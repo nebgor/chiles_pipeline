@@ -34,6 +34,8 @@ AWS_SECURITY_GROUPS = None
 AWS_SUBNET_ID = None
 AWS_REGION = None
 
+BASH_SCRIPT = None
+
 config_file_name = dirname(__file__) + '/chiles.settings'
 if exists(config_file_name):
     config = ConfigObj(config_file_name)
@@ -44,3 +46,5 @@ if exists(config_file_name):
     AWS_SECURITY_GROUPS = config['security_groups']
     AWS_SUBNET_ID = config['subnet_id']
     AWS_REGION = config['region']
+
+    BASH_SCRIPT = config['bash_script']

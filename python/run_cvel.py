@@ -28,8 +28,9 @@ Start a number of CVEL servers
 import argparse
 import getpass
 import logging
+from os.path import dirname, join
 import sys
-from config import AWS_AMI_ID
+from config import AWS_AMI_ID, BASH_SCRIPT
 from ec2_helper import EC2Helper
 
 LOG = logging.getLogger(__name__)
@@ -46,15 +47,24 @@ def start_servers(ami_id, user_data, instance_type, volume_id, created_by, name,
         ec2_helper.run_instance(ami_id, user_data, instance_type, volume_id, created_by, name, ephemeral=True)
 
 
+def get_script(file_name):
+    here = dirname(__file__)
+    bash = join(here, '../bash', file_name)
+    with open(bash, 'r') as my_file:
+        data = my_file.read()
+
+    return data
+
+
 def check_args(args):
     """
     Check the arguments and prompt for new ones
     """
-    map_args = {}
-    if args['ami_id'] is not None:
-        map_args['ami_id'] = args['ami_id']
-    else:
-        map_args['ami_id'] = AWS_AMI_ID
+    map_args = {
+        'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
+        'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
+        'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
+        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT)}
 
     if args['vol_id'] is not None:
         map_args['vol_id'] = args['vol_id']
@@ -66,25 +76,10 @@ def check_args(args):
     else:
         return None
 
-    if args['created_by'] is not None:
-        map_args['created_by'] = args['created_by']
-    else:
-        map_args['created_by'] = getpass.getuser()
-
     if args['name'] is not None:
         map_args['name'] = args['name']
     else:
         return None
-
-    if args['spot_price'] is not None:
-        map_args['spot_price'] = args['spot_price']
-    else:
-        map_args['spot_price'] = None
-
-    map_args['user_data'] = '''
-#!/bin/bash
-echo 'Hello World'
-'''
 
     return map_args
 
@@ -97,6 +92,7 @@ def main():
     parser.add_argument('-c', '--created_by', help='the username to use')
     parser.add_argument('-n', '--name', required=True, help='the instance name to use')
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
+    parser.add_argument('-b', '--bash_script', help='the bash script to use')
 
     args = vars(parser.parse_args())
 
@@ -108,4 +104,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

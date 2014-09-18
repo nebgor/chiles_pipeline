@@ -47,17 +47,13 @@ class EC2Helper:
         self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
-    def build_block_device_map(volume_id, ephemeral):
+    def build_block_device_map(ephemeral):
         bdm = blockdevicemapping.BlockDeviceMapping()
-
-        # The fixed disk
-        dev_xvdf = blockdevicemapping.EBSBlockDeviceType(volume_id=volume_id)
-        bdm['/dev/xvdf'] = dev_xvdf
 
         if ephemeral:
             # The ephemeral disk
             xvdb = BlockDeviceType()
-            xvdb.ephemeral_name='ephemeral0'
+            xvdb.ephemeral_name = 'ephemeral0'
             bdm['/dev/xvdb'] = xvdb
 
         return bdm
@@ -66,7 +62,7 @@ class EC2Helper:
         """
         Run up an instance
         """
-        bdm = self.build_block_device_map(volume_id, ephemeral)
+        bdm = self.build_block_device_map(ephemeral)
 
         LOG.info('Running instance: ami: {0}'.format(ami_id))
         reservations = self.ec2_connection.run_instances(ami_id,
@@ -79,24 +75,26 @@ class EC2Helper:
                                                          block_device_map=bdm)
         instance = reservations.instances[0]
         time.sleep(5)
+
+        while not instance.update() == 'running':
+            LOG.info('Not running yet')
+            time.sleep(1)
+
+        # Now we have an instance id we can attach the disk
+        self.ec2_connection.attach_volume(volume_id, instance.id, '/dev/xvdf')
+
         LOG.info('Assigning the tags')
         self.ec2_connection.create_tags([instance.id],
                                         {'CVEL': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
                                          'Created By': '{0}'.format(created_by)})
 
-        while not instance.update() == 'running':
-            LOG.info('Not running yet')
-            time.sleep(1)
-
-        # As the default behaviour of this subnet is to allocate a public IP we don't need to
-
     def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, ephemeral=False):
         """
         Run the ami as a spot instance
         """
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(volume_id, ephemeral)
+        bdm = self.build_block_device_map(ephemeral)
         spot_request = self.ec2_connection.request_spot_instances(spot_price,
                                                                   image_id=ami_id,
                                                                   count=1,
@@ -129,15 +127,10 @@ class EC2Helper:
                     instance_id = requests[0].instance_id
                 elif requests[0].state == 'cancelled':
                     raise CancelledException('Request {0} cancelled. Status: {1}'.format(spot_request_id, requests[0].status))
+                elif requests[0].state == 'failed':
+                    raise CancelledException('Request {0} failed. Status: {1}. Fault: {2}'.format(spot_request_id, requests[0].status, requests[0].fault))
                 else:
                     time.sleep(10)
-
-        # Give it time to settle down
-        LOG.info('Assigning the tags')
-        self.ec2_connection.create_tags([instance_id],
-                                        {'CVEL': '{0}'.format(ami_id),
-                                         'Name': '{0}'.format(name),
-                                         'Created By': '{0}'.format(created_by)})
 
         reservations = self.ec2_connection.get_all_instances(instance_ids=[instance_id])
         instance = reservations[0].instances[0]
@@ -146,6 +139,16 @@ class EC2Helper:
         while not instance.update() == 'running':
             LOG.info('Not running yet')
             time.sleep(1)
+
+        # When we have an instance id we can attach the volume
+        self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')
+
+        # Give it time to settle down
+        LOG.info('Assigning the tags')
+        self.ec2_connection.create_tags([instance_id],
+                                        {'CVEL': '{0}'.format(ami_id),
+                                         'Name': '{0}'.format(name),
+                                         'Created By': '{0}'.format(created_by)})
 
 
 class CancelledException(Exception):
