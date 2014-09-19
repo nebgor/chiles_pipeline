@@ -12,6 +12,11 @@ export PBS_JOBID=$1
 
 # This is the "job_id" to identify multiple jobs in a single run
 export PBS_ARRAYID=$2
+
+# For non-PBS testing
+export PBS_JOBID=9999
+export PBS_ARRAYID=0
+
 #
 # each run has a unique id (converted from pbs_job_id, e.g.19625[0].pleiades.icrar.org)
 export CH_RUN_ID=${PBS_JOBID}
@@ -77,6 +82,7 @@ cd $CH_CASA_WORK_DIR/${PBS_JOBID}[${PBS_ARRAYID}]
 #CH_CASA_SOURCE=/home/apopping/Software/casapy-41.0.24668-001-64b-2
 #CH_CASA_SOURCE=/home/rdodson/Software/Casa/casapy-42.1.29047-001-1-64b
 # run casapy
+export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 #done
 
