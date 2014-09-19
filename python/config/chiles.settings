@@ -1,0 +1,8 @@
+# AWS Settings
+
+ami_id = "ami-a144279b"
+subnet_id = "subnet-878cc2ee"
+key_name = "icrar_sydney"
+security_groups = "sg-6438d001", "sg-39ce265c"
+region = "ap-southeast-2"
+bash_script_cvel = "run_cvel.bash"
