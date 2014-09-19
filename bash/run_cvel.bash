@@ -24,8 +24,9 @@ while [ ! -b "/dev/xvdf" ]; do
 done
 
 # Now mount the data disk
-mkdir -p /mnt/Data
-mount /dev/xvdf /mnt/Data
+mkdir -p /mnt/Data/data1
+mount /dev/xvdf /mnt/Data/data1
+chmod -R oug+r /mnt/Data/data1
 
 # Make sure the code area is up to date and is run by ec2-user not root
 cd /home/ec2-user/chiles_pipeline
@@ -33,8 +34,7 @@ runuser -l ec2-user git pull
 
 # CHEN - You bits go here :-)
 cd /home/ec2-user
-runuser -l ec2-user echo "Hello World!"
-#runuser -l ec2-user sh ~/chiles_pipeline/bash/start_cvel.sh
+runuser -l ec2-user sh ~/chiles_pipeline/bash/start_cvel.sh
 
 # Copy files to S3
 # TODO - when I see what the output looks like

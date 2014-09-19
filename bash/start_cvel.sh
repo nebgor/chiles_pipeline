@@ -14,16 +14,16 @@ export PBS_ARRAYID=0
 # each run has a unique id (converted from pbs_job_id, e.g.19625[0].pleiades.icrar.org)
 export CH_RUN_ID=${PBS_JOBID}
 # total number of jobs
-export CH_NUM_JOB=1 ## Should match total from ARRAY (-t) line 
+export CH_NUM_JOB=1 ## Should match total from ARRAY (-t) line
 # target field
 export CH_TARGET_FIELD='deepfield'
 
-export CH_OBS_DIR=/mnt/
+export CH_OBS_DIR=/mnt/Data/
 # the index of the first / last observation (to be split) listed in "ls -l $OBS_DIR"
 export CH_OBS_FIRST=0
 export CH_OBS_LAST=0
 
-#	  SpwID  Name           #Chans   Frame   Ch0(MHz)  ChanWid(kHz)  TotBW(kHz) BBC Num  Corrs  
+#	  SpwID  Name           #Chans   Frame   Ch0(MHz)  ChanWid(kHz)  TotBW(kHz) BBC Num  Corrs
 #	  0      EVLA_L#A0C0#0    2048   TOPO     951.000        15.625     32000.0      12  RR  LL
 #	  1      EVLA_L#A0C0#1    2048   TOPO     983.000        15.625     32000.0      12  RR  LL
 #	  2      EVLA_L#A0C0#2    2048   TOPO    1015.000        15.625     32000.0      12  RR  LL
@@ -75,8 +75,6 @@ cd $CH_CASA_WORK_DIR/${PBS_JOBID}[${PBS_ARRAYID}]
 #CH_CASA_SOURCE=/home/apopping/Software/casapy-41.0.24668-001-64b-2
 #CH_CASA_SOURCE=/home/rdodson/Software/Casa/casapy-42.1.29047-001-1-64b
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py 
+casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 #done
-
-# Copy results to store 
 
