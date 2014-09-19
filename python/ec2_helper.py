@@ -107,8 +107,11 @@ class EC2Helper:
                                                                   block_device_map=bdm)
 
         # Wait for EC2 to provision the instance
+        time.sleep(10)
         instance_id = None
         error_count = 0
+
+        # Has it been provisioned yet - we allow 3 errors before aborting
         while instance_id is None and error_count < 3:
             spot_request_id = spot_request[0].id
             requests = None

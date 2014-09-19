@@ -26,6 +26,8 @@
 Start a number of CVEL servers
 """
 import argparse
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import getpass
 import logging
 from os.path import dirname, join
@@ -48,12 +50,29 @@ def start_servers(ami_id, user_data, instance_type, volume_id, created_by, name,
 
 
 def get_script(file_name):
+    """
+    AWS allows for a multipart m
+    """
+    user_data = MIMEMultipart()
+
+    cloud_init = MIMEText('''
+#cloud-config
+
+# Log all cloud-init process output (info & errors) to a logfile
+output : { all : ">> /var/log/kv-output.log" }
+
+# final_message written to log when cloud-init processes are finished
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+''')
+    user_data.attach(cloud_init)
+
     here = dirname(__file__)
     bash = join(here, '../bash', file_name)
     with open(bash, 'r') as my_file:
         data = my_file.read()
 
-    return data
+    user_data.attach(MIMEText(data))
+    return user_data.as_string()
 
 
 def check_args(args):

@@ -1,18 +1,19 @@
-#!/bin/bash
+#!/bin/bash -ve
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 # Setup the ephemeral disk
 if [ -b "/dev/xvdb" ]; then
   if mountpoint -q "/media/ephemeral0" ; then
     # The ephemeral disk is mounted on /media/ephemeral0
-    rm -f /mnt/data2
-    ln -s /media/ephemeral0 /mnt/data2
+    rm -f /mnt/output
+    ln -s /media/ephemeral0 /mnt/output
   else
-    mkdir -p /mnt/data2
+    mkdir -p /mnt/output
     mkfs.ext4 /dev/xvdb
-    mount /dev/xvdb /mnt/data2
+    mount /dev/xvdb /mnt/output
   fi
 fi
-chmod oug+wrx /mnt/data2
+chmod oug+wrx /mnt/output
+
 
 # As we might need to wait for the mount point to arrive as it can only be attached
 # after the instance is running
@@ -23,8 +24,8 @@ while [ ! -b "/dev/xvdf" ]; do
 done
 
 # Now mount the data disk
-mkdir -p /mnt/data1
-mount /dev/xvdf /mnt/data1
+mkdir -p /mnt/Data
+mount /dev/xvdf /mnt/Data
 
 # make sure the code area is up to date
 cd chiles_pipeline
@@ -33,6 +34,7 @@ runuser -l ec2-user git pull
 # CHEN - You bits go here :-)
 cd ~
 runuser -l ec2-user echo "Hello World!"
+#runuser -l ec2-user sh ~/chiles_pipeline/bash/start_cvel.sh
 
 # Copy files to S3
 # TODO - when I see what the output looks like
