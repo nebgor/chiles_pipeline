@@ -27,12 +27,12 @@ done
 mkdir -p /mnt/Data
 mount /dev/xvdf /mnt/Data
 
-# make sure the code area is up to date
-cd chiles_pipeline
+# Make sure the code area is up to date and is run by ec2-user not root
+cd /home/ec2-user/chiles_pipeline
 runuser -l ec2-user git pull
 
 # CHEN - You bits go here :-)
-cd ~
+cd /home/ec2-user
 runuser -l ec2-user echo "Hello World!"
 #runuser -l ec2-user sh ~/chiles_pipeline/bash/start_cvel.sh
 
