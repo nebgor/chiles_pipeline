@@ -18,7 +18,7 @@ export CH_NUM_JOB=1 ## Should match total from ARRAY (-t) line
 # target field
 export CH_TARGET_FIELD='deepfield'
 
-export CH_OBS_DIR=/mnt/
+export CH_OBS_DIR=/mnt/Data/
 # the index of the first / last observation (to be split) listed in "ls -l $OBS_DIR"
 export CH_OBS_FIRST=0
 export CH_OBS_LAST=0
