@@ -4,7 +4,7 @@ Taken from makecube.py extracting the final combination of cubes
 This module should run together with the casapy: e.g. casapy --logfile casapy.log -c make_finalcube.py
 """
 
-execfile('makecube_defines.py')
+execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
 # checkDir(job_id, vis_dirs)
 # checkDir(job_id, vis_bk_dirs)
