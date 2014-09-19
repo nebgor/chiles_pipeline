@@ -58,8 +58,13 @@ def get_script(file_name):
     cloud_init = MIMEText('''
 #cloud-config
 
+# Install additional packages on first boot
+packages:
+ - wget
+ - git
+
 # Log all cloud-init process output (info & errors) to a logfile
-output : { all : ">> /var/log/kv-output.log" }
+output : { all : ">> /var/log/chiles-output.log" }
 
 # final_message written to log when cloud-init processes are finished
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"

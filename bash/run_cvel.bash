@@ -30,11 +30,11 @@ chmod -R oug+r /mnt/Data/data1
 
 # Make sure the code area is up to date and is run by ec2-user not root
 cd /home/ec2-user/chiles_pipeline
-runuser -l ec2-user git pull
+runuser -l ec2-user -c 'git pull'
 
 # CHEN - You bits go here :-)
 cd /home/ec2-user
-runuser -l ec2-user sh ~/chiles_pipeline/bash/start_cvel.sh
+runuser -l ec2-user -c 'sh ~/chiles_pipeline/bash/start_cvel.sh'
 
 # Copy files to S3
 # TODO - when I see what the output looks like

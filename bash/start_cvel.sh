@@ -6,6 +6,8 @@
 #PBS -o $HOME/Chiles/run-11.out
 #PBS -e $HOME/Chiles/run-11.err
 
+export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
+
 # For non-PBS testing
 export PBS_JOBID=9999
 export PBS_ARRAYID=0
