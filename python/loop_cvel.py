@@ -5,8 +5,9 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 """
 
 
-execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
+#execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
+from makecube_defines import *
 
 print 'test'+INPUT_VIS_SUFFIX
 # loop through selected obs and cvel. Uses obId to only do subset of possible
@@ -39,6 +40,9 @@ for obs in obs_list:
     outdir = '%s/%s/' % (vis_dirs, obsId)
     backup_dir = '%s/%s/' % (vis_bk_dirs, obsId)
     do_cvel(infile, outdir, backup_dir, freq_min, 
-             freq_max, freq_step, freq_width, spec_window, obsId)   
+             freq_max, freq_step, freq_width, spec_window, obsId) 
+
+# wait until all other cvel processes are done before quite:
+done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)  
 
     # Done

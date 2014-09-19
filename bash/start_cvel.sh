@@ -6,15 +6,17 @@
 #PBS -o $HOME/Chiles/run-11.out
 #PBS -e $HOME/Chiles/run-11.err
 
-# For non-PBS testing
-export PBS_JOBID=9999
-export PBS_ARRAYID=0
-#for PBS_ARRAYID in 0 1 2 3
+# For non-PBS testing, a.k.a. RUN_ID (see blow)
+# note that PBS job id is NOT the same as our job_id
+export PBS_JOBID=$1
+
+# This is the "job_id" to identify multiple jobs in a single run
+export PBS_ARRAYID=$2
 #
 # each run has a unique id (converted from pbs_job_id, e.g.19625[0].pleiades.icrar.org)
 export CH_RUN_ID=${PBS_JOBID}
 # total number of jobs
-export CH_NUM_JOB=1 ## Should match total from ARRAY (-t) line
+export CH_NUM_JOB=$3 ## Should match total from ARRAY (-t) line
 # target field
 export CH_TARGET_FIELD='deepfield'
 

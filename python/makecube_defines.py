@@ -29,7 +29,11 @@ def execCmd(cmd, failonerror = True, okErr = []):
 
 def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     """
-    Return a list of Obs that this job has to split
+    Return a tupe
+    
+    The first element: list of Obs that this job has to split
+    The second element: all obs
+    
     Since the num_jobs could be less than num_obs, a job may need to
     process more than one obs
     
