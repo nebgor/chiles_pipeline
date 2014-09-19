@@ -30,7 +30,7 @@ import getpass
 import logging
 from os.path import dirname, join
 import sys
-from config import AWS_AMI_ID, BASH_SCRIPT
+from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
 LOG = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ def check_args(args):
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
         'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
         'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
-        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT)}
+        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CVEL)}
 
     if args['vol_id'] is not None:
         map_args['vol_id'] = args['vol_id']
