@@ -51,13 +51,13 @@ export CH_MODE_DEBUG=0 # In the debug mode, CASA routines are not called but onl
 export CH_BKP_SPLIT=0 # whether to make a backup copy of the split vis files
 
 # each obs will create a sub-directory under this
-export CH_VIS_DIR=$HOME/Data/Ouputs/Chiles/split_vis
-export CH_VIS_BK_DIR=$HOME/Data/Ouputs/Chiles/backup_split_vis
+export CH_VIS_DIR=$HOME/Data/Outputs/Chiles/split_vis
+export CH_VIS_BK_DIR=$HOME/Data/Outputs/Chiles/backup_split_vis
 
 # NOTE - ON pleiades, do not set this to /scratch
-export CH_CUBE_DIR=$HOME/Data/Ouputs/Chiles/split_cubes
+export CH_CUBE_DIR=$HOME/Data/Outputs/Chiles/split_cubes
 #export CH_OUT_NAME=$HOME/Tests/Chiles/cubes/comb_$CH_FREQ_MIN~$CH_FREQ_MAX.image
-export CH_OUT_DIR=$HOME/Data/Ouputs/Chiles/cubes
+export CH_OUT_DIR=$HOME/Data/Outputs/Chiles/cubes
 
 export CH_SPLIT_TIMEOUT=3600 # 1 hour
 export CH_CLEAN_TIMEOUT=3600
