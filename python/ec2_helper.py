@@ -154,6 +154,7 @@ class EC2Helper:
         self.ec2_connection.create_tags([instance_id],
                                         {'CVEL': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
+                                         'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
 
     def get_volume_name(self, volume_id):
