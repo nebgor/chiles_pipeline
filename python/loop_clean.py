@@ -4,12 +4,12 @@ Taken from makecube.py extracting the loop over clean
 This module should run together with the casapy: e.g. casapy --nologger -c loop_clean.py
 """
 
-#execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
+execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
-base_path = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(base_path))
-
-from makecube_defines import *
+#base_path = os.path.dirname(__file__)
+#sys.path.append(os.path.abspath(base_path))
+#
+#from makecube_defines import *
 
 #checkDir(job_id, vis_dirs)
 #checkDir(job_id, vis_bk_dirs)

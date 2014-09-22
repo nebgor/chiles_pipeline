@@ -7,14 +7,10 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 
 execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
-# import os
-# import sys
-# print 'Sys Path: ' + str(sys.path)
+#import sys
+#sys.path.append('/home/ec2-user/chiles_pipeline/python')
 #
-# base_path = os.path.dirname(__file__)
-# sys.path.append(os.path.abspath(base_path))
-# print 'Sys Path: ' + str(sys.path)
-# from makecube_defines import *
+#from makecube_defines import *
 
 print 'test'+INPUT_VIS_SUFFIX
 # loop through selected obs and cvel. Uses obId to only do subset of possible

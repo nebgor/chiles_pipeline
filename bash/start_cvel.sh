@@ -73,8 +73,8 @@ export CH_CLEAN_TIMEOUT=3600
 # NOTE - ON pleiades, do not set this to /scratch
 export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
 # TODO - create it if not there
-mkdir -p $CH_CASA_WORK_DIR/${PBS_JOBID}[${PBS_ARRAYID}]
-cd $CH_CASA_WORK_DIR/${PBS_JOBID}[${PBS_ARRAYID}]
+mkdir -p $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
+cd $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
 
 # point to casapy installation
 #CH_CASA_SOURCE=/mnt/gleam/software/casapy-42.0.28322-021-1-64b
