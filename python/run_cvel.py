@@ -43,13 +43,17 @@ LOG.info('PYTHONPATH = {0}'.format(sys.path))
 def start_servers(ami_id, user_data, instance_type, volume_id, created_by, name, spot_price=None):
     ec2_helper = EC2Helper()
 
+    # Get the name of the volume
+    volume_name = ec2_helper.get_volume_name(volume_id)
+    user_data = get_mime_encoded_user_data(user_data, volume_name)
+
     if spot_price is not None:
         ec2_helper.run_spot_instance(ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, ephemeral=True)
     else:
         ec2_helper.run_instance(ami_id, user_data, instance_type, volume_id, created_by, name, ephemeral=True)
 
 
-def get_script(file_name):
+def get_mime_encoded_user_data(data, volume_name):
     """
     AWS allows for a multipart m
     """
@@ -66,29 +70,32 @@ packages:
 # Log all cloud-init process output (info & errors) to a logfile
 output : { all : ">> /var/log/chiles-output.log" }
 
-# final_message written to log when cloud-init processes are finished
+# Final_message written to log when cloud-init processes are finished
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
 ''')
     user_data.attach(cloud_init)
+    data = data.format(volume_name)
+    user_data.attach(MIMEText(data))
+    return user_data.as_string()
 
+
+def get_script(file_name):
+    """
+    AWS allows for a multipart m
+    """
     here = dirname(__file__)
     bash = join(here, '../bash', file_name)
     with open(bash, 'r') as my_file:
         data = my_file.read()
 
-    user_data.attach(MIMEText(data))
-    return user_data.as_string()
+    return data
 
 
 def check_args(args):
     """
     Check the arguments and prompt for new ones
     """
-    map_args = {
-        'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
-        'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
-        'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
-        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CVEL)}
+    map_args = {}
 
     if args['vol_id'] is not None:
         map_args['vol_id'] = args['vol_id']
@@ -104,6 +111,12 @@ def check_args(args):
         map_args['name'] = args['name']
     else:
         return None
+
+    map_args.update({
+        'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
+        'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
+        'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
+        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CVEL)})
 
     return map_args
 

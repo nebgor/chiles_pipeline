@@ -25,6 +25,7 @@
 """
 The helper for starting EC2 Instances
 """
+import re
 import boto
 import logging
 import time
@@ -32,6 +33,7 @@ import datetime
 from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
+import unicodedata
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 LOG = logging.getLogger(__name__)
@@ -152,6 +154,23 @@ class EC2Helper:
                                         {'CVEL': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
                                          'Created By': '{0}'.format(created_by)})
+
+    def get_volume_name(self, volume_id):
+        """
+        Get the name of volume (if it has one)
+        """
+        volume_details = self.ec2_connection.get_all_volumes(volume_id)
+        if volume_details and len(volume_details) == 1:
+            volume = volume_details[0]
+            name = volume.tags['Name']
+            if name:
+                name = unicodedata.normalize('NFKD', name)
+                name = name.encode('ascii', 'ignore').lower()
+                name = re.sub(r'[^a-z0-9]+', '-', name).strip('-')
+                name = re.sub(r'[-]+', '-', name)
+                return name
+
+        return volume_id
 
 
 class CancelledException(Exception):
