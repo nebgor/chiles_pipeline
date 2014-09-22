@@ -7,6 +7,10 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 
 #execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
+print 'Sys Path: ' + sys.path
+import os
+import sys
+
 base_path = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(base_path))
 print 'Sys Path: ' + sys.path
