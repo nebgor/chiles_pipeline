@@ -6,6 +6,9 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 
 #execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
+base_path = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(base_path))
+
 from makecube_defines import *
 
 #checkDir(job_id, vis_dirs)
@@ -19,7 +22,7 @@ obsId_list = []
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
 
-# Wait on split ... 
+# Wait on split ...
 done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
 
 vis_dirs_cube = []
