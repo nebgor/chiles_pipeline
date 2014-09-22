@@ -1,4 +1,4 @@
-#!/bin/bash -ve
+#!/bin/bash -vx
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 # Setup the ephemeral disk
 if [ -b "/dev/xvdb" ]; then
@@ -14,7 +14,6 @@ if [ -b "/dev/xvdb" ]; then
 fi
 chmod oug+wrx /mnt/output
 
-
 # As we might need to wait for the mount point to arrive as it can only be attached
 # after the instance is running
 sleep 10
@@ -29,12 +28,11 @@ mount /dev/xvdf /mnt/Data/data1
 chmod -R oug+r /mnt/Data/data1
 
 # Make sure the code area is up to date and is run by ec2-user not root
-cd /home/ec2-user/chiles_pipeline
-runuser -l ec2-user -c 'git pull'
+runuser -l ec2-user -c 'cd /home/ec2-user/chiles_pipeline ; git pull'
 
-# CHEN - You bits go here :-)
-cd /home/ec2-user
-runuser -l ec2-user -c 'sh ~/chiles_pipeline/bash/start_cvel.sh'
+# Run the cvel pipeline
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 2' &
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 1 2'
 
 # Copy files to S3
 # TODO - when I see what the output looks like
