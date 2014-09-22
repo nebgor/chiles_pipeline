@@ -46,12 +46,12 @@ def start_servers(ami_id, user_data, instance_type, volume_ids, created_by, name
     for volume_id in volume_ids:
         # Get the name of the volume
         volume_name = ec2_helper.get_volume_name(volume_id)
-        user_data = get_mime_encoded_user_data(user_data, volume_name)
+        user_data_mime = get_mime_encoded_user_data(user_data, volume_name)
 
         if spot_price is not None:
-            ec2_helper.run_spot_instance(ami_id, spot_price, user_data, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
         else:
-            ec2_helper.run_instance(ami_id, user_data, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
 
         count += 1
 
@@ -77,8 +77,8 @@ output : { all : ">> /var/log/chiles-output.log" }
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
 ''')
     user_data.attach(cloud_init)
-    data = data.format(volume_name)
-    user_data.attach(MIMEText(data))
+    data_formatted = data.format(volume_name)
+    user_data.attach(MIMEText(data_formatted))
     return user_data.as_string()
 
 
