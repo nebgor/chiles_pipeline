@@ -14,8 +14,8 @@ export PBS_JOBID=$1
 export PBS_ARRAYID=$2
 
 # For non-PBS testing
-export PBS_JOBID=9999
-export PBS_ARRAYID=0
+#export PBS_JOBID=9999
+#export PBS_ARRAYID=0
 
 #
 # each run has a unique id (converted from pbs_job_id, e.g.19625[0].pleiades.icrar.org)
