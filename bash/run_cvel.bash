@@ -34,7 +34,7 @@ runuser -l ec2-user -c 'cd /home/ec2-user/chiles_pipeline ; git pull'
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1'
 
 # Copy files to S3
-# TODO - when I see what the output looks like
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py'
 
 # Terminate
 #shutdown -h now
