@@ -28,8 +28,8 @@
 from os.path import exists, dirname
 from configobj import ConfigObj
 
-# CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
-CHILES_CVEL_OUTPUT = '/Users/kevinvinsen/Downloads/mnt/output/Chiles/split_vis'
+CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
+#CHILES_CVEL_OUTPUT = '/Users/kevinvinsen/Downloads/mnt/output/Chiles/split_vis'
 CHILES_BUCKET_NAME = 'icrar.chiles.output'
 
 AWS_AMI_ID = None
