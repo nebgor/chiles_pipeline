@@ -31,7 +31,7 @@ chmod -R oug+r /mnt/Data/data1
 runuser -l ec2-user -c 'cd /home/ec2-user/chiles_pipeline ; git pull'
 
 # Run the cvel pipeline
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 1 1'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1'
 
 # Copy files to S3
 # TODO - when I see what the output looks like
