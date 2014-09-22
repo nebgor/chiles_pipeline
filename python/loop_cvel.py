@@ -46,6 +46,6 @@ for obs in obs_list:
              freq_max, freq_step, freq_width, spec_window, obsId)
 
 # wait until all other cvel processes are done before quite:
-done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
+#done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
 
     # Done
