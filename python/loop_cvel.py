@@ -9,7 +9,7 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 
 base_path = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(base_path))
-
+print 'Sys Path: ' + sys.path
 from makecube_defines import *
 
 print 'test'+INPUT_VIS_SUFFIX
