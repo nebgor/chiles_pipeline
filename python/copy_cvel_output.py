@@ -26,6 +26,7 @@
 Copy the CVEL output files to S3
 """
 import argparse
+from contextlib import closing
 import logging
 import os
 from os.path import isdir, join
@@ -42,7 +43,7 @@ LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 def make_tarfile(output_filename, source_dir):
     LOG.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
-    with tarfile.open(output_filename, "w:gz") as tar:
+    with closing(tarfile.open(output_filename, "w:gz")) as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
