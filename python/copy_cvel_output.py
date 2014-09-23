@@ -28,16 +28,19 @@ Copy the CVEL output files to S3
 import argparse
 from contextlib import closing
 import logging
+import multiprocessing
 import os
 from os.path import isdir, join
 import sys
 import tarfile
+
 from common import make_safe_filename
 from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+
+LOG = multiprocessing.log_to_stderr()
+LOG.setLevel(logging.INFO)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
@@ -63,6 +66,7 @@ def main():
                 directory_frequency_full = join(path_frequency, directory_frequency)
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
                     LOG.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
+                    # TODO: Build a task queue and do this in parallel
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
                     make_tarfile(output_tar_filename, directory_frequency_full)
 

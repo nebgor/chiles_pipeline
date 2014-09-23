@@ -27,21 +27,53 @@ Copy the CVEL output from S3 so we can run clean on it
 """
 import argparse
 import logging
+import multiprocessing
 import sys
 import os
 import tarfile
-from common import make_safe_filename
+
+from common import make_safe_filename, Consumer
 from config import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+
+LOG = multiprocessing.log_to_stderr()
+LOG.setLevel(logging.INFO)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def copy_files(observation_id, frequency_id):
+class Task(object):
+    """
+    The actual task
+    """
+    def __init__(self, key, tar_file, directory):
+        self._key = key
+        self._tar_file = tar_file
+        self._directory = directory
+
+    def __call__(self, consumer_id):
+        """
+        Actually run the job
+        """
+        LOG.info('Queue: {0}, key: {1}, tar_file: {2}'.format(consumer_id, self._key, self._tar_file))
+        self._key.get_contents_to_filename(self._tar_file)
+        with tarfile.open(self._tar_file, "r:gz") as tar:
+            tar.extractall(path=self._directory)
+
+        os.remove(self._tar_file)
+
+
+def copy_files(observation_id, frequency_id, processes):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
+
+    # Create the queue
+    tasks = multiprocessing.JoinableQueue()
+
+    # Start the consumers
+    for x in range(processes):
+        consumer = Consumer(tasks, x)
+        consumer.start()
 
     for key in bucket.list(prefix='{0}/{1}'.format(observation_id, frequency_id)):
         # Ignore the key
@@ -51,24 +83,31 @@ def copy_files(observation_id, frequency_id):
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            # Copy the file over
+            # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
-            key.get_contents_to_filename(temp_file)
-            with tarfile.open(temp_file, "r:gz") as tar:
-                tar.extractall(path=directory)
+            tasks.put(Task(key, temp_file, directory))
 
-            os.remove(temp_file)
+    # Add a poison pill to shut things down
+    for x in range(processes):
+        tasks.put(None)
+
+    # Wait for the queue to terminate
+    tasks.join()
+
 
 
 def main():
     parser = argparse.ArgumentParser('Copy the output to the correct place in S3')
     parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('freq_id', help='the frequency id')
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
     frequency_id = args['freq_id']
+    processes = args['-p']
 
-    copy_files(observation_id, frequency_id)
+    copy_files(observation_id, frequency_id, processes)
 
 if __name__ == "__main__":
     main()

@@ -27,17 +27,44 @@ Common code
 """
 from email.mime.text import MIMEText
 import logging
+import multiprocessing
 from os.path import join, expanduser, dirname
 import re
 import unicodedata
+import time
+
 from fabric.api import settings, cd, sudo, run
 from fabric.utils import fastprint, puts
-import time
-import sys
+
 from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+
+LOG = multiprocessing.log_to_stderr()
+LOG.setLevel(logging.INFO)
+
+
+class Consumer(multiprocessing.Process):
+    """
+    A class to process jobs from the queue
+    """
+    def __init__(self, queue, consumer_id):
+        multiprocessing.Process.__init__(self)
+        self._queue = queue
+        self._consumer_id = consumer_id
+
+    def run(self):
+        """
+        Sit in a loop
+        """
+        while True:
+            next_task = self._queue.get()
+            if next_task is None:
+                # Poison pill means shutdown
+                LOG.info('Exiting')
+                self._queue.task_done()
+                return
+            next_task(self._consumer_id)
+            self._queue.task_done()
 
 
 def make_safe_filename(name):

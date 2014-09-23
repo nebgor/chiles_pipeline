@@ -25,20 +25,22 @@
 """
 The helper for starting EC2 Instances
 """
-import re
-import boto
+import multiprocessing
 import logging
 import time
 import datetime
+
+import boto
 from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
-import unicodedata
+
 from common import make_safe_filename
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+
+LOG = multiprocessing.log_to_stderr()
+LOG.setLevel(logging.INFO)
 
 
 class EC2Helper:

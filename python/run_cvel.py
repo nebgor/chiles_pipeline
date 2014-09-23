@@ -30,13 +30,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
 import logging
+import multiprocessing
 import sys
+
 from common import make_safe_filename, get_cloud_init, setup_boto, get_script
 from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+
+LOG = multiprocessing.log_to_stderr()
+LOG.setLevel(logging.INFO)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
