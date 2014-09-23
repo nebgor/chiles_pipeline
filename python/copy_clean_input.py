@@ -26,6 +26,7 @@
 Copy the CVEL output from S3 so we can run clean on it
 """
 import argparse
+from contextlib import closing
 import multiprocessing
 import sys
 import os
@@ -58,7 +59,7 @@ class Task(object):
         if not os.path.exists(self._directory):
             os.makedirs(self._directory)
         self._key.get_contents_to_filename(self._tar_file)
-        with tarfile.open(self._tar_file, "r:gz") as tar:
+        with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
             tar.extractall(path=self._directory)
 
         os.remove(self._tar_file)
