@@ -26,7 +26,6 @@
 The helper for starting EC2 Instances
 """
 import multiprocessing
-import logging
 import time
 import datetime
 
@@ -40,7 +39,7 @@ from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
 LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class EC2Helper:

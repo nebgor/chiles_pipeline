@@ -29,17 +29,16 @@ import argparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
-import logging
 import multiprocessing
 import sys
 
-from common import get_script, setup_boto, get_cloud_init, Consumer
+from common import get_script, setup_boto, get_cloud_init, Consumer, make_safe_filename
 from config import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
 
 LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
@@ -58,11 +57,11 @@ class Task(object):
         self._name = name
         self._spot_price = spot_price
 
-    def __call__(self, consumer_id):
+    def __call__(self):
         """
         Actually run the job
         """
-        LOG.info('Queue: {0}, observation_id: {1}, frequency_id: {2}'.format(consumer_id, self._observation_id, self._frequency_id))
+        LOG.info('observation_id: {0}, frequency_id: {1}'.format(self._observation_id, self._frequency_id))
         user_data_mime = get_mime_encoded_user_data(self._user_data, self._observation_id, self._frequency_id)
 
         if self._spot_price is not None:
@@ -94,7 +93,7 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, f
 
     # Start the consumers
     for x in range(processes):
-        consumer = Consumer(tasks, x)
+        consumer = Consumer(tasks)
         consumer.start()
 
     ec2_helper = EC2Helper()
@@ -107,7 +106,6 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, f
 
     # Wait for the queue to terminate
     tasks.join()
-
 
 
 def get_mime_encoded_user_data(data, observation_id, frequency_id):
@@ -164,11 +162,20 @@ def main():
 
     args = vars(parser.parse_args())
 
-    args1 = check_args(args)
-    if args1 is None:
+    corrected_args = check_args(args)
+    if corrected_args is None:
         LOG.error('The arguments are incorrect: {0}'.format(args))
     else:
-        start_servers(args['processes'], args1['ami_id'], args1['user_data'], args['instance_type'], args['obs_id'], args['frequencies'], args1['created_by'], args['name'], args1['spot_price'])
+        start_servers(
+            args['processes'],
+            corrected_args['ami_id'],
+            corrected_args['user_data'],
+            args['instance_type'],
+            make_safe_filename(args['obs_id']),
+            args['frequencies'],
+            corrected_args['created_by'],
+            args['name'],
+            corrected_args['spot_price'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis1407~vis1411 vis_1411~1415 vis_1415~1419

@@ -22,7 +22,7 @@ done
 sleep 5
 
 # Copy files from S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} {1}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} {1} -p 3'
 
 # Run the cvel pipeline
 #runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {0} 0 1'

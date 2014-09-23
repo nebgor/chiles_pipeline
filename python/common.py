@@ -26,7 +26,6 @@
 Common code
 """
 from email.mime.text import MIMEText
-import logging
 import multiprocessing
 from os.path import join, expanduser, dirname
 import re
@@ -40,30 +39,31 @@ from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 
 LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class Consumer(multiprocessing.Process):
     """
     A class to process jobs from the queue
     """
-    def __init__(self, queue, consumer_id):
+    def __init__(self, queue):
         multiprocessing.Process.__init__(self)
         self._queue = queue
-        self._consumer_id = consumer_id
 
     def run(self):
         """
         Sit in a loop
         """
         while True:
+            LOG.info('Getting a task')
             next_task = self._queue.get()
             if next_task is None:
                 # Poison pill means shutdown
                 LOG.info('Exiting')
                 self._queue.task_done()
                 return
-            next_task(self._consumer_id)
+            LOG.info('Executing the task')
+            next_task()
             self._queue.task_done()
 
 

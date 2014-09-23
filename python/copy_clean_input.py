@@ -26,7 +26,6 @@
 Copy the CVEL output from S3 so we can run clean on it
 """
 import argparse
-import logging
 import multiprocessing
 import sys
 import os
@@ -38,7 +37,7 @@ from s3_helper import S3Helper
 
 
 LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
@@ -51,11 +50,13 @@ class Task(object):
         self._tar_file = tar_file
         self._directory = directory
 
-    def __call__(self, consumer_id):
+    def __call__(self):
         """
         Actually run the job
         """
-        LOG.info('Queue: {0}, key: {1}, tar_file: {2}'.format(consumer_id, self._key, self._tar_file))
+        LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key, self._tar_file, self._directory))
+        if not os.path.exists(self._directory):
+            os.makedirs(self._directory)
         self._key.get_contents_to_filename(self._tar_file)
         with tarfile.open(self._tar_file, "r:gz") as tar:
             tar.extractall(path=self._directory)
@@ -68,32 +69,30 @@ def copy_files(observation_id, frequency_id, processes):
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
 
     # Create the queue
-    tasks = multiprocessing.JoinableQueue()
+    queue = multiprocessing.JoinableQueue()
 
     # Start the consumers
     for x in range(processes):
-        consumer = Consumer(tasks, x)
+        consumer = Consumer(queue)
         consumer.start()
 
     for key in bucket.list(prefix='{0}/{1}'.format(observation_id, frequency_id)):
         # Ignore the key
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')
+            #directory = '/tmp/output/Chiles/split_vis/{0}/data1/{1}'.format(elements[2], frequency_id)
             directory = '/mnt/output/Chiles/split_vis/{0}/data1/{1}'.format(elements[2], frequency_id)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
-            tasks.put(Task(key, temp_file, directory))
+            queue.put(Task(key, temp_file, directory))
 
     # Add a poison pill to shut things down
     for x in range(processes):
-        tasks.put(None)
+        queue.put(None)
 
     # Wait for the queue to terminate
-    tasks.join()
-
+    queue.join()
 
 
 def main():
@@ -105,7 +104,7 @@ def main():
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
     frequency_id = args['freq_id']
-    processes = args['-p']
+    processes = args['processes']
 
     copy_files(observation_id, frequency_id, processes)
 

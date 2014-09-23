@@ -46,6 +46,7 @@ LOG.info('PYTHONPATH = {0}'.format(sys.path))
 def start_servers(ami_id, user_data, instance_type, observation_id, volume_ids, created_by, name, spot_price=None):
     ec2_helper = EC2Helper()
     for volume_id in volume_ids:
+        # TODO: Parallelise the startup
         # Get the name of the volume
         volume_name = ec2_helper.get_volume_name(volume_id)
         user_data_mime = get_mime_encoded_user_data(user_data, volume_name, observation_id)
@@ -78,24 +79,16 @@ def check_args(args):
     """
     map_args = {}
 
-    if args['obs_id'] is not None:
-        map_args['obs_id'] = make_safe_filename(args['obs_id'])
-    else:
+    if args['obs_id'] is None:
         return None
 
-    if args['vol_ids'] is not None:
-        map_args['vol_ids'] = args['vol_ids']
-    else:
+    if args['vol_ids'] is None:
         return None
 
-    if args['instance_type'] is not None:
-        map_args['instance_type'] = args['instance_type']
-    else:
+    if args['instance_type'] is None:
         return None
 
-    if args['name'] is not None:
-        map_args['name'] = args['name']
-    else:
+    if args['name'] is None:
         return None
 
     map_args.update({
@@ -120,11 +113,19 @@ def main():
 
     args = vars(parser.parse_args())
 
-    args1 = check_args(args)
-    if args1 is None:
+    corrected_args= check_args(args)
+    if corrected_args is None:
         LOG.error('The arguments are incorrect: {0}'.format(args))
     else:
-        start_servers(args1['ami_id'], args1['user_data'], args1['instance_type'], args1['obs_id'], args1['vol_ids'], args1['created_by'], args1['name'], args1['spot_price'])
+        start_servers(
+            corrected_args['ami_id'],
+            corrected_args['user_data'],
+            args['instance_type'],
+            make_safe_filename(args['obs_id']),
+            args['vol_ids'],
+            corrected_args['created_by'],
+            args['name'],
+            corrected_args['spot_price'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin cvel test" -s 0.10 obs-1 vol-f7dda9f3 vol-22deaa26 vol-70c2b674 vol-66c2b662
