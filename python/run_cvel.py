@@ -33,7 +33,7 @@ import logging
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_boto, get_script
+from common import make_safe_filename, get_cloud_init, setup_boto, get_script, Consumer
 from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
@@ -43,21 +43,73 @@ LOG.setLevel(logging.INFO)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def start_servers(ami_id, user_data, instance_type, observation_id, volume_ids, created_by, name, spot_price=None):
-    ec2_helper = EC2Helper()
-    for volume_id in volume_ids:
-        # TODO: Parallelise the startup
-        # Get the name of the volume
-        volume_name = ec2_helper.get_volume_name(volume_id)
-        user_data_mime = get_mime_encoded_user_data(user_data, volume_name, observation_id)
+class Task(object):
+    """
+    The actual task
+    """
+    def __init__(self, ec2_helper, ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price):
+        self._ec2_helper = ec2_helper
+        self._ami_id = ami_id
+        self._user_data = user_data
+        self._instance_type = instance_type
+        self._observation_id = observation_id
+        self._volume_id = volume_id
+        self._created_by = created_by
+        self._name = name
+        self._spot_price = spot_price
 
-        if spot_price is not None:
-            ec2_instance = ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + '- {0}'.format(volume_name), ephemeral=True)
+    def __call__(self):
+        """
+        Actually run the job
+        """
+        # Get the name of the volume
+        volume_name = self._ec2_helper.get_volume_name(self._volume_id)
+        LOG.info('observation_id: {0}, volume_name: {1}'.format(self._observation_id, volume_name))
+        user_data_mime = get_mime_encoded_user_data(self._user_data, volume_name, self._observation_id)
+
+        if self._spot_price is not None:
+            ec2_instance = self._ec2_helper.run_spot_instance(
+                self._ami_id,
+                self._spot_price,
+                user_data_mime,
+                self._instance_type,
+                self._volume_id,
+                self._created_by,
+                self._name + '- {0}'.format(volume_name),
+                ephemeral=True)
         else:
-            ec2_instance = ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + '- {0}'.format(volume_name), ephemeral=True)
+            ec2_instance = self._ec2_helper.run_instance(
+                self._ami_id,
+                user_data_mime,
+                self._instance_type,
+                self._volume_id,
+                self._created_by,
+                self._name + '- {0}'.format(volume_name),
+                ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
         setup_boto(ec2_instance.ip_address)
+
+
+def start_servers(processes, ami_id, user_data, instance_type, observation_id, volume_ids, created_by, name, spot_price=None):
+    # Create the queue
+    tasks = multiprocessing.JoinableQueue()
+
+    # Start the consumers
+    for x in range(processes):
+        consumer = Consumer(tasks)
+        consumer.start()
+
+    ec2_helper = EC2Helper()
+    for volume_id in volume_ids:
+        tasks.put(Task(ec2_helper, ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price))
+
+        # Add a poison pill to shut things down
+    for x in range(processes):
+        tasks.put(None)
+
+    # Wait for the queue to terminate
+    tasks.join()
 
 
 def get_mime_encoded_user_data(data, volume_name, observation_id):
@@ -108,6 +160,7 @@ def main():
     parser.add_argument('-n', '--name', required=True, help='the instance name to use')
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('vol_ids', nargs='+', help='the volume ids to use')
 
@@ -118,6 +171,7 @@ def main():
         LOG.error('The arguments are incorrect: {0}'.format(args))
     else:
         start_servers(
+            args['processes'],
             corrected_args['ami_id'],
             corrected_args['user_data'],
             args['instance_type'],

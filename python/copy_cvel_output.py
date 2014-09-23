@@ -34,7 +34,7 @@ from os.path import isdir, join
 import sys
 import tarfile
 
-from common import make_safe_filename
+from common import make_safe_filename, Consumer
 from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -42,6 +42,37 @@ from s3_helper import S3Helper
 LOG = multiprocessing.log_to_stderr()
 LOG.setLevel(logging.INFO)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
+
+
+class Task(object):
+    """
+    The actual task
+    """
+    def __init__(self, s3_helper, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day):
+        self._s3_helper = s3_helper
+        self._output_tar_filename = output_tar_filename
+        self._directory_frequency_full = directory_frequency_full
+        self._observation_id = observation_id
+        self._directory_frequency = directory_frequency
+        self._directory_day = directory_day
+
+    def __call__(self):
+        """
+        Actually run the job
+        """
+        try:
+            make_tarfile(self._output_tar_filename, self._directory_frequency_full)
+
+            LOG.info('Copying {0} to s3'.format(self._output_tar_filename))
+            self._s3_helper.add_file_to_bucket(
+                CHILES_BUCKET_NAME,
+                self._observation_id + '/' + self._directory_frequency + '/' + self._directory_day + '/data.tar.gz',
+                self._output_tar_filename)
+
+            # Clean up
+            os.remove(self._output_tar_filename)
+        except:
+            LOG.exception('Task died')
 
 
 def make_tarfile(output_filename, source_dir):
@@ -53,8 +84,18 @@ def make_tarfile(output_filename, source_dir):
 def main():
     parser = argparse.ArgumentParser('Copy the output to the correct place in S3')
     parser.add_argument('obs_id', help='the observation id')
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
+    processes = args['processes']
+
+    # Create the queue
+    queue = multiprocessing.JoinableQueue()
+
+    # Start the consumers
+    for x in range(processes):
+        consumer = Consumer(queue)
+        consumer.start()
 
     s3_helper = S3Helper()
     # Look in the output directory
@@ -66,18 +107,8 @@ def main():
                 directory_frequency_full = join(path_frequency, directory_frequency)
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
                     LOG.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
-                    # TODO: Build a task queue and do this in parallel
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
-                    make_tarfile(output_tar_filename, directory_frequency_full)
-
-                    LOG.info('Copying {0} to s3'.format(output_tar_filename))
-                    s3_helper.add_file_to_bucket(
-                        CHILES_BUCKET_NAME,
-                        observation_id + '/' + directory_frequency + '/' + directory_day + '/data.tar.gz',
-                        output_tar_filename)
-
-                    # Clean up
-                    os.remove(output_tar_filename)
+                    queue.put(Task(s3_helper, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day))
 
         s3_helper.add_file_to_bucket(
             CHILES_BUCKET_NAME,
@@ -87,6 +118,13 @@ def main():
             CHILES_BUCKET_NAME,
             observation_id + '/' + directory_day + '/log/casapy.log',
             join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
+
+    # Add a poison pill to shut things down
+    for x in range(processes):
+        queue.put(None)
+
+    # Wait for the queue to terminate
+    queue.join()
 
 if __name__ == "__main__":
     main()

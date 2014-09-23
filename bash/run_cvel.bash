@@ -37,7 +37,7 @@ done
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1'
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py {1}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py {1} -p 3'
 
 # Terminate
 shutdown -h now
