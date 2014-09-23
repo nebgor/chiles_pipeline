@@ -157,7 +157,7 @@ def main():
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
-    parser.add_argument('obs_id', nargs='1', help='the observation id')
+    parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('frequencies', nargs='+', help='the frequencies to use')
 
     args = vars(parser.parse_args())
@@ -178,5 +178,5 @@ def main():
             corrected_args['spot_price'])
 
 if __name__ == "__main__":
-    # -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis1407~vis1411 vis_1411~1415 vis_1415~1419
+    # -p 3 -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis1407~vis1411 vis_1411~1415 vis_1415~1419
     main()
