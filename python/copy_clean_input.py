@@ -83,8 +83,8 @@ def copy_files(observation_id, frequency_id, processes):
         # Ignore the key
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')
-            #directory = '/tmp/output/Chiles/split_vis/{0}/data1/{1}'.format(elements[2], frequency_id)
-            directory = '/mnt/output/Chiles/split_vis/{0}/data1/{1}'.format(elements[2], frequency_id)
+            #directory = '/tmp/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
+            directory = '/mnt/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
