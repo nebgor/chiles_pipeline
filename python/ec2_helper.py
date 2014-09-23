@@ -34,6 +34,7 @@ from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
 import unicodedata
+from common import make_safe_filename
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 LOG = logging.getLogger(__name__)
@@ -82,8 +83,9 @@ class EC2Helper:
             LOG.info('Not running yet')
             time.sleep(5)
 
-        # Now we have an instance id we can attach the disk
-        self.ec2_connection.attach_volume(volume_id, instance.id, '/dev/xvdf')
+        if volume_id:
+            # Now we have an instance id we can attach the disk
+            self.ec2_connection.attach_volume(volume_id, instance.id, '/dev/xvdf')
 
         LOG.info('Assigning the tags')
         self.ec2_connection.create_tags([instance.id],
@@ -148,8 +150,9 @@ class EC2Helper:
             LOG.info('Not running yet')
             time.sleep(5)
 
-        # When we have an instance id we can attach the volume
-        self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')
+        if volume_id:
+            # When we have an instance id we can attach the volume
+            self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')
 
         # Give it time to settle down
         LOG.info('Assigning the tags')
@@ -170,11 +173,7 @@ class EC2Helper:
             volume = volume_details[0]
             name = volume.tags['Name']
             if name:
-                name = unicodedata.normalize('NFKD', name)
-                name = name.encode('ascii', 'ignore').lower()
-                name = re.sub(r'[^a-z0-9]+', '-', name).strip('-')
-                name = re.sub(r'[-]+', '-', name)
-                return name
+                return make_safe_filename(name)
 
         return volume_id
 

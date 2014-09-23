@@ -5,4 +5,7 @@ subnet_id = "subnet-878cc2ee"
 key_name = "icrar_sydney"
 security_groups = "sg-6438d001", "sg-39ce265c"
 region = "ap-southeast-2"
+
+# The scripts
 bash_script_cvel = "run_cvel.bash"
+bash_script_clean = "run_clean.bash"

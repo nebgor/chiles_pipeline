@@ -25,11 +25,13 @@
 """
 Copy the CVEL output files to S3
 """
+import argparse
 import logging
 import os
 from os.path import isdir, join
 import sys
 import tarfile
+from common import make_safe_filename
 from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -44,6 +46,11 @@ def make_tarfile(output_filename, source_dir):
 
 
 def main():
+    parser = argparse.ArgumentParser('Copy the output to the correct place in S3')
+    parser.add_argument('obs_id', nargs='1', help='the observation id')
+    args = vars(parser.parse_args())
+    observation_id = make_safe_filename(args['obs_id'])
+
     s3_helper = S3Helper()
     # Look in the output directory
     for directory_day in os.listdir(CHILES_CVEL_OUTPUT):
@@ -54,10 +61,10 @@ def main():
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
                     make_tarfile(output_tar_filename, directory_frequency_full)
-                    s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, directory_frequency + '/' + directory_day + '/data.tar.gz', output_tar_filename)
+                    s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_frequency + '/' + directory_day + '/data.tar.gz', output_tar_filename)
 
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, directory_day + '/logs/chiles-output.log', '/var/logs/chiles-output.log')
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, directory_day + '/logs/casapy.log', join('/home/ec2-user/Chiles/casa_work_dir/{0}-0'.format(directory_day)))
+        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/logs/chiles-output.log', '/var/logs/chiles-output.log')
+        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/logs/casapy.log', join('/home/ec2-user/Chiles/casa_work_dir/{0}-0'.format(directory_day)))
 
 if __name__ == "__main__":
     main()
