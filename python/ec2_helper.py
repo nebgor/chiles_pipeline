@@ -80,7 +80,7 @@ class EC2Helper:
 
         while not instance.update() == 'running':
             LOG.info('Not running yet')
-            time.sleep(1)
+            time.sleep(5)
 
         # Now we have an instance id we can attach the disk
         self.ec2_connection.attach_volume(volume_id, instance.id, '/dev/xvdf')
@@ -146,7 +146,7 @@ class EC2Helper:
         LOG.info('Waiting to start up')
         while not instance.update() == 'running':
             LOG.info('Not running yet')
-            time.sleep(1)
+            time.sleep(5)
 
         # When we have an instance id we can attach the volume
         self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')

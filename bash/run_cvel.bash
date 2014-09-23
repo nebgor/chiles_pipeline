@@ -19,7 +19,7 @@ chmod oug+wrx /mnt/output
 sleep 10
 while [ ! -b "/dev/xvdf" ]; do
   echo Sleeping
-  sleep 10
+  sleep 30
 done
 
 # Now mount the data disk
@@ -30,7 +30,7 @@ chmod -R oug+r /mnt/Data/data1
 # Wait for the boto file to be created
 while [ ! -f "/home/ec2-user/.boto" ]; do
   echo Sleeping
-  sleep 10
+  sleep 30
 done
 
 # Run the cvel pipeline

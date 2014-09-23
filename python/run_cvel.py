@@ -43,13 +43,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def setup_boto(ec2_instance, ec2_connection):
+def setup_boto(hostname):
     LOG.info('Waiting for the ssh daemon to start up')
     for i in range(12):
         fastprint('.')
         time.sleep(5)
     puts('.')
-    with settings(user=USERNAME, key_name=AWS_KEY, ec2_instance=ec2_instance, ec2_connection=ec2_connection, hosts=[ec2_instance.ip_address]):
+    with settings(user=USERNAME, key_name=AWS_KEY, host=hostname, warn_only=True):
         with cd('/home/ec2-user/chiles_pipeline'):
             run('git pull')
         sudo('pip install {0}'.format(PIP_PACKAGES))
@@ -71,7 +71,7 @@ def start_servers(ami_id, user_data, instance_type, volume_ids, created_by, name
             ec2_instance = ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_boto(ec2_instance, ec2_helper.ec2_connection)
+        setup_boto(ec2_instance.ip_address)
 
         count += 1
 
