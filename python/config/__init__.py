@@ -32,7 +32,7 @@ CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 #CHILES_CVEL_OUTPUT = '/Users/kevinvinsen/Downloads/mnt/output/Chiles/split_vis'
 CHILES_BUCKET_NAME = 'icrar.chiles.output'
 
-AWS_KEY = expanduser('~/.ssh/icrar-sydney.pem')
+AWS_KEY = expanduser('~/.ssh/icrar_sydney.pem')
 PIP_PACKAGES = 'fabric configobj boto'
 USERNAME = 'ec2-user'
 

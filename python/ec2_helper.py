@@ -92,7 +92,7 @@ class EC2Helper:
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
 
-        return instance, self.ec2_connection
+        return instance
 
     def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, ephemeral=False):
         """
@@ -159,7 +159,7 @@ class EC2Helper:
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
 
-        return instance, self.ec2_connection
+        return instance
 
     def get_volume_name(self, volume_id):
         """

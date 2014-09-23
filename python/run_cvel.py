@@ -33,6 +33,8 @@ import logging
 from os.path import dirname, join, expanduser
 import sys
 from fabric.api import settings, sudo, run, cd
+from fabric.utils import fastprint, puts
+import time
 from config import AWS_AMI_ID, BASH_SCRIPT_CVEL, USERNAME, AWS_KEY, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
@@ -42,10 +44,15 @@ LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 def setup_boto(ec2_instance, ec2_connection):
-    with settings(user=USERNAME, key_name=AWS_KEY, ec2_instance=ec2_instance, ec2_connection=ec2_connection, hosts = [ec2_instance.ip_address]):
+    LOG.info('Waiting for the ssh daemon to start up')
+    for i in range(12):
+        fastprint('.')
+        time.sleep(5)
+    puts('.')
+    with settings(user=USERNAME, key_name=AWS_KEY, ec2_instance=ec2_instance, ec2_connection=ec2_connection, hosts=[ec2_instance.ip_address]):
         with cd('/home/ec2-user/chiles_pipeline'):
             run('git pull')
-        sudo('pip install --upgrade {0}'.format(PIP_PACKAGES))
+        sudo('pip install {0}'.format(PIP_PACKAGES))
         run('''echo "{0}
 " > /home/ec2-user/.boto'''.format(get_boto_data()))
 
@@ -59,12 +66,12 @@ def start_servers(ami_id, user_data, instance_type, volume_ids, created_by, name
         user_data_mime = get_mime_encoded_user_data(user_data, volume_name)
 
         if spot_price is not None:
-            ec2_instance, ec2_connection = ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_instance = ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
         else:
-            ec2_instance, ec2_connection = ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_instance = ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_boto(ec2_instance, ec2_connection)
+        setup_boto(ec2_instance, ec2_helper.ec2_connection)
 
         count += 1
 
@@ -84,6 +91,7 @@ repo_upgrade: all
 packages:
  - wget
  - git
+ - python-pip
 
 # Log all cloud-init process output (info & errors) to a logfile
 output : { all : ">> /var/log/chiles-output.log" }
