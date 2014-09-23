@@ -55,15 +55,17 @@ class Task(object):
         """
         Actually run the job
         """
-        LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key, self._tar_file, self._directory))
-        if not os.path.exists(self._directory):
-            os.makedirs(self._directory)
-        self._key.get_contents_to_filename(self._tar_file)
-        with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
-            tar.extractall(path=self._directory)
+        try:
+            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key, self._tar_file, self._directory))
+            if not os.path.exists(self._directory):
+                os.makedirs(self._directory)
+            self._key.get_contents_to_filename(self._tar_file)
+            with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
+                tar.extractall(path=self._directory)
 
-        os.remove(self._tar_file)
-
+            os.remove(self._tar_file)
+        except:
+            LOG.exception('Task died')
 
 def copy_files(observation_id, frequency_id, processes):
     s3_helper = S3Helper()
