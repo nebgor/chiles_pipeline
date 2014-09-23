@@ -57,7 +57,7 @@ def copy_files(observation_id, frequency_id):
             with tarfile.open(temp_file, "r:gz") as tar:
                 tar.extractall(path=directory)
 
-            #os.remove(temp_file)
+            os.remove(temp_file)
 
 
 def main():

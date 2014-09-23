@@ -61,19 +61,28 @@ def main():
             LOG.info('path_frequency: {0}'.format(path_frequency))
             for directory_frequency in os.listdir(path_frequency):
                 directory_frequency_full = join(path_frequency, directory_frequency)
-                LOG.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
+                    LOG.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
                     make_tarfile(output_tar_filename, directory_frequency_full)
 
                     LOG.info('Copying {0} to s3'.format(output_tar_filename))
-                    s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_frequency + '/' + directory_day + '/data.tar.gz', output_tar_filename)
+                    s3_helper.add_file_to_bucket(
+                        CHILES_BUCKET_NAME,
+                        observation_id + '/' + directory_frequency + '/' + directory_day + '/data.tar.gz',
+                        output_tar_filename)
 
                     # Clean up
                     os.remove(output_tar_filename)
 
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/log/chiles-output.log', '/var/log/chiles-output.log')
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/log/casapy.log', join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
+        s3_helper.add_file_to_bucket(
+            CHILES_BUCKET_NAME,
+            observation_id + '/' + directory_day + '/log/chiles-output.log',
+            '/var/log/chiles-output.log')
+        s3_helper.add_file_to_bucket(
+            CHILES_BUCKET_NAME,
+            observation_id + '/' + directory_day + '/log/casapy.log',
+            join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
 
 if __name__ == "__main__":
     main()
