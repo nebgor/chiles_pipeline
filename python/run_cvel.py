@@ -112,7 +112,7 @@ def main():
     parser.add_argument('-n', '--name', required=True, help='the instance name to use')
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
-    parser.add_argument('obs_id', nargs='1', help='the observation id')
+    parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('vol_ids', nargs='+', help='the volume ids to use')
 
     args = vars(parser.parse_args())
