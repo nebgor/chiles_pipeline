@@ -47,7 +47,7 @@ def make_tarfile(output_filename, source_dir):
 
 def main():
     parser = argparse.ArgumentParser('Copy the output to the correct place in S3')
-    parser.add_argument('obs_id', nargs='1', help='the observation id')
+    parser.add_argument('obs_id', help='the observation id')
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
 
