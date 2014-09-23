@@ -38,7 +38,6 @@ from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 def make_safe_filename(name):
