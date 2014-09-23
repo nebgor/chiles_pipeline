@@ -25,12 +25,16 @@
 """
 
 """
-from os.path import exists, dirname
+from os.path import exists, dirname, expanduser
 from configobj import ConfigObj
 
 CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 #CHILES_CVEL_OUTPUT = '/Users/kevinvinsen/Downloads/mnt/output/Chiles/split_vis'
 CHILES_BUCKET_NAME = 'icrar.chiles.output'
+
+AWS_KEY = expanduser('~/.ssh/icrar-sydney.pem')
+PIP_PACKAGES = 'fabric configobj boto'
+USERNAME = 'ec2-user'
 
 AWS_AMI_ID = None
 AWS_KEY_NAME = None

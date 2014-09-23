@@ -30,14 +30,24 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
 import logging
-from os.path import dirname, join
+from os.path import dirname, join, expanduser
 import sys
-from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
+from fabric.api import settings, sudo, run, cd
+from config import AWS_AMI_ID, BASH_SCRIPT_CVEL, USERNAME, AWS_KEY, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
+
+
+def setup_boto(ec2_instance, ec2_connection):
+    with settings(user=USERNAME, key_name=AWS_KEY, ec2_instance=ec2_instance, ec2_connection=ec2_connection, hosts = [ec2_instance.ip_address]):
+        with cd('/home/ec2-user/chiles_pipeline'):
+            run('git pull')
+        sudo('pip install --upgrade {0}'.format(PIP_PACKAGES))
+        run('''echo "{0}
+" > /home/ec2-user/.boto'''.format(get_boto_data()))
 
 
 def start_servers(ami_id, user_data, instance_type, volume_ids, created_by, name, spot_price=None):
@@ -49,9 +59,12 @@ def start_servers(ami_id, user_data, instance_type, volume_ids, created_by, name
         user_data_mime = get_mime_encoded_user_data(user_data, volume_name)
 
         if spot_price is not None:
-            ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_instance, ec2_connection = ec2_helper.run_spot_instance(ami_id, spot_price, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
         else:
-            ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+            ec2_instance, ec2_connection = ec2_helper.run_instance(ami_id, user_data_mime, instance_type, volume_id, created_by, name + ' {0}'.format(count), ephemeral=True)
+
+        # Setup boto via SSH so we don't pass our keys etc in "the clear"
+        setup_boto(ec2_instance, ec2_connection)
 
         count += 1
 
@@ -64,6 +77,8 @@ def get_mime_encoded_user_data(data, volume_name):
 
     cloud_init = MIMEText('''
 #cloud-config
+repo_update: true
+repo_upgrade: all
 
 # Install additional packages on first boot
 packages:
@@ -80,6 +95,14 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
     data_formatted = data.format(volume_name)
     user_data.attach(MIMEText(data_formatted))
     return user_data.as_string()
+
+
+def get_boto_data():
+    dot_boto = join(expanduser('~'), '.boto')
+    with open(dot_boto, 'r') as my_file:
+        data = my_file.read()
+
+    return data
 
 
 def get_script(file_name):
@@ -143,4 +166,5 @@ def main():
         start_servers(args1['ami_id'], args1['user_data'], args1['instance_type'], args1['vol_ids'], args1['created_by'], args1['name'], args1['spot_price'])
 
 if __name__ == "__main__":
+    # -i r3.xlarge -n "Kevin cvel test" -s 0.10 vol-f7dda9f3 vol-22deaa26 vol-70c2b674 vol-66c2b662
     main()

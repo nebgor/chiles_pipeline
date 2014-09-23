@@ -92,6 +92,8 @@ class EC2Helper:
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
 
+        return instance, self.ec2_connection
+
     def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, ephemeral=False):
         """
         Run the ami as a spot instance
@@ -156,6 +158,8 @@ class EC2Helper:
                                          'Name': '{0}'.format(name),
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
+
+        return instance, self.ec2_connection
 
     def get_volume_name(self, volume_id):
         """

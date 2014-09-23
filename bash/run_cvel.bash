@@ -27,8 +27,11 @@ mkdir -p /mnt/Data/data1
 mount /dev/xvdf /mnt/Data/data1
 chmod -R oug+r /mnt/Data/data1
 
-# Make sure the code area is up to date and is run by ec2-user not root
-runuser -l ec2-user -c 'cd /home/ec2-user/chiles_pipeline ; git pull'
+# Wait for the boto file to be created
+while [ ! -f "/home/ec2-user/.boto" ]; do
+  echo Sleeping
+  sleep 10
+done
 
 # Run the cvel pipeline
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1'
