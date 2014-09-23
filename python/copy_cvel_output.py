@@ -65,10 +65,15 @@ def main():
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
                     make_tarfile(output_tar_filename, directory_frequency_full)
+
+                    LOG.info('Copying {0} to s3'.format(output_tar_filename))
                     s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_frequency + '/' + directory_day + '/data.tar.gz', output_tar_filename)
 
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/logs/chiles-output.log', '/var/logs/chiles-output.log')
-        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/logs/casapy.log', join('/home/ec2-user/Chiles/casa_work_dir/{0}-0'.format(directory_day)))
+                    # Clean up
+                    os.remove(output_tar_filename)
+
+        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/log/chiles-output.log', '/var/log/chiles-output.log')
+        s3_helper.add_file_to_bucket(CHILES_BUCKET_NAME, observation_id + '/' + directory_day + '/log/casapy.log', join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
 
 if __name__ == "__main__":
     main()
