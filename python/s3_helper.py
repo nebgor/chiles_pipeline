@@ -25,7 +25,6 @@
 """
 A helper for S3
 """
-import logging
 import multiprocessing
 import socket
 import time
@@ -33,12 +32,8 @@ import time
 import boto
 from boto.s3.key import Key
 
-if multiprocessing.current_process().name == "MainProcess":
-    LOG = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-else:
-    LOG = multiprocessing.get_logger()
-    LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.get_logger()
+LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class S3Helper:

@@ -26,7 +26,6 @@
 Copy the clean output
 """
 import argparse
-import logging
 import multiprocessing
 import os
 from os.path import join, isdir, basename
@@ -36,13 +35,8 @@ from common import make_safe_filename, Consumer, make_tarfile
 from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
-if multiprocessing.current_process().name == "MainProcess":
-    LOG = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-else:
-    LOG = multiprocessing.get_logger()
-    LOG.setLevel(multiprocessing.SUBDEBUG)
-
+LOG = multiprocessing.get_logger()
+LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 

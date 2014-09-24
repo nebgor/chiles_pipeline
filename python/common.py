@@ -27,7 +27,6 @@ Common code
 """
 from contextlib import closing
 from email.mime.text import MIMEText
-import logging
 import multiprocessing
 from os.path import join, expanduser, dirname, basename
 import re
@@ -41,12 +40,8 @@ from fabric.utils import fastprint, puts
 from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 
-if multiprocessing.current_process().name == "MainProcess":
-    LOG = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-else:
-    LOG = multiprocessing.get_logger()
-    LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.get_logger()
+LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class Consumer(multiprocessing.Process):

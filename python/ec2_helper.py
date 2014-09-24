@@ -25,7 +25,6 @@
 """
 The helper for starting EC2 Instances
 """
-import logging
 import multiprocessing
 import time
 import datetime
@@ -39,12 +38,8 @@ from common import make_safe_filename
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
-if multiprocessing.current_process().name == "MainProcess":
-    LOG = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-else:
-    LOG = multiprocessing.get_logger()
-    LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.get_logger()
+LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class EC2Helper:

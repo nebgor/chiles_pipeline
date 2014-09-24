@@ -26,26 +26,18 @@
 Copy the CVEL output files to S3
 """
 import argparse
-from contextlib import closing
-import logging
 import multiprocessing
 import os
 from os.path import isdir, join
 import sys
-import tarfile
 
 from common import make_safe_filename, Consumer, make_tarfile
 from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-if multiprocessing.current_process().name == "MainProcess":
-    LOG = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
-else:
-    LOG = multiprocessing.get_logger()
-    LOG.setLevel(multiprocessing.SUBDEBUG)
-
+LOG = multiprocessing.get_logger()
+LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
