@@ -87,8 +87,8 @@ def copy_files(observation_id, frequency_id, processes):
         LOG.info('dir_name: {0}'.format(dir_name))
         if isdir(join(directory_data, dir_name)) and dir_name.startswith('cube_'):
             LOG.info('dir_name: {0}'.format(dir_name))
-            output_tar_filename = join(directory_data, basename(dir_name) + '.tar.gz')
-            queue.put(Task(s3_helper, output_tar_filename, observation_id, frequency_id, dir_name))
+            output_tar_filename = join(directory_data, dir_name + '.tar.gz')
+            queue.put(Task(s3_helper, output_tar_filename, observation_id, frequency_id, join(directory_data, dir_name)))
 
     s3_helper.add_file_to_bucket(
         CHILES_BUCKET_NAME,
