@@ -25,14 +25,14 @@
 """
 A helper for S3
 """
-import multiprocessing
 import socket
 import time
 
 import boto
 from boto.s3.key import Key
+from common import get_logger
 
-LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
+LOG = get_logger()
 
 
 class S3Helper:

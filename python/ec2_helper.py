@@ -25,7 +25,6 @@
 """
 The helper for starting EC2 Instances
 """
-import multiprocessing
 import time
 import datetime
 
@@ -34,11 +33,11 @@ from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
 
-from common import make_safe_filename
+from common import make_safe_filename, get_logger
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
-LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
+LOG = get_logger()
 
 
 class EC2Helper:

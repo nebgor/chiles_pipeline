@@ -32,12 +32,12 @@ import sys
 import os
 import tarfile
 
-from common import make_safe_filename, Consumer
+from common import make_safe_filename, Consumer, get_logger
 from config import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
+LOG = get_logger()
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 

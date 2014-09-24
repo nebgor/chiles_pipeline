@@ -32,12 +32,12 @@ import getpass
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_boto, get_script, Consumer
+from common import make_safe_filename, get_cloud_init, setup_boto, get_script, Consumer, get_logger
 from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
 
-LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
+LOG = get_logger()
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
