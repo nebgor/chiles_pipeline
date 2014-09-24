@@ -38,8 +38,7 @@ from common import make_safe_filename
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
-LOG = multiprocessing.get_logger()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
 
 
 class EC2Helper:

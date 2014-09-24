@@ -32,8 +32,7 @@ import time
 import boto
 from boto.s3.key import Key
 
-LOG = multiprocessing.get_logger()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
 
 
 class S3Helper:

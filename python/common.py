@@ -40,8 +40,7 @@ from fabric.utils import fastprint, puts
 from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 
-LOG = multiprocessing.get_logger()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+LOG = multiprocessing.log_to_stderr(multiprocessing.SUBDEBUG)
 
 
 class Consumer(multiprocessing.Process):
