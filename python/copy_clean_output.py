@@ -26,15 +26,13 @@
 Copy the clean output
 """
 import argparse
-from contextlib import closing
-from glob import glob
 import logging
 import multiprocessing
+import os
 from os.path import join, isdir, basename
 import sys
-import tarfile
 
-from common import make_safe_filename
+from common import make_safe_filename, Consumer, make_tarfile
 from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
@@ -48,29 +46,55 @@ else:
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def make_tarfile(directory_data, frequency_id):
-    output_filename = join(directory_data, frequency_id + '.tar.gz')
-    LOG.info('directory_data: {0}, frequency_id: {1}, output_filename: {2}'.format(directory_data, frequency_id, output_filename))
-    with closing(tarfile.open(output_filename, "w:gz")) as tar:
-        for dir_name in glob('{0}/*'.format(directory_data)):
-            if isdir(dir_name) and basename(dir_name).startswith('cube_'):
-                tar.add(dir_name, arcname=basename(dir_name))
+class Task(object):
+    """
+    The actual task
+    """
+    def __init__(self, s3_helper, output_tar_filename, observation_id, frequency_id, directory_to_save):
+        self._s3_helper = s3_helper
+        self._output_tar_filename = output_tar_filename
+        self._observation_id = observation_id
+        self._frequency_id = frequency_id
+        self._directory_to_save = directory_to_save
 
-    return output_filename
+    def __call__(self):
+        """
+        Actually run the job
+        """
+        try:
+            make_tarfile(self._output_tar_filename, self._directory_to_save)
+
+            LOG.info('Copying {0} to s3'.format(self._output_tar_filename))
+            self._s3_helper.add_file_to_bucket(
+                CHILES_BUCKET_NAME,
+                self._observation_id + '/CLEAN/' + self._frequency_id + '/' + basename(self._output_tar_filename) + '.tar.gz',
+                self._output_tar_filename)
+
+            # Clean up
+            os.remove(self._output_tar_filename)
+        except:
+            LOG.exception('Task died')
 
 
-def copy_files(observation_id, frequency_id):
-    # Create the
+def copy_files(observation_id, frequency_id, processes):
+    # Create the queue
+    queue = multiprocessing.JoinableQueue()
+    # Start the consumers
+    for x in range(processes):
+        consumer = Consumer(queue)
+        consumer.start()
+
+    # Create the helper
     s3_helper = S3Helper()
 
     # Look in the output directory
     directory_data = join(CHILES_CLEAN_OUTPUT, observation_id)
     LOG.info('directory_data: {0}'.format(directory_data))
-    tar_filename = make_tarfile(directory_data, frequency_id)
-    s3_helper.add_file_to_bucket(
-        CHILES_BUCKET_NAME,
-        observation_id + '/CLEAN/' + frequency_id + '/data.tar.gz',
-        tar_filename)
+    for dir_name in directory_data:
+        if isdir(dir_name) and basename(dir_name).startswith('cube_'):
+            LOG.info('dir_name: {0}'.format(dir_name))
+            output_tar_filename = join(directory_data, basename(dir_name) + '.tar.gz')
+            queue.put(Task(s3_helper, output_tar_filename, observation_id, frequency_id, dir_name))
 
     s3_helper.add_file_to_bucket(
         CHILES_BUCKET_NAME,
@@ -86,11 +110,13 @@ def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
     parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('frequency_id', help='the frequency id')
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
     frequency_id = args['frequency_id']
+    processes = args['processes']
 
-    copy_files(observation_id, frequency_id)
+    copy_files(observation_id, frequency_id, processes)
 
 if __name__ == "__main__":
     main()

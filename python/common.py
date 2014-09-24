@@ -25,11 +25,13 @@
 """
 Common code
 """
+from contextlib import closing
 from email.mime.text import MIMEText
 import logging
 import multiprocessing
-from os.path import join, expanduser, dirname
+from os.path import join, expanduser, dirname, basename
 import re
+import tarfile
 import unicodedata
 import time
 
@@ -136,3 +138,9 @@ def setup_boto(hostname):
         sudo('pip install {0}'.format(PIP_PACKAGES))
         run('''echo "{0}
 " > /home/ec2-user/.boto'''.format(get_boto_data()))
+
+
+def make_tarfile(output_filename, source_dir):
+    LOG.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
+    with closing(tarfile.open(output_filename, "w:gz")) as tar:
+        tar.add(source_dir, arcname=basename(source_dir))
