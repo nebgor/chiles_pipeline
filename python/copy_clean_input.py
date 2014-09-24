@@ -71,6 +71,7 @@ class Task(object):
 def copy_files(observation_id, frequency_id, processes):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
+    LOG.info('Scanning bucket: {0}, observation_id: {1}, frequency_id: {2}'.format(bucket, observation_id, frequency_id))
 
     # Create the queue
     queue = multiprocessing.JoinableQueue()
@@ -86,7 +87,7 @@ def copy_files(observation_id, frequency_id, processes):
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')
             #directory = '/tmp/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
-            directory = '/mnt/output/Chiles/split_vis/{0}/data1/'.format(elements[3])
+            directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[3])
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
