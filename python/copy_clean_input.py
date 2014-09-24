@@ -27,6 +27,7 @@ Copy the CVEL output from S3 so we can run clean on it
 """
 import argparse
 from contextlib import closing
+import logging
 import multiprocessing
 import sys
 import os
@@ -37,8 +38,13 @@ from config import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+if multiprocessing.current_process().name == "MainProcess":
+    LOG = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+else:
+    LOG = multiprocessing.get_logger()
+    LOG.setLevel(multiprocessing.SUBDEBUG)
+
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 

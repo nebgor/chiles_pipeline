@@ -38,8 +38,13 @@ from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
 
-LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+if multiprocessing.current_process().name == "MainProcess":
+    LOG = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+else:
+    LOG = multiprocessing.get_logger()
+    LOG.setLevel(multiprocessing.SUBDEBUG)
+
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 

@@ -29,6 +29,7 @@ import argparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
+import logging
 import multiprocessing
 from string import find
 import sys
@@ -38,8 +39,13 @@ from config import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
 
-LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+if multiprocessing.current_process().name == "MainProcess":
+    LOG = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+else:
+    LOG = multiprocessing.get_logger()
+    LOG.setLevel(multiprocessing.SUBDEBUG)
+
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 

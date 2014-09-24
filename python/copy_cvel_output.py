@@ -39,9 +39,20 @@ from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+if multiprocessing.current_process().name == "MainProcess":
+    LOG = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+else:
+    LOG = multiprocessing.get_logger()
+    LOG.setLevel(multiprocessing.SUBDEBUG)
+
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
+
+
+def make_tarfile(output_filename, source_dir):
+    LOG.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
+    with closing(tarfile.open(output_filename, "w:gz")) as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
 class Task(object):
@@ -73,12 +84,6 @@ class Task(object):
             os.remove(self._output_tar_filename)
         except:
             LOG.exception('Task died')
-
-
-def make_tarfile(output_filename, source_dir):
-    LOG.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
-    with closing(tarfile.open(output_filename, "w:gz")) as tar:
-        tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
 def copy_files(observation_id, processes):

@@ -25,6 +25,7 @@
 """
 The helper for starting EC2 Instances
 """
+import logging
 import multiprocessing
 import time
 import datetime
@@ -38,8 +39,12 @@ from common import make_safe_filename
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
-LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(multiprocessing.SUBDEBUG)
+if multiprocessing.current_process().name == "MainProcess":
+    LOG = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
+else:
+    LOG = multiprocessing.get_logger()
+    LOG.setLevel(multiprocessing.SUBDEBUG)
 
 
 class EC2Helper:
@@ -51,7 +56,7 @@ class EC2Helper:
         self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
-    def build_block_device_map(ephemeral):
+    def build_block_device_map(ephemeral, ebs_size=None):
         bdm = blockdevicemapping.BlockDeviceMapping()
 
         if ephemeral:
@@ -59,6 +64,12 @@ class EC2Helper:
             xvdb = BlockDeviceType()
             xvdb.ephemeral_name = 'ephemeral0'
             bdm['/dev/xvdb'] = xvdb
+
+        if ebs_size:
+            xvdc = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
+            xvdc.size = int(ebs_size)  # size in Gigabytes
+            bdm['/dev/xvdc'] = xvdc
+
 
         return bdm
 
