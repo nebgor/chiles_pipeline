@@ -38,6 +38,7 @@ else:
     LOG = multiprocessing.get_logger()
     LOG.setLevel(multiprocessing.SUBDEBUG)
 
+
 class S3Helper:
     def __init__(self):
         """

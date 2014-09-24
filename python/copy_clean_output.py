@@ -30,14 +30,12 @@ from contextlib import closing
 from glob import glob
 import logging
 import multiprocessing
-import os
 from os.path import join, isdir, basename
 import sys
 import tarfile
 
-from common import make_safe_filename, Consumer
+from common import make_safe_filename
 from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
-from loop_cvel import obs
 from s3_helper import S3Helper
 
 if multiprocessing.current_process().name == "MainProcess":

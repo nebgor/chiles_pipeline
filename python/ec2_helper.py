@@ -70,7 +70,6 @@ class EC2Helper:
             xvdc.size = int(ebs_size)  # size in Gigabytes
             bdm['/dev/xvdc'] = xvdc
 
-
         return bdm
 
     def run_instance(self, ami_id, user_data, instance_type, volume_id, created_by, name, ephemeral=False):

@@ -122,7 +122,7 @@ def get_mime_encoded_user_data(data, observation_id, frequency_id):
     # Split the frequencies
     index_underscore = find(frequency_id, '_')
     index_tilde = find(frequency_id, '~')
-    min_freq = frequency_id[index_underscore + 1 : index_tilde]
+    min_freq = frequency_id[index_underscore + 1:index_tilde]
     max_freq = frequency_id[index_tilde + 1:]
     LOG.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
 

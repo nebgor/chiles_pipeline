@@ -25,14 +25,11 @@
 """
 Common code
 """
-from contextlib import closing
 from email.mime.text import MIMEText
 import logging
 import multiprocessing
-import os
 from os.path import join, expanduser, dirname
 import re
-import tarfile
 import unicodedata
 import time
 

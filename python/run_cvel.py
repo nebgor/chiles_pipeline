@@ -171,7 +171,7 @@ def main():
 
     args = vars(parser.parse_args())
 
-    corrected_args= check_args(args)
+    corrected_args = check_args(args)
     if corrected_args is None:
         LOG.error('The arguments are incorrect: {0}'.format(args))
     else:
