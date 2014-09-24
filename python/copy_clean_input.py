@@ -71,6 +71,7 @@ class Task(object):
 def copy_files(observation_id, frequency_id, processes):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
+    LOG.info('Scanning bucket: {0}, observation_id: {1}, frequency_id: {2}'.format(bucket, observation_id, frequency_id))
 
     # Create the queue
     queue = multiprocessing.JoinableQueue()
