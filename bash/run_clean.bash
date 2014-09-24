@@ -28,7 +28,7 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {0} 0 1 {2} {3}'
 
 # Copy files to S3
-#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py -p 3 {0} {1}'
 
 # Terminate
-#shutdown -h now
+shutdown -h now

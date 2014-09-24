@@ -47,6 +47,7 @@ def get_logger(level=multiprocessing.SUBDEBUG):
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    logger.propagate = 0
 
     if level:
         logger.setLevel(level)
