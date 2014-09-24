@@ -3,6 +3,8 @@ Taken from makecube.py extracting the loop over clean
 
 This module should run together with the casapy: e.g. casapy --nologger -c loop_clean.py
 """
+from glob import glob
+import os
 
 execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
@@ -23,7 +25,13 @@ obsId_list = []
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
 
 # Wait on split ...
-done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
+# done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
+
+# this is only for Amazon
+done_obs = {}
+obslist = glob(vis_dirs)
+for obsfile in obslist:
+    done_obs[os.path.basename(obsfile)] = 1
 
 vis_dirs_cube = []
 for obsId in done_obs.keys():
