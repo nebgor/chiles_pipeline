@@ -28,6 +28,7 @@ A helper for S3
 import logging
 import multiprocessing
 import socket
+import time
 
 import boto
 from boto.s3.key import Key
@@ -65,6 +66,7 @@ class S3Helper:
         :param key_name:
         :param filename:
         """
+        LOG.info('bucket_name: {0}, key_name: {1}, filename: {2}, reduced_redundancy: {3}'.format(bucket_name, key_name, filename, reduced_redundancy))
         retry_count = 0
         done = False
         while retry_count < 3 and not done:
@@ -77,6 +79,7 @@ class S3Helper:
             except socket.error:
                 LOG.exception('Error')
                 retry_count += 1
+                time.sleep(10)
 
 
     def get_file_from_bucket(self, bucket_name, key_name, file_name):
