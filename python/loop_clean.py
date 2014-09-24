@@ -29,7 +29,7 @@ print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs,
 
 # this is only for Amazon
 done_obs = {}
-obslist = glob(vis_dirs)
+obslist = glob('%s/*' % vis_dirs)
 for obsfile in obslist:
     done_obs[os.path.basename(obsfile)] = 1
 
