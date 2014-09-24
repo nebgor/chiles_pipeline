@@ -178,5 +178,5 @@ def main():
             corrected_args['spot_price'])
 
 if __name__ == "__main__":
-    # -p 3 -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis1407~vis1411 vis_1411~1415 vis_1415~1419
+    # -p 3 -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis1407~1411 vis_1411~1415 vis_1415~1419
     main()
