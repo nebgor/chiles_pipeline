@@ -120,7 +120,7 @@ def get_mime_encoded_user_data(data, observation_id, frequency_id):
     max_freq = frequency_id[index_tilde + 1:]
     LOG.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
 
-
+    # Build the mime message
     user_data = MIMEMultipart()
     user_data.attach(get_cloud_init())
 

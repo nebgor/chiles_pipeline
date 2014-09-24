@@ -71,7 +71,8 @@ export CH_CLEAN_TIMEOUT=3600
 
 # create a separate casa_work directory for each casa process
 # NOTE - ON pleiades, do not set this to /scratch
-export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
+#export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
+export CH_CASA_WORK_DIR=/mnt/output/Chiles/casa_work_dir
 # TODO - create it if not there
 mkdir -p $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
 cd $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
