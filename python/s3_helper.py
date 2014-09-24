@@ -27,6 +27,7 @@ A helper for S3
 """
 import logging
 import multiprocessing
+import socket
 
 import boto
 from boto.s3.key import Key
@@ -64,10 +65,19 @@ class S3Helper:
         :param key_name:
         :param filename:
         """
-        bucket = self.get_bucket(bucket_name)
-        key = Key(bucket)
-        key.key = key_name
-        key.set_contents_from_filename(filename, reduced_redundancy=reduced_redundancy)
+        retry_count = 0
+        done = False
+        while retry_count < 3 and not done:
+            try:
+                bucket = self.get_bucket(bucket_name)
+                key = Key(bucket)
+                key.key = key_name
+                key.set_contents_from_filename(filename, reduced_redundancy=reduced_redundancy)
+                done = True
+            except socket.error:
+                LOG.exception('Error')
+                retry_count += 1
+
 
     def get_file_from_bucket(self, bucket_name, key_name, file_name):
         """
