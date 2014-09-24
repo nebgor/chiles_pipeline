@@ -56,7 +56,7 @@ class Task(object):
         Actually run the job
         """
         try:
-            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key, self._tar_file, self._directory))
+            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
             if not os.path.exists(self._directory):
                 os.makedirs(self._directory)
             self._key.get_contents_to_filename(self._tar_file)
@@ -81,11 +81,12 @@ def copy_files(observation_id, frequency_id, processes):
         consumer.start()
 
     for key in bucket.list(prefix='{0}/CVEL/{1}'.format(observation_id, frequency_id)):
+        LOG.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')
             #directory = '/tmp/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
-            directory = '/mnt/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
+            directory = '/mnt/output/Chiles/split_vis/{0}/data1/'.format(elements[3])
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
