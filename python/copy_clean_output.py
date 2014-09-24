@@ -23,73 +23,47 @@
 #    MA 02111-1307  USA
 #
 """
-Copy the CVEL output from S3 so we can run clean on it
+Copy the clean output
 """
 import argparse
-from contextlib import closing
 import multiprocessing
-import sys
 import os
-import tarfile
+from os.path import join, isdir
+import sys
 
 from common import make_safe_filename, Consumer
-from config import CHILES_BUCKET_NAME
+from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
-
 
 LOG = multiprocessing.log_to_stderr()
 LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, key, tar_file, directory):
-        self._key = key
-        self._tar_file = tar_file
-        self._directory = directory
-
-    def __call__(self):
-        """
-        Actually run the job
-        """
-        try:
-            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key, self._tar_file, self._directory))
-            if not os.path.exists(self._directory):
-                os.makedirs(self._directory)
-            self._key.get_contents_to_filename(self._tar_file)
-            with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
-                tar.extractall(path=self._directory)
-
-            os.remove(self._tar_file)
-        except:
-            LOG.exception('Task died')
-
-
-def copy_files(observation_id, frequency_id, processes):
-    s3_helper = S3Helper()
-    bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
-
+def copy_files(observation_id, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
-
     # Start the consumers
     for x in range(processes):
         consumer = Consumer(queue)
         consumer.start()
+    s3_helper = S3Helper()
 
-    for key in bucket.list(prefix='{0}/CVEL/{1}'.format(observation_id, frequency_id)):
-        # Ignore the key
-        if key.key.endswith('/data.tar.gz'):
-            elements = key.key.split('/')
-            #directory = '/tmp/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
-            directory = '/mnt/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
+    # Look in the output directory
+    for directory_day in os.listdir(CHILES_CLEAN_OUTPUT):
+        if isdir(join(CHILES_CLEAN_OUTPUT, directory_day)):
+            path_frequency = join(CHILES_CLEAN_OUTPUT, directory_day, 'data1')
+            LOG.info('path_frequency: {0}'.format(path_frequency))
+            # TODO
 
-            # Queue the copy of the file
-            temp_file = os.path.join(directory, 'data.tar.gz')
-            queue.put(Task(key, temp_file, directory))
+        s3_helper.add_file_to_bucket(
+            CHILES_BUCKET_NAME,
+            observation_id + '/CLEAN/' + directory_day + '/log/chiles-output.log',
+            '/var/log/chiles-output.log')
+        s3_helper.add_file_to_bucket(
+            CHILES_BUCKET_NAME,
+            observation_id + '/CLEAN/' + directory_day + '/log/casapy.log',
+            join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
@@ -100,17 +74,14 @@ def copy_files(observation_id, frequency_id, processes):
 
 
 def main():
-    parser = argparse.ArgumentParser('Copy the CVEL output from S3')
+    parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
     parser.add_argument('obs_id', help='the observation id')
-    parser.add_argument('freq_id', help='the frequency id')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
-
     args = vars(parser.parse_args())
     observation_id = make_safe_filename(args['obs_id'])
-    frequency_id = args['freq_id']
     processes = args['processes']
 
-    copy_files(observation_id, frequency_id, processes)
+    copy_files(observation_id, processes)
 
 if __name__ == "__main__":
     main()

@@ -40,7 +40,7 @@ from s3_helper import S3Helper
 
 
 LOG = multiprocessing.log_to_stderr()
-LOG.setLevel(logging.INFO)
+LOG.setLevel(multiprocessing.SUBDEBUG)
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
@@ -66,7 +66,7 @@ class Task(object):
             LOG.info('Copying {0} to s3'.format(self._output_tar_filename))
             self._s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
-                self._observation_id + '/' + self._directory_frequency + '/' + self._directory_day + '/data.tar.gz',
+                self._observation_id + '/CVEL/' + self._directory_frequency + '/' + self._directory_day + '/data.tar.gz',
                 self._output_tar_filename)
 
             # Clean up
@@ -81,23 +81,15 @@ def make_tarfile(output_filename, source_dir):
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
-def main():
-    parser = argparse.ArgumentParser('Copy the output to the correct place in S3')
-    parser.add_argument('obs_id', help='the observation id')
-    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
-    args = vars(parser.parse_args())
-    observation_id = make_safe_filename(args['obs_id'])
-    processes = args['processes']
-
+def copy_files(observation_id, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
-
     # Start the consumers
     for x in range(processes):
         consumer = Consumer(queue)
         consumer.start()
-
     s3_helper = S3Helper()
+
     # Look in the output directory
     for directory_day in os.listdir(CHILES_CVEL_OUTPUT):
         if isdir(join(CHILES_CVEL_OUTPUT, directory_day)):
@@ -112,11 +104,11 @@ def main():
 
         s3_helper.add_file_to_bucket(
             CHILES_BUCKET_NAME,
-            observation_id + '/' + directory_day + '/log/chiles-output.log',
+            observation_id + '/CVEL/' + directory_day + '/log/chiles-output.log',
             '/var/log/chiles-output.log')
         s3_helper.add_file_to_bucket(
             CHILES_BUCKET_NAME,
-            observation_id + '/' + directory_day + '/log/casapy.log',
+            observation_id + '/CVEL/' + directory_day + '/log/casapy.log',
             join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
 
     # Add a poison pill to shut things down
@@ -125,6 +117,17 @@ def main():
 
     # Wait for the queue to terminate
     queue.join()
+
+
+def main():
+    parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
+    parser.add_argument('obs_id', help='the observation id')
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+    args = vars(parser.parse_args())
+    observation_id = make_safe_filename(args['obs_id'])
+    processes = args['processes']
+
+    copy_files(observation_id, processes)
 
 if __name__ == "__main__":
     main()

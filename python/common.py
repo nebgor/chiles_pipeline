@@ -125,7 +125,7 @@ def setup_boto(hostname):
         fastprint('.')
         time.sleep(5)
     puts('.')
-    with settings(user=USERNAME, key_filename=AWS_KEY, host_string=hostname, connection_attempts=5):
+    with settings(user=USERNAME, key_filename=AWS_KEY, host_string=hostname, connection_attempts=5, timeout=30):
         with cd('/home/ec2-user/chiles_pipeline'):
             run('git pull')
         sudo('pip install {0}'.format(PIP_PACKAGES))
