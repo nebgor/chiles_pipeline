@@ -83,7 +83,8 @@ def copy_files(observation_id, frequency_id, processes):
     # Look in the output directory
     directory_data = join(CHILES_CLEAN_OUTPUT, observation_id)
     LOG.info('directory_data: {0}'.format(directory_data))
-    for dir_name in directory_data:
+    for dir_name in os.listdir(directory_data):
+        LOG.info('dir_name: {0}'.format(dir_name))
         if isdir(dir_name) and basename(dir_name).startswith('cube_'):
             LOG.info('dir_name: {0}'.format(dir_name))
             output_tar_filename = join(directory_data, basename(dir_name) + '.tar.gz')
@@ -97,6 +98,13 @@ def copy_files(observation_id, frequency_id, processes):
         CHILES_BUCKET_NAME,
         observation_id + '/CLEAN/' + frequency_id + '/log/casapy.log',
         join('/mnt/output/Chiles/casa_work_dir/{0}-0/casapy.log'.format(observation_id)))
+
+    # Add a poison pill to shut things down
+    for x in range(processes):
+        queue.put(None)
+
+    # Wait for the queue to terminate
+    queue.join()
 
 
 def main():
