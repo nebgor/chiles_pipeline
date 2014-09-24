@@ -49,8 +49,8 @@ export CH_OBS_LAST=0
 
 export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
 export CH_SPW=14 # ALL, 1~2, etc.ALL means '*'
-export CH_FREQ_MIN=1407 # MHz -- must be int (could be float if required, but makecube would need changing)
-export CH_FREQ_MAX=1419 # MHz -- must be int
+export CH_FREQ_MIN=$4 # MHz -- must be int (could be float if required, but makecube would need changing)
+export CH_FREQ_MAX=$5 # MHz -- must be int
 export CH_FREQ_STEP=4   # MHz -- must be int
 export CH_FREQ_WIDTH=15.625 # in kHz -- float value
 

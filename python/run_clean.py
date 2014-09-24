@@ -30,6 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
 import multiprocessing
+from string import find
 import sys
 
 from common import get_script, setup_boto, get_cloud_init, Consumer, make_safe_filename
@@ -112,11 +113,18 @@ def get_mime_encoded_user_data(data, observation_id, frequency_id):
     """
     AWS allows for a multipart m
     """
-    user_data = MIMEMultipart()
+    # Split the frequencies
+    index_underscore = find(frequency_id, '_')
+    index_tilde = find(frequency_id, '~')
+    min_freq = frequency_id[index_underscore + 1 : index_tilde]
+    max_freq = frequency_id[index_tilde + 1:]
+    LOG.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
 
+
+    user_data = MIMEMultipart()
     user_data.attach(get_cloud_init())
 
-    data_formatted = data.format(observation_id, frequency_id)
+    data_formatted = data.format(observation_id, frequency_id, min_freq, max_freq)
     user_data.attach(MIMEText(data_formatted))
     return user_data.as_string()
 
