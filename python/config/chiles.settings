@@ -9,3 +9,4 @@ region = "ap-southeast-2"
 # The scripts
 bash_script_cvel = "run_cvel.bash"
 bash_script_clean = "run_clean.bash"
+bash_script_makecube = "run_makecube.bash"

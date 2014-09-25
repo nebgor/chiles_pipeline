@@ -49,7 +49,7 @@ def get_mime_encoded_user_data(data, observation_id):
 
 
 def start_servers(ami_id, user_data, instance_type, obs_id, created_by, name, spot_price=None):
-    LOGGER.info('obs_id: {0}, frequency_id: {1}'.format(obs_id))
+    LOGGER.info('obs_id: {0}'.format(obs_id))
     ec2_helper = EC2Helper()
     user_data_mime = get_mime_encoded_user_data(user_data, obs_id)
     if spot_price is not None:
@@ -82,9 +82,6 @@ def check_args(args):
     map_args = {}
 
     if args['obs_id'] is None:
-        return None
-
-    if args['frequencies'] is None:
         return None
 
     if args['instance_type'] is None:
@@ -128,6 +125,6 @@ def main():
             corrected_args['spot_price'])
 
 if __name__ == "__main__":
-    # -p 3 -i r3.xlarge -n "Kevin clean test" -s 0.10 obs-1 vis_1407~1411 vis_1411~1415 vis_1415~1419
+    # -i r3.xlarge -n "Kevin ImgConcat test" -s 0.10 obs-1
     main()
 
