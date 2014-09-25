@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export IMAGE_NAME = $1
+export IMAGE_NAME=$1
 export CH_CASA_WORK_DIR=/mnt/output/Chiles/casa_work_dir
 
 mkdir -p $CH_CASA_WORK_DIR
