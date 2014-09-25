@@ -27,12 +27,17 @@ A helper for S3
 """
 import socket
 import time
+import math
+import mimetypes
+from multiprocessing import Pool
+import os
 
 import boto
 from boto.s3.key import Key
-from common import get_logger
 
-LOG = get_logger()
+from common import LOGGER
+
+from file_chunk_io import FileChunkIO
 
 
 class S3Helper:
@@ -60,7 +65,7 @@ class S3Helper:
         :param key_name:
         :param filename:
         """
-        LOG.info('bucket_name: {0}, key_name: {1}, filename: {2}, reduced_redundancy: {3}'.format(bucket_name, key_name, filename, reduced_redundancy))
+        LOGGER.info('bucket_name: {0}, key_name: {1}, filename: {2}, reduced_redundancy: {3}'.format(bucket_name, key_name, filename, reduced_redundancy))
         retry_count = 0
         done = False
         while retry_count < 3 and not done:
@@ -71,10 +76,9 @@ class S3Helper:
                 key.set_contents_from_filename(filename, reduced_redundancy=reduced_redundancy)
                 done = True
             except socket.error:
-                LOG.exception('Error')
+                LOGGER.exception('Error')
                 retry_count += 1
                 time.sleep(10)
-
 
     def get_file_from_bucket(self, bucket_name, key_name, file_name):
         """
@@ -89,3 +93,57 @@ class S3Helper:
         key = Key(bucket)
         key.key = key_name
         key.get_contents_to_filename(file_name)
+
+    @staticmethod
+    def _upload_part(bucket_name, multipart_id, part_num, source_path, offset, bytes_to_copy, amount_of_retries=10):
+        """
+        Uploads a part with retries.
+        """
+        def _upload(retries_left=amount_of_retries):
+            try:
+                LOGGER.info('Start uploading part #%d ...' % part_num)
+                conn = boto.connect_s3()
+                bucket = conn.get_bucket(bucket_name)
+                for mp in bucket.get_all_multipart_uploads():
+                    if mp.id == multipart_id:
+                        with FileChunkIO(source_path, 'r', offset=offset, bytes=bytes_to_copy) as fp:
+                            mp.upload_part_from_file(fp=fp, part_num=part_num)
+                        break
+            except Exception, exc:
+                if retries_left:
+                    _upload(retries_left=retries_left - 1)
+                else:
+                    LOGGER.info('... Failed uploading part #%d' % part_num)
+                    raise exc
+            else:
+                LOGGER.info('... Uploaded part #%d' % part_num)
+
+        _upload()
+
+    def add_file_to_bucket_multipart(self, bucket_name, key_name, source_path, parallel_processes=4, reduced_redundancy=True):
+        """
+        Parallel multipart upload.
+        """
+        bucket = self.get_bucket(bucket_name)
+
+        headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
+        mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
+
+        source_size = os.stat(source_path).st_size
+        bytes_per_chunk = max(int(math.sqrt(5242880) * math.sqrt(source_size)), 5242880)
+        chunk_amount = int(math.ceil(source_size / float(bytes_per_chunk)))
+
+        pool = Pool(processes=parallel_processes)
+        for i in range(chunk_amount):
+            offset = i * bytes_per_chunk
+            remaining_bytes = source_size - offset
+            bytes_to_copy = min([bytes_per_chunk, remaining_bytes])
+            part_num = i + 1
+            pool.apply_async(self._upload_part, [bucket_name, mp.id, part_num, source_path, offset, bytes_to_copy])
+        pool.close()
+        pool.join()
+
+        if len(mp.get_all_parts()) == chunk_amount:
+            mp.complete_upload()
+        else:
+            mp.cancel_upload()

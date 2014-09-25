@@ -43,7 +43,7 @@ from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 def get_logger(level=multiprocessing.SUBDEBUG):
     logger = multiprocessing.get_logger()
-    formatter = logging.Formatter('%(asctime)-15s:' + logging.BASIC_FORMAT)
+    formatter = logging.Formatter('[%(levelname)s/%(processName)s] %(message)s')
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
@@ -55,7 +55,7 @@ def get_logger(level=multiprocessing.SUBDEBUG):
     return logger
 
 
-LOG = get_logger()
+LOGGER = get_logger()
 
 
 class Consumer(multiprocessing.Process):
@@ -71,14 +71,14 @@ class Consumer(multiprocessing.Process):
         Sit in a loop
         """
         while True:
-            LOG.info('Getting a task')
+            LOGGER.info('Getting a task')
             next_task = self._queue.get()
             if next_task is None:
                 # Poison pill means shutdown
-                LOG.info('Exiting')
+                LOGGER.info('Exiting')
                 self._queue.task_done()
                 return
-            LOG.info('Executing the task')
+            LOGGER.info('Executing the task')
             next_task()
             self._queue.task_done()
 
@@ -136,7 +136,7 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
 
 
 def setup_boto(hostname):
-    LOG.info('Waiting for the ssh daemon to start up')
+    LOGGER.info('Waiting for the ssh daemon to start up')
     for i in range(12):
         fastprint('.')
         time.sleep(5)
@@ -150,6 +150,6 @@ def setup_boto(hostname):
 
 
 def make_tarfile(output_filename, source_dir):
-    LOG.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
+    LOGGER.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
     with closing(tarfile.open(output_filename, "w:gz")) as tar:
         tar.add(source_dir, arcname=basename(source_dir))

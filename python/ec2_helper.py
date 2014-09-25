@@ -33,11 +33,8 @@ from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
 
-from common import make_safe_filename, get_logger
+from common import make_safe_filename, LOGGER
 from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
-
-
-LOG = get_logger()
 
 
 class EC2Helper:
@@ -71,7 +68,7 @@ class EC2Helper:
         """
         bdm = self.build_block_device_map(ephemeral)
 
-        LOG.info('Running instance: ami: {0}'.format(ami_id))
+        LOGGER.info('Running instance: ami: {0}'.format(ami_id))
         reservations = self.ec2_connection.run_instances(ami_id,
                                                          instance_type=instance_type,
                                                          instance_initiated_shutdown_behavior='terminate',
@@ -84,14 +81,14 @@ class EC2Helper:
         time.sleep(5)
 
         while not instance.update() == 'running':
-            LOG.info('Not running yet')
+            LOGGER.info('Not running yet')
             time.sleep(5)
 
         if volume_id:
             # Now we have an instance id we can attach the disk
             self.ec2_connection.attach_volume(volume_id, instance.id, '/dev/xvdf')
 
-        LOG.info('Assigning the tags')
+        LOGGER.info('Assigning the tags')
         self.ec2_connection.create_tags([instance.id],
                                         {'CVEL': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
@@ -129,14 +126,14 @@ class EC2Helper:
             try:
                 requests = self.ec2_connection.get_all_spot_instance_requests(request_ids=[spot_request_id])
             except EC2ResponseError:
-                LOG.exception('Error count = {0}'.format(error_count))
+                LOGGER.exception('Error count = {0}'.format(error_count))
                 error_count += 1
 
             if requests is None:
                 # Wait for AWS to catch up
                 time.sleep(10)
             else:
-                LOG.info('{0}, state: {1}, status:{2}'.format(spot_request_id, requests[0].state, requests[0].status))
+                LOGGER.info('{0}, state: {1}, status:{2}'.format(spot_request_id, requests[0].state, requests[0].status))
                 if requests[0].state == 'active' and requests[0].status.code == 'fulfilled':
                     instance_id = requests[0].instance_id
                 elif requests[0].state == 'cancelled':
@@ -149,9 +146,9 @@ class EC2Helper:
         reservations = self.ec2_connection.get_all_instances(instance_ids=[instance_id])
         instance = reservations[0].instances[0]
 
-        LOG.info('Waiting to start up')
+        LOGGER.info('Waiting to start up')
         while not instance.update() == 'running':
-            LOG.info('Not running yet')
+            LOGGER.info('Not running yet')
             time.sleep(5)
 
         if volume_id:
@@ -159,7 +156,7 @@ class EC2Helper:
             self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')
 
         # Give it time to settle down
-        LOG.info('Assigning the tags')
+        LOGGER.info('Assigning the tags')
         self.ec2_connection.create_tags([instance_id],
                                         {'CVEL': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),

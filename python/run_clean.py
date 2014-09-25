@@ -33,21 +33,19 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_boto, get_cloud_init, Consumer, make_safe_filename, get_logger
+from common import get_script, setup_boto, get_cloud_init, Consumer, make_safe_filename, LOGGER
 from config import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
 
-LOG = get_logger()
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
+LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 class Task(object):
     """
     The actual task
     """
-    def __init__(self, ec2_helper, ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price):
-        self._ec2_helper = ec2_helper
+    def __init__(self, ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
@@ -61,11 +59,12 @@ class Task(object):
         """
         Actually run the job
         """
-        LOG.info('observation_id: {0}, frequency_id: {1}'.format(self._observation_id, self._frequency_id))
+        LOGGER.info('observation_id: {0}, frequency_id: {1}'.format(self._observation_id, self._frequency_id))
+        ec2_helper = EC2Helper()
         user_data_mime = get_mime_encoded_user_data(self._user_data, self._observation_id, self._frequency_id)
 
         if self._spot_price is not None:
-            ec2_instance = self._ec2_helper.run_spot_instance(
+            ec2_instance = ec2_helper.run_spot_instance(
                 self._ami_id,
                 self._spot_price,
                 user_data_mime,
@@ -74,7 +73,7 @@ class Task(object):
                 self._name + '- {0}'.format(self._frequency_id),
                 ephemeral=True)
         else:
-            ec2_instance = self._ec2_helper.run_instance(
+            ec2_instance = ec2_helper.run_instance(
                 self._ami_id,
                 user_data_mime,
                 self._instance_type,
@@ -96,9 +95,8 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, f
         consumer = Consumer(tasks)
         consumer.start()
 
-    ec2_helper = EC2Helper()
     for frequency_id in frequency_ids:
-        tasks.put(Task(ec2_helper, ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price))
+        tasks.put(Task(ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price))
 
         # Add a poison pill to shut things down
     for x in range(processes):
@@ -117,7 +115,7 @@ def get_mime_encoded_user_data(data, observation_id, frequency_id):
     index_tilde = find(frequency_id, '~')
     min_freq = frequency_id[index_underscore + 1:index_tilde]
     max_freq = frequency_id[index_tilde + 1:]
-    LOG.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
+    LOGGER.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
 
     # Build the mime message
     user_data = MIMEMultipart()
@@ -171,7 +169,7 @@ def main():
 
     corrected_args = check_args(args)
     if corrected_args is None:
-        LOG.error('The arguments are incorrect: {0}'.format(args))
+        LOGGER.error('The arguments are incorrect: {0}'.format(args))
     else:
         start_servers(
             args['processes'],

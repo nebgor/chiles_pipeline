@@ -32,13 +32,12 @@ import sys
 import os
 import tarfile
 
-from common import make_safe_filename, Consumer, get_logger
+from common import make_safe_filename, Consumer, LOGGER
 from config import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-LOG = get_logger()
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
+LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 class Task(object):
@@ -55,7 +54,7 @@ class Task(object):
         Actually run the job
         """
         try:
-            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
+            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
             if not os.path.exists(self._directory):
                 os.makedirs(self._directory)
             self._key.get_contents_to_filename(self._tar_file)
@@ -64,13 +63,13 @@ class Task(object):
 
             os.remove(self._tar_file)
         except:
-            LOG.exception('Task died')
+            LOGGER.exception('Task died')
 
 
 def copy_files(observation_id, frequency_id, processes):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
-    LOG.info('Scanning bucket: {0}, observation_id: {1}, frequency_id: {2}'.format(bucket, observation_id, frequency_id))
+    LOGGER.info('Scanning bucket: {0}, observation_id: {1}, frequency_id: {2}'.format(bucket, observation_id, frequency_id))
 
     # Create the queue
     queue = multiprocessing.JoinableQueue()
@@ -81,7 +80,7 @@ def copy_files(observation_id, frequency_id, processes):
         consumer.start()
 
     for key in bucket.list(prefix='{0}/CVEL/{1}'.format(observation_id, frequency_id)):
-        LOG.info('Checking {0}'.format(key.key))
+        LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')

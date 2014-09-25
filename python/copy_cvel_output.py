@@ -31,21 +31,19 @@ import os
 from os.path import isdir, join
 import sys
 
-from common import make_safe_filename, Consumer, make_tarfile, get_logger
+from common import make_safe_filename, Consumer, make_tarfile, LOGGER
 from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
-LOG = get_logger()
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
+LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 class Task(object):
     """
     The actual task
     """
-    def __init__(self, s3_helper, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day):
-        self._s3_helper = s3_helper
+    def __init__(self, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day):
         self._output_tar_filename = output_tar_filename
         self._directory_frequency_full = directory_frequency_full
         self._observation_id = observation_id
@@ -59,8 +57,9 @@ class Task(object):
         try:
             make_tarfile(self._output_tar_filename, self._directory_frequency_full)
 
-            LOG.info('Copying {0} to s3'.format(self._output_tar_filename))
-            self._s3_helper.add_file_to_bucket(
+            LOGGER.info('Copying {0} to s3'.format(self._output_tar_filename))
+            s3_helper = S3Helper()
+            s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
                 self._observation_id + '/CVEL/' + self._directory_frequency + '/' + self._directory_day + '/data.tar.gz',
                 self._output_tar_filename)
@@ -68,7 +67,7 @@ class Task(object):
             # Clean up
             os.remove(self._output_tar_filename)
         except:
-            LOG.exception('Task died')
+            LOGGER.exception('Task died')
 
 
 def copy_files(observation_id, processes):
@@ -84,13 +83,13 @@ def copy_files(observation_id, processes):
     for directory_day in os.listdir(CHILES_CVEL_OUTPUT):
         if isdir(join(CHILES_CVEL_OUTPUT, directory_day)):
             path_frequency = join(CHILES_CVEL_OUTPUT, directory_day, 'data1')
-            LOG.info('path_frequency: {0}'.format(path_frequency))
+            LOGGER.info('path_frequency: {0}'.format(path_frequency))
             for directory_frequency in os.listdir(path_frequency):
                 directory_frequency_full = join(path_frequency, directory_frequency)
                 if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
-                    LOG.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
+                    LOGGER.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
                     output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
-                    queue.put(Task(s3_helper, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day))
+                    queue.put(Task(output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day))
 
         s3_helper.add_file_to_bucket(
             CHILES_BUCKET_NAME,

@@ -31,20 +31,18 @@ import os
 from os.path import join, isdir, basename
 import sys
 
-from common import make_safe_filename, Consumer, make_tarfile, get_logger
+from common import make_safe_filename, Consumer, make_tarfile, LOGGER
 from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
-LOG = get_logger()
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
+LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 class Task(object):
     """
     The actual task
     """
-    def __init__(self, s3_helper, output_tar_filename, observation_id, frequency_id, directory_to_save):
-        self._s3_helper = s3_helper
+    def __init__(self, output_tar_filename, observation_id, frequency_id, directory_to_save):
         self._output_tar_filename = output_tar_filename
         self._observation_id = observation_id
         self._frequency_id = frequency_id
@@ -57,16 +55,17 @@ class Task(object):
         try:
             make_tarfile(self._output_tar_filename, self._directory_to_save)
 
-            LOG.info('Copying {0} to s3'.format(self._output_tar_filename))
-            self._s3_helper.add_file_to_bucket(
+            LOGGER.info('Copying {0} to s3'.format(self._output_tar_filename))
+            s3_helper = S3Helper()
+            s3_helper.add_file_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
-                self._observation_id + '/CLEAN/' + self._frequency_id + '/' + basename(self._output_tar_filename) + '.tar.gz',
+                self._observation_id + '/CLEAN/' + self._frequency_id + '/' + basename(self._output_tar_filename),
                 self._output_tar_filename)
 
             # Clean up
             os.remove(self._output_tar_filename)
         except:
-            LOG.exception('Task died')
+            LOGGER.exception('Task died')
 
 
 def copy_files(observation_id, frequency_id, processes):
@@ -82,13 +81,13 @@ def copy_files(observation_id, frequency_id, processes):
 
     # Look in the output directory
     directory_data = join(CHILES_CLEAN_OUTPUT, observation_id)
-    LOG.info('directory_data: {0}'.format(directory_data))
+    LOGGER.info('directory_data: {0}'.format(directory_data))
     for dir_name in os.listdir(directory_data):
-        LOG.info('dir_name: {0}'.format(dir_name))
+        LOGGER.info('dir_name: {0}'.format(dir_name))
         if isdir(join(directory_data, dir_name)) and dir_name.startswith('cube_'):
-            LOG.info('dir_name: {0}'.format(dir_name))
+            LOGGER.info('dir_name: {0}'.format(dir_name))
             output_tar_filename = join(directory_data, dir_name + '.tar.gz')
-            queue.put(Task(s3_helper, output_tar_filename, observation_id, frequency_id, join(directory_data, dir_name)))
+            queue.put(Task(output_tar_filename, observation_id, frequency_id, join(directory_data, dir_name)))
 
     s3_helper.add_file_to_bucket(
         CHILES_BUCKET_NAME,

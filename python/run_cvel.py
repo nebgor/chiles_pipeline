@@ -32,21 +32,19 @@ import getpass
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_boto, get_script, Consumer, get_logger
+from common import make_safe_filename, get_cloud_init, setup_boto, get_script, Consumer, LOGGER
 from config import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
 
-LOG = get_logger()
-LOG.info('PYTHONPATH = {0}'.format(sys.path))
+LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 class Task(object):
     """
     The actual task
     """
-    def __init__(self, ec2_helper, ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price):
-        self._ec2_helper = ec2_helper
+    def __init__(self, ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
@@ -61,12 +59,13 @@ class Task(object):
         Actually run the job
         """
         # Get the name of the volume
-        volume_name = self._ec2_helper.get_volume_name(self._volume_id)
-        LOG.info('observation_id: {0}, volume_name: {1}'.format(self._observation_id, volume_name))
+        ec2_helper = EC2Helper()
+        volume_name = ec2_helper.get_volume_name(self._volume_id)
+        LOGGER.info('observation_id: {0}, volume_name: {1}'.format(self._observation_id, volume_name))
         user_data_mime = get_mime_encoded_user_data(self._user_data, volume_name, self._observation_id)
 
         if self._spot_price is not None:
-            ec2_instance = self._ec2_helper.run_spot_instance(
+            ec2_instance = ec2_helper.run_spot_instance(
                 self._ami_id,
                 self._spot_price,
                 user_data_mime,
@@ -76,7 +75,7 @@ class Task(object):
                 self._name + '- {0}'.format(volume_name),
                 ephemeral=True)
         else:
-            ec2_instance = self._ec2_helper.run_instance(
+            ec2_instance = ec2_helper.run_instance(
                 self._ami_id,
                 user_data_mime,
                 self._instance_type,
@@ -98,9 +97,8 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, v
         consumer = Consumer(tasks)
         consumer.start()
 
-    ec2_helper = EC2Helper()
     for volume_id in volume_ids:
-        tasks.put(Task(ec2_helper, ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price))
+        tasks.put(Task(ami_id, user_data, instance_type, observation_id, volume_id, created_by, name, spot_price))
 
         # Add a poison pill to shut things down
     for x in range(processes):
@@ -166,7 +164,7 @@ def main():
 
     corrected_args = check_args(args)
     if corrected_args is None:
-        LOG.error('The arguments are incorrect: {0}'.format(args))
+        LOGGER.error('The arguments are incorrect: {0}'.format(args))
     else:
         start_servers(
             args['processes'],
