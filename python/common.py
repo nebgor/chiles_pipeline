@@ -43,7 +43,7 @@ from config import USERNAME, AWS_KEY, PIP_PACKAGES
 
 def get_logger(level=multiprocessing.SUBDEBUG):
     logger = multiprocessing.get_logger()
-    formatter = logging.Formatter('[%(levelname)s/%(processName)s] %(message)s')
+    formatter = logging.Formatter('[%(processName)s]:%(asctime)-15s:%(levelname)s:%(message)s')
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
