@@ -45,6 +45,7 @@ AWS_REGION = None
 
 BASH_SCRIPT_CVEL = None
 BASH_SCRIPT_CLEAN = None
+BASH_SCRIPT_MAKECUBE = None
 
 config_file_name = dirname(__file__) + '/chiles.settings'
 if exists(config_file_name):
@@ -59,3 +60,4 @@ if exists(config_file_name):
 
     BASH_SCRIPT_CVEL = config['bash_script_cvel']
     BASH_SCRIPT_CLEAN = config['bash_script_clean']
+    BASH_SCRIPT_MAKECUBE = config['bash_script_makecube']
