@@ -90,7 +90,7 @@ def copy_files(observation_id, processes):
         # Ignore the key
         if key.key.endswith('.image.tar.gz'):
             # Queue the copy of the file
-            temp_file = os.path.join(DIRECTORY, basename(key.key) + '.tar.gz')
+            temp_file = os.path.join(DIRECTORY, basename(key.key))
             queue.put(Task(key, temp_file, DIRECTORY))
 
     # Add a poison pill to shut things down

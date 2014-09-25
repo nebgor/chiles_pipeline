@@ -25,8 +25,16 @@
 """
 
 """
+import os
 
+MNT_OUTPUT_CHILES = '/mnt/output/Chiles/'
+
+cube_names = []
+out_name = MNT_OUTPUT_CHILES + os.getenv('IMAGE_NAME', 'image')
+for dir_name in os.listdir(MNT_OUTPUT_CHILES):
+    if os.path.isdir(dir_name) and dir_name.endswith('.image'):
+        cube_names.append(os.path.join(MNT_OUTPUT_CHILES, dir_name))
 
 print 'Start concatenating %s' % str(cube_names)
-final=ia.imageconcat(infiles=cube_names, outfile=outname, relax=T)
+final=ia.imageconcat(infiles=cube_names, outfile=out_name, relax=True)
 final.done()
