@@ -134,6 +134,7 @@ class S3Helper:
         source_size = os.stat(source_path).st_size
         bytes_per_chunk = max(int(math.sqrt(5242880) * math.sqrt(source_size)), 5242880)
         chunk_amount = int(math.ceil(source_size / float(bytes_per_chunk)))
+        LOGGER.info('bytes_per_chunk: {0}, chunk_amount: {1}'.format(bytes_per_chunk, chunk_amount))
 
         pool = Pool(processes=parallel_processes)
         for i in range(chunk_amount):
