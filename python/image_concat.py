@@ -30,7 +30,7 @@ import os
 MNT_OUTPUT_CHILES = '/mnt/output/Chiles/'
 
 cube_names = []
-out_name = MNT_OUTPUT_CHILES + os.getenv('IMAGE_NAME', 'image')
+out_name = MNT_OUTPUT_CHILES + os.getenv('IMAGE_NAME', 'image') + '.cube'
 for dir_name in os.listdir(MNT_OUTPUT_CHILES):
     if dir_name.endswith('.image'):
         path_join = os.path.join(MNT_OUTPUT_CHILES, dir_name)

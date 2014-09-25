@@ -30,7 +30,7 @@ from configobj import ConfigObj
 
 CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 CHILES_CLEAN_OUTPUT = '/mnt/output/Chiles/split_cubes'
-#CHILES_CVEL_OUTPUT = '/Users/kevinvinsen/Downloads/mnt/output/Chiles/split_vis'
+CHILES_IMGCONCAT_OUTPUT = '/mnt/output/Chiles'
 CHILES_BUCKET_NAME = 'icrar.chiles.output'
 
 AWS_KEY = expanduser('~/.ssh/icrar_sydney.pem')
