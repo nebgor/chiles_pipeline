@@ -23,7 +23,7 @@
 #    MA 02111-1307  USA
 #
 """
-Start a number of CVEL servers
+Start a number of CLEAN servers
 """
 import argparse
 from email.mime.multipart import MIMEMultipart

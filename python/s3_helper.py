@@ -40,6 +40,32 @@ from common import LOGGER
 from file_chunk_io import FileChunkIO
 
 
+def upload_part(bucket_name, multipart_id, part_num, source_path, offset, bytes_to_copy, amount_of_retries=10):
+    """
+    Uploads a part with retries.  It is outside the class to get pickling to work properly
+    """
+    def _upload(retries_left=amount_of_retries):
+        try:
+            LOGGER.info('Start uploading part #%d ...' % part_num)
+            conn = boto.connect_s3()
+            bucket = conn.get_bucket(bucket_name)
+            for mp in bucket.get_all_multipart_uploads():
+                if mp.id == multipart_id:
+                    with FileChunkIO(source_path, 'r', offset=offset, bytes=bytes_to_copy) as fp:
+                        mp.upload_part_from_file(fp=fp, part_num=part_num)
+                    break
+        except Exception, exc:
+            if retries_left:
+                _upload(retries_left=retries_left - 1)
+            else:
+                LOGGER.info('... Failed uploading part #%d' % part_num)
+                raise exc
+        else:
+            LOGGER.info('... Uploaded part #%d' % part_num)
+
+    _upload()
+
+
 class S3Helper:
     def __init__(self):
         """
@@ -94,36 +120,12 @@ class S3Helper:
         key.key = key_name
         key.get_contents_to_filename(file_name)
 
-    @staticmethod
-    def _upload_part(bucket_name, multipart_id, part_num, source_path, offset, bytes_to_copy, amount_of_retries=10):
-        """
-        Uploads a part with retries.
-        """
-        def _upload(retries_left=amount_of_retries):
-            try:
-                LOGGER.info('Start uploading part #%d ...' % part_num)
-                conn = boto.connect_s3()
-                bucket = conn.get_bucket(bucket_name)
-                for mp in bucket.get_all_multipart_uploads():
-                    if mp.id == multipart_id:
-                        with FileChunkIO(source_path, 'r', offset=offset, bytes=bytes_to_copy) as fp:
-                            mp.upload_part_from_file(fp=fp, part_num=part_num)
-                        break
-            except Exception, exc:
-                if retries_left:
-                    _upload(retries_left=retries_left - 1)
-                else:
-                    LOGGER.info('... Failed uploading part #%d' % part_num)
-                    raise exc
-            else:
-                LOGGER.info('... Uploaded part #%d' % part_num)
-
-        _upload()
-
     def add_file_to_bucket_multipart(self, bucket_name, key_name, source_path, parallel_processes=4, reduced_redundancy=True):
         """
         Parallel multipart upload.
         """
+        LOGGER.info('bucket_name: {0}, key_name: {1}, filename: {2}, parallel_processes: {3}, reduced_redundancy: {4}'.format(
+            bucket_name, key_name, source_path, parallel_processes, reduced_redundancy))
         bucket = self.get_bucket(bucket_name)
 
         headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
@@ -139,7 +141,7 @@ class S3Helper:
             remaining_bytes = source_size - offset
             bytes_to_copy = min([bytes_per_chunk, remaining_bytes])
             part_num = i + 1
-            pool.apply_async(self._upload_part, [bucket_name, mp.id, part_num, source_path, offset, bytes_to_copy])
+            pool.apply_async(upload_part, [bucket_name, mp.id, part_num, source_path, offset, bytes_to_copy])
         pool.close()
         pool.join()
 
