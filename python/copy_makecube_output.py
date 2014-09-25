@@ -39,13 +39,6 @@ LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 def copy_files(observation_id, processes):
-    # Create the queue
-    queue = multiprocessing.JoinableQueue()
-    # Start the consumers
-    for x in range(processes):
-        consumer = Consumer(queue)
-        consumer.start()
-
     # Create the helper
     s3_helper = S3Helper()
 
