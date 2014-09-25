@@ -54,7 +54,7 @@ def copy_files(observation_id, processes):
             s3_helper = S3Helper()
             s3_helper.add_file_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
-                observation_id + '/IMCONCAT/' + basename(output_tar_filename),
+                observation_id + '/IMGCONCAT/' + basename(output_tar_filename),
                 output_tar_filename)
 
             # Clean up
