@@ -140,13 +140,14 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
                       niter=0,
                       gain=0.1,
                       threshold='0.0mJy',
-                      phasecenter=['10:01:53.9 02:24:52.0'],
-                      imsize=[1024],
-                      cell=['0.5arcsec'],
+#                      phasecenter=['10:01:53.9 02:24:52.0'],
+                      phasecenter=['10:01:17.3 02:17:24.0'],
+                      imsize=[512],
+                      cell=['1.0arcsec'],
 #                      imsize=[2048],
 #                      cell=['1.5arcsec'],
-                      weighting='briggs',
-                      robust=0.0,
+                      weighting='natural',
+                      robust=2.0,
                       usescratch=True)
             except Exception, clEx:
                 print '*********\nClean exception: %s\n***********' % str(clEx)
@@ -327,8 +328,9 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
             os.system('rm -rf ' + backupfile)
             print 'working on: ' + outfile
             try:
-                cvel(vis=infile,
+                mstransform(vis=infile,
                       outputvis=outfile,
+                      regridms=T,
                       restfreq='1420.405752MHz',
                       mode='frequency',
                       nchan=no_chan,
@@ -337,7 +339,23 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
                       veltype='radio',
                       start=str(freq1)+'MHz',
                       width=str(width_freq)+'kHz',
-                      spw=spw_range)
+                      spw=spw_range,
+                      combinespws        =  True,
+                      nspw               =  1,
+                      createmms          =  False,
+                      datacolumn         =  "data")
+
+                # cvel(vis=infile,
+                #       outputvis=outfile,
+                #       restfreq='1420.405752MHz',
+                #       mode='frequency',
+                #       nchan=no_chan,
+                #       outframe='lsrk',
+                #       interpolation='linear',
+                #       veltype='radio',
+                #       start=str(freq1)+'MHz',
+                #       width=str(width_freq)+'kHz',
+                #       spw=spw_range)
             except Exception, spEx:
                 print '*********\nSplit exception: %s\n***********' % str(spEx)
         else:
