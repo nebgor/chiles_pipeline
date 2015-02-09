@@ -26,7 +26,6 @@
 Copy the clean output
 """
 import argparse
-import multiprocessing
 import os
 from os.path import join, isdir, basename
 import sys
@@ -59,7 +58,7 @@ def copy_files(observation_id, processes):
 
             # Clean up
             os.remove(output_tar_filename)
-        except:
+        except Exception:
             LOGGER.exception('Task died')
 
     s3_helper.add_file_to_bucket(

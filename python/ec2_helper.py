@@ -38,12 +38,12 @@ from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
 class EC2Helper:
-    def __init__(self):
+    def __init__(self, aws_access_key_id, aws_secret_access_key):
         """
         Get an EC2 connection
         """
         # This relies on a ~/.boto file holding the '<aws access key>', '<aws secret key>'
-        self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
+        self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
     @staticmethod
     def build_block_device_map(ephemeral, ebs_size=None):
@@ -177,6 +177,15 @@ class EC2Helper:
                 return make_safe_filename(name)
 
         return volume_id
+
+    def create_volume(self, snapshot_id, zone):
+        snapshot = self.ec2_connection.get_all_snapshots([snapshot_id])
+        volume = self.ec2_connection.create_volume(None, zone, snapshot=snapshot_id, volume_type='gp2')
+        snapshot_name = snapshot[0].tags['Name']
+
+        self.ec2_connection.create_tags(volume.id, {'Name': 'CAN BE DELETED: ' + snapshot_name})
+
+        return volume, snapshot_name
 
 
 class CancelledException(Exception):

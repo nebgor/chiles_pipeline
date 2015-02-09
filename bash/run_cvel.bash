@@ -39,5 +39,10 @@ runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.
 # Copy files to S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py {1} -p 3'
 
+# Unattach the snapshot and delete it
+umount /dev/xvdf
+sleep 10
+# TODO
+
 # Terminate
 shutdown -h now

@@ -66,7 +66,7 @@ class Task(object):
 
             # Clean up
             os.remove(self._output_tar_filename)
-        except:
+        except Exception:
             LOGGER.exception('Task died')
 
 
