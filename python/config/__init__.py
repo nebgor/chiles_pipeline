@@ -31,9 +31,9 @@ from configobj import ConfigObj
 CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 CHILES_CLEAN_OUTPUT = '/mnt/output/Chiles/split_cubes'
 CHILES_IMGCONCAT_OUTPUT = '/mnt/output/Chiles'
-CHILES_BUCKET_NAME = 'icrar.chiles.output'
+CHILES_BUCKET_NAME = 'chiles.output.icrar.org'
 
-AWS_KEY = expanduser('~/.ssh/icrar_sydney.pem')
+AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
 PIP_PACKAGES = 'fabric configobj boto'
 USERNAME = 'ec2-user'
 
