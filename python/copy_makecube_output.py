@@ -26,13 +26,12 @@
 Copy the clean output
 """
 import argparse
-import multiprocessing
 import os
 from os.path import join, isdir, basename
 import sys
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
-from config import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
+from settings_file import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
 from s3_helper import S3Helper
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
@@ -59,7 +58,7 @@ def copy_files(observation_id, processes):
 
             # Clean up
             os.remove(output_tar_filename)
-        except:
+        except Exception:
             LOGGER.exception('Task died')
 
     s3_helper.add_file_to_bucket(

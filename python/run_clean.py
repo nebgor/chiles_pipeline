@@ -33,8 +33,8 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_boto, get_cloud_init, Consumer, make_safe_filename, LOGGER
-from config import AWS_AMI_ID, BASH_SCRIPT_CLEAN
+from common import get_script, setup_aws_machine, get_cloud_init, Consumer, make_safe_filename, LOGGER
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
 
@@ -83,7 +83,7 @@ class Task(object):
                 ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_boto(ec2_instance.ip_address)
+        setup_aws_machine(ec2_instance.ip_address)
 
 
 def start_servers(processes, ami_id, user_data, instance_type, observation_id, frequency_ids, created_by, name, spot_price=None):

@@ -34,7 +34,7 @@ import sys
 import tarfile
 
 from common import make_safe_filename, LOGGER, Consumer
-from config import CHILES_BUCKET_NAME
+from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
