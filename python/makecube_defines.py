@@ -10,6 +10,7 @@ import os, sys, commands, time
 import os.path
 #import numpy as np
 
+execfile('/home/ec2-user/chiles_pipeline/python/freq_map.py')
 
 
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
@@ -316,8 +317,10 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
             freq_range = 'min~max'
             spw_range = spec_window
 
-
-        spw_range = spec_window
+        # If no spw is given then calculate from the max and min range
+        if (spec_window == ''): 
+            spw_range = freq_map(freq1,freq2)
+        
         no_chan=int(step_freq*1000.0/width_freq)  # MHz/kHz!!
 # I think I always want this with cvel.
 
