@@ -289,6 +289,8 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
     (1) deal with (max_freq - min_freq) % step_freq > 0
     (2) some debug info
     (3) obsId parameter for marking split_done
+
+    If spec_window is blank ('') then freq_map is called to define the spw selection
     """
 
     if (not os.path.exists(outdir)):
