@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -38,7 +38,7 @@ import time
 from fabric.api import settings, cd, sudo, run
 from fabric.utils import fastprint, puts
 
-from config import USERNAME, AWS_KEY, PIP_PACKAGES
+from settings_file import USERNAME, AWS_KEY, PIP_PACKAGES
 
 
 def get_logger(level=multiprocessing.SUBDEBUG):
@@ -118,6 +118,10 @@ packages:
  - wget
  - git
  - python-pip
+ - libXrandr
+ - libXfixes
+ - libXcursor
+ - libXinerama
 
 # Log all cloud-init process output (info & errors) to a logfile
 output : { all : ">> /var/log/chiles-output.log" }
@@ -127,7 +131,7 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
 ''')
 
 
-def setup_boto_and_git(hostname, aws_access_key_id, aws_secret_access_key):
+def setup_aws_machine(hostname, aws_access_key_id, aws_secret_access_key):
     LOGGER.info('Waiting for the ssh daemon to start up')
     for i in range(12):
         fastprint('.')

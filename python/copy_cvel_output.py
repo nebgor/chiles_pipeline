@@ -32,7 +32,7 @@ from os.path import isdir, join
 import sys
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
-from config import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
+from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 

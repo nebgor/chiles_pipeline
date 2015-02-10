@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 #    MA 02111-1307  USA
 #
 """
-
+Chiles settings
 """
 from os.path import exists, dirname, expanduser
 from configobj import ConfigObj

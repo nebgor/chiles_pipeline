@@ -25,7 +25,7 @@ export CH_NUM_JOB=$3 ## Should match total from ARRAY (-t) line
 # target field
 export CH_TARGET_FIELD='deepfield'
 
-export CH_OBS_DIR=/mnt/Data/
+export CH_OBS_DIR=/mnt/Data/data1
 # the index of the first / last observation (to be split) listed in "ls -l $OBS_DIR"
 export CH_OBS_FIRST=0
 export CH_OBS_LAST=0
@@ -47,11 +47,16 @@ export CH_OBS_LAST=0
 #	  13     EVLA_L#A0C0#13   2048   TOPO    1367.000        15.625     32000.0      12  RR  LL
 #	  14     EVLA_L#A0C0#14   2048   TOPO    1399.000        15.625     32000.0      12  RR  LL
 
-export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
-export CH_SPW=14 # ALL, 1~2, etc.ALL means '*'
-export CH_FREQ_MIN=1407 # MHz -- must be int (could be float if required, but makecube would need changing)
-export CH_FREQ_MAX=1419 # MHz -- must be int
-export CH_FREQ_STEP=4   # MHz -- must be int
+#export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
+#export CH_SPW=14 # ALL, 1~2, etc.ALL means '*'
+#export CH_FREQ_MIN=1407 # MHz -- must be int (could be float if required, but makecube would need changing)
+#export CH_FREQ_MAX=1419 # MHz -- must be int
+#export CH_FREQ_STEP=4   # MHz -- must be int
+#export CH_FREQ_WIDTH=15.625 # in kHz -- float value
+export CH_SPW=$4 # ALL, 1~2, etc.ALL means '*'
+export CH_FREQ_MIN=$5 # MHz -- must be int (could be float if required, but makecube would need changing)
+export CH_FREQ_MAX=$6 # MHz -- must be int
+export CH_FREQ_STEP=$7   # MHz -- must be int
 export CH_FREQ_WIDTH=15.625 # in kHz -- float value
 
 export CH_MODE_DEBUG=0 # In the debug mode, CASA routines are not called but only printed

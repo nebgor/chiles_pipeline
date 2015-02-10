@@ -30,8 +30,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
 
-from common import LOGGER, make_safe_filename, get_script, get_cloud_init, setup_boto_and_git
-from config import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE
+from common import LOGGER, make_safe_filename, get_script, get_cloud_init, setup_aws_machine
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE
 from ec2_helper import EC2Helper
 
 
@@ -72,7 +72,7 @@ def start_servers(ami_id, user_data, instance_type, obs_id, created_by, name, sp
             ephemeral=True)
 
     # Setup boto via SSH so we don't pass our keys etc in "the clear"
-    setup_boto_and_git(ec2_instance.ip_address)
+    setup_aws_machine(ec2_instance.ip_address)
 
 
 def check_args(args):

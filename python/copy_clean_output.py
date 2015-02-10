@@ -32,7 +32,7 @@ from os.path import join, isdir, basename
 import sys
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
-from config import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
+from settings_file import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))

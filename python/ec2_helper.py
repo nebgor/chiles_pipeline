@@ -34,7 +34,7 @@ from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
 
 from common import make_safe_filename, LOGGER
-from config import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
+from settings_file import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
 class EC2Helper:
