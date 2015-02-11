@@ -30,33 +30,19 @@ def execCmd(cmd, failonerror=True, okErr=[]):
     return re
 
 
-def get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs):
-    """
-    Return a tupe
-
-    The first element: list of Obs that this job has to split
-    The second element: all obs
-
-    Since the num_jobs could be less than num_obs, a job may need to
-    process more than one obs
-
-    """
+def get_my_obs(obs_dir):
     print '''
-job_id    = {0}
-obs_dir   = {1}
-obs_first = {2}
-obs_last  = {3}
-num_jobs  = {4}
-'''.format(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_dir   = {0}
+'''.format(obs_dir)
 
-    ret = []
     lsre = execCmd('ls %s' % obs_dir)
     all_obs = lsre[1].split('\n')
 
-    for i in xrange(obs_first + job_id, obs_last + 1, num_jobs):
-        ret.append(all_obs[i])
-
-    return ret, all_obs[obs_first:obs_last + 1]
+    print '''
+obs_dir = {0}
+all_obs = {1}
+'''.format(obs_dir, all_obs)
+    return all_obs
 
 
 def check_dir(this_dir, create_on_missing=True):
@@ -264,16 +250,16 @@ def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout=100):
         for obs in all_obs:
             infile_dir = '%s/%s' % (obs_dir, obs)
             obsId = os.path.basename(infile_dir).replace('_FINAL_PRODUCTS', '')
-            if (done_obs.has_key(obsId)):
+            if done_obs.has_key(obsId):
                 continue
             done_01_f = createSplitDoneMarker(casa_workdir, run_id, obsId)
-            if (os.path.exists(done_01_f)):
+            if os.path.exists(done_01_f):
                 done_obs[obsId] = 1
         gap = len(all_obs) - len(done_obs.keys())
-        if (0 == gap):
+        if 0 == gap:
             break
         else:
-            if (i % 60 == 0):  # report every one minute
+            if i % 60 == 0:  # report every one minute
                 print 'Still need %d obs to be split' % gap
             time.sleep(1)
 
@@ -323,8 +309,8 @@ obsId       = {8}
         steps = 1
 
     for i in range(steps):
-        if (sel_freq):
-            if (rem and (i == steps - 1)):
+        if sel_freq:
+            if rem and (i == steps - 1):
                 freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
             else:
                 freq_range = str(freq1) + '~' + str(freq2)

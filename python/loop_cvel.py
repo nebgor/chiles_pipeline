@@ -13,8 +13,7 @@ print 'test'+INPUT_VIS_SUFFIX
 check_dir(vis_dirs)
 check_dir(vis_bk_dirs)
 
-obs_list, all_obs = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
-obsId_list = []
+obs_list = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
 
@@ -32,7 +31,6 @@ for obs in obs_list:
         continue
 
     obsId = os.path.basename(infile_dir).replace('_FINAL_PRODUCTS', '')
-    obsId_list.append(obsId)
     outdir = '%s/%s/' % (vis_dirs, obsId)
     backup_dir = '%s/%s/' % (vis_bk_dirs, obsId)
     do_cvel(infile, outdir, backup_dir, freq_min,
