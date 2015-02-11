@@ -15,10 +15,10 @@ execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 print 'test'+INPUT_VIS_SUFFIX
 # loop through selected obs and cvel. Uses obId to only do subset of possible
 
-checkDir(job_id, vis_dirs)
-checkDir(job_id, vis_bk_dirs)
-#checkDir(job_id, cube_dir)
-#checkDir(job_id, out_dir)
+check_dir(job_id, vis_dirs)
+check_dir(job_id, vis_bk_dirs)
+#check_dir(job_id, cube_dir)
+#check_dir(job_id, out_dir)
 
 obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)
 obsId_list = []
@@ -32,7 +32,7 @@ for obs in obs_list:
 
     infile = None
     for ff in lsre[1].split('\n'):
-         if (ff.endswith(INPUT_VIS_SUFFIX)):
+         if ff.endswith(INPUT_VIS_SUFFIX):
              infile = '%s/%s' % (infile_dir, ff)
     if (not infile):
         print 'No measurementSet file found under %s' % infile_dir

@@ -13,10 +13,10 @@ execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 #
 #from makecube_defines import *
 
-#checkDir(job_id, vis_dirs)
-#checkDir(job_id, vis_bk_dirs)
-checkDir(job_id, cube_dir)
-#checkDir(job_id, out_dir)
+#check_dir(job_id, vis_dirs)
+#check_dir(job_id, vis_bk_dirs)
+check_dir(job_id, cube_dir)
+#check_dir(job_id, out_dir)
 
 
 obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)

@@ -1,27 +1,3 @@
-#PBS -l nodes=1:ppn=6:compute
-#PBS -l walltime=10:00:00
-#PBS -N test_cube
-#PBS -A rdodson
-#PBS -t 0-5
-#PBS -o $HOME/Chiles/run-11.out
-#PBS -e $HOME/Chiles/run-11.err
-
-# For non-PBS testing, a.k.a. RUN_ID (see blow)
-# note that PBS job id is NOT the same as our job_id
-export PBS_JOBID=$1
-
-# This is the "job_id" to identify multiple jobs in a single run
-export PBS_ARRAYID=$2
-
-# For non-PBS testing
-#export PBS_JOBID=9999
-#export PBS_ARRAYID=0
-
-#
-# each run has a unique id (converted from pbs_job_id, e.g.19625[0].pleiades.icrar.org)
-export CH_RUN_ID=${PBS_JOBID}
-# total number of jobs
-export CH_NUM_JOB=$3 ## Should match total from ARRAY (-t) line
 # target field
 export CH_TARGET_FIELD='deepfield'
 
@@ -49,8 +25,8 @@ export CH_OBS_LAST=0
 
 #export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
 export CH_SPW=14 # ALL, 1~2, etc.ALL means '*'
-export CH_FREQ_MIN=$4 # MHz -- must be int (could be float if required, but makecube would need changing)
-export CH_FREQ_MAX=$5 # MHz -- must be int
+export CH_FREQ_MIN=$1 # MHz -- must be int (could be float if required, but makecube would need changing)
+export CH_FREQ_MAX=$2 # MHz -- must be int
 export CH_FREQ_STEP=4   # MHz -- must be int
 export CH_FREQ_WIDTH=15.625 # in kHz -- float value
 
@@ -61,20 +37,17 @@ export CH_BKP_SPLIT=0 # whether to make a backup copy of the split vis files
 export CH_VIS_DIR=/mnt/output/Chiles/split_vis
 export CH_VIS_BK_DIR=/mnt/output/Chiles/backup_split_vis
 
-# NOTE - ON pleiades, do not set this to /scratch
 export CH_CUBE_DIR=/mnt/output/Chiles/split_cubes
-#export CH_OUT_NAME=$HOME/Chiles/cubes/comb_$CH_FREQ_MIN~$CH_FREQ_MAX.image
 export CH_OUT_DIR=/mnt/output/Chiles/cubes
 
 export CH_SPLIT_TIMEOUT=3600 # 1 hour
 export CH_CLEAN_TIMEOUT=3600
 
 # create a separate casa_work directory for each casa process
-# NOTE - ON pleiades, do not set this to /scratch
 export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
 # TODO - create it if not there
-mkdir -p $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
-cd $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
+mkdir -p $CH_CASA_WORK_DIR/${CH_FREQ_MIN}-${CH_FREQ_MAX}
+cd $CH_CASA_WORK_DIR/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 
 # point to casapy installation
 export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin

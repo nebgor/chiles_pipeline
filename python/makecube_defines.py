@@ -5,15 +5,16 @@ This module contains all the setups and the defines
 
 """
 
-import os, sys, commands, time
-
+import os
+import commands
+import time
 import os.path
-#import numpy as np
 
 execfile('/home/ec2-user/chiles_pipeline/python/freq_map.py')
 
 
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
+
 
 def execCmd(cmd, failonerror = True, okErr = []):
     """
@@ -50,7 +51,7 @@ def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     return ret, all_obs[obs_first:obs_last + 1]
 
 
-def checkDir(job_id, this_dir, createOnMissing = True):
+def check_dir(job_id, this_dir, createOnMissing = True):
     """
     Return    True if the directory is there
     """
@@ -275,7 +276,7 @@ def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = 100)
             time.sleep(1)
 
     gap = len(all_obs) - len(done_obs.keys())
-    if (gap > 0):
+    if gap > 0:
         print 'job %d timed out when waiting for all obs to be split' % job_id
     else:
         print 'job %d found all obs have been split' % job_id
@@ -284,7 +285,7 @@ def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = 100)
 
 # load all environment variables to set up configuration
 
-def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec_window, obsId):
+def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId):
     """
     Adapted from loop.split.py with changes
     (1) deal with (max_freq - min_freq) % step_freq > 0
@@ -334,22 +335,23 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
             os.system('rm -rf ' + backupfile)
             print 'working on: ' + outfile
             try:
-                mstransform(vis=infile,
-                      outputvis=outfile,
-                      regridms=T,
-                      restfreq='1420.405752MHz',
-                      mode='frequency',
-                      nchan=no_chan,
-                      outframe='lsrk',
-                      interpolation='linear',
-                      veltype='radio',
-                      start=str(freq1)+'MHz',
-                      width=str(width_freq)+'kHz',
-                      spw=spw_range,
-                      combinespws        =  True,
-                      nspw               =  1,
-                      createmms          =  False,
-                      datacolumn         =  "data")
+                mstransform(
+                    vis=infile,
+                    outputvis=outfile,
+                    regridms=T,
+                    restfreq='1420.405752MHz',
+                    mode='frequency',
+                    nchan=no_chan,
+                    outframe='lsrk',
+                    interpolation='linear',
+                    veltype='radio',
+                    start=str(freq1)+'MHz',
+                    width=str(width_freq)+'kHz',
+                    spw=spw_range,
+                    combinespws=True,
+                    nspw=1,
+                    createmms=False,
+                    datacolumn="data")
 
                 # cvel(vis=infile,
                 #       outputvis=outfile,
@@ -388,7 +390,7 @@ debug = int(os.getenv('CH_MODE_DEBUG', '0'))
 null_str = 'N/A'
 null_int = '-1'
 spec_window = os.getenv('CH_SPW', '*')
-if ('ALL' == spec_window.upper()):
+if 'ALL' == spec_window.upper():
     spec_window = '*'
 host_name = os.getenv('HOSTNAME', 'myhost')
 job_id = int(os.getenv('PBS_ARRAYID', '-1'))
@@ -408,10 +410,10 @@ num_jobs = int(os.getenv('CH_NUM_JOB', null_int))
 target_field = (os.getenv('CH_TARGET_FIELD', null_str))
 
 split_tmout = int(os.getenv('CH_SPLIT_TIMEOUT', null_int))
-if (-1 == split_tmout):
+if -1 == split_tmout:
     split_tmout = 3600
 clean_tmout = int(os.getenv('CH_CLEAN_TIMEOUT', null_int))
-if (-1 == clean_tmout):
+if -1 == clean_tmout:
     clean_tmout = 3600
 
 bkp_split = int(os.getenv('CH_BKP_SPLIT', '0'))
@@ -421,17 +423,5 @@ sel_freq = int(os.getenv('CH_SLCT_FREQ', '1'))
 cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/%s/' % run_id
 out_dir = os.getenv('CH_OUT_DIR', null_str) + '/%s/' % run_id
 
-# checkDir(job_id, vis_dirs)
-# checkDir(job_id, vis_bk_dirs)
-# checkDir(job_id, cube_dir)
-# checkDir(job_id, out_dir)
-
-# '/mnt/hidata/chiles/cubes/comb_1255~1280.image'
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
-
-# obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)
-# obsId_list = []
-
-# print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
-
 

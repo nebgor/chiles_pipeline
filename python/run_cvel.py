@@ -44,14 +44,11 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(
-            self,
-            ami_id,
-            user_data, instance_type, observation_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
+    def __init__(self, ami_id, user_data, instance_type, date, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
-        self._observation_id = observation_id
+        self._date = date
         self._snapshot_id = snapshot_id
         self._created_by = created_by
         self._name = name
@@ -69,8 +66,8 @@ class Task(object):
         # Get the name of the volume
         ec2_helper = EC2Helper(self._aws_access_key_id, self._aws_secret_access_key)
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone)
-        LOGGER.info('observation_id: {0}, volume_name: {1}'.format(self._observation_id, snapshot_name))
-        user_data_mime = self.get_mime_encoded_user_data(self._user_data, snapshot_name, self._observation_id, volume.id, self._frequency_groups)
+        LOGGER.info('date: {0}, volume_name: {1}'.format(self._date, snapshot_name))
+        user_data_mime = self.get_mime_encoded_user_data(self._user_data, volume.id)
 
         if self._spot_price is not None:
             ec2_instance = ec2_helper.run_spot_instance(
@@ -95,8 +92,7 @@ class Task(object):
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
         setup_aws_machine(ec2_instance.ip_address, self._aws_access_key_id, self._aws_secret_access_key)
 
-    @staticmethod
-    def get_mime_encoded_user_data(data, volume_name, observation_id, volume_id, frequency_groups):
+    def get_mime_encoded_user_data(self, data, volume_id):
         """
         AWS allows for a multipart m
         """
@@ -104,10 +100,32 @@ class Task(object):
 
         user_data.attach(get_cloud_init())
 
-        data_formatted = data.format(volume_name, observation_id, volume_id)
+        # Build the strings we need
+        cvel_pipeline = self.build_cvel_pipeline()
+        copy_cvel_output = self.build_copy_cvel_output()
+
+        data_formatted = data.format(cvel_pipeline, copy_cvel_output, volume_id)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(data_formatted))
         return user_data.as_string()
+
+    def build_cvel_pipeline(self):
+        return_string = ''
+        for frequnecy_pairs in self._frequency_groups:
+            return_string += '''
+# runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} {1}
+'''.format(frequnecy_pairs[0], frequnecy_pairs[1])
+
+        return return_string
+
+    def build_copy_cvel_output(self):
+        return_string = ''
+        for frequnecy_pairs in self._frequency_groups:
+            return_string += '''
+# runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 3 {0} {1} {2}
+'''.format(self._date, frequnecy_pairs[0], frequnecy_pairs[1])
+
+        return return_string
 
 
 def get_frequency_groups(pairs_per_group):
@@ -136,7 +154,7 @@ def get_frequency_groups(pairs_per_group):
     return frequency_groups
 
 
-def start_servers(processes, ami_id, user_data, instance_type, observation_id, snapshot_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
+def start_servers(processes, ami_id, user_data, instance_type, date, snapshot_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -153,7 +171,7 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, s
                     ami_id,
                     user_data,
                     instance_type,
-                    observation_id,
+                    date,
                     snapshot_id,
                     created_by,
                     name,
@@ -179,7 +197,7 @@ def check_args(args):
     """
     map_args = {}
 
-    if args['obs_id'] is None:
+    if args['date'] is None:
         return None
 
     if args['snap_ids'] is None:
@@ -213,7 +231,7 @@ def main():
     parser.add_argument('aws_access_key_id', help='your aws_access_key_id')
     parser.add_argument('aws_secret_access_key', help='your aws_secret_access_key')
     # parser.add_argument('zone', help='the zone you want to run this in')
-    parser.add_argument('obs_id', help='the observation id')
+    parser.add_argument('date', help='the date of the observation')
     parser.add_argument('snap_ids', nargs='+', help='the snapshot ids to use')
 
     args = vars(parser.parse_args())
@@ -227,7 +245,7 @@ def main():
             corrected_args['ami_id'],
             corrected_args['user_data'],
             args['instance_type'],
-            make_safe_filename(args['obs_id']),
+            make_safe_filename(args['date']),
             args['snap_ids'],
             corrected_args['created_by'],
             args['name'],
