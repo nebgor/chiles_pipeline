@@ -9,8 +9,8 @@ import os
 import commands
 import time
 import os.path
+from freq_map import freq_map
 
-execfile('/home/ec2-user/chiles_pipeline/python/freq_map.py')
 
 casalog.filter('DEBUGGING')
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
@@ -31,17 +31,8 @@ def execCmd(cmd, failonerror=True, okErr=[]):
 
 
 def get_my_obs(obs_dir):
-    print '''
-obs_dir   = {0}
-'''.format(obs_dir)
-
     lsre = execCmd('ls %s' % obs_dir)
     all_obs = lsre[1].split('\n')
-
-    print '''
-obs_dir = {0}
-all_obs = {1}
-'''.format(obs_dir, all_obs)
     return all_obs
 
 
@@ -63,7 +54,7 @@ def check_dir(this_dir, create_on_missing=True):
         return True
 
 
-def createCubeDoneMarker(casa_workdir, run_id, freq_range):
+def create_cube_done_marker(casa_workdir, run_id, freq_range):
     return '%s/%s_cube_%s_done' % (casa_workdir, run_id, freq_range.replace('~', '-'))
 
 
@@ -144,7 +135,7 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
         freq1 = freq1 + (num_jobs * step_freq)
         freq2 = freq2 + (num_jobs * step_freq)
 
-        done_02_f = createCubeDoneMarker(casa_workdir, run_id, freq_range)
+        done_02_f = create_cube_done_marker(casa_workdir, run_id, freq_range)
         if (debug):
             print 'Job %d: Creating done_02_f: %s' % (job_id, done_02_f)
         open(done_02_f, 'a').close()  # create the file marking the completion of this freq range
@@ -170,29 +161,29 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
         freq1 = min_freq
         freq2 = min_freq + step_freq
         for i in range(steps):
-            if (sel_freq):
-                if (rem and (i == steps - 1)):
+            if sel_freq:
+                if rem and (i == steps - 1):
                     freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
                 else:
                     freq_range = str(freq1) + '~' + str(freq2)
             else:
                 freq_range = 'min~max'
-            if (not done_freq.has_key(freq_range)):
-                done_02_f = createCubeDoneMarker(casa_workdir, run_id, freq_range)
-                if (os.path.exists(done_02_f)):
+            if not done_freq.has_key(freq_range):
+                done_02_f = create_cube_done_marker(casa_workdir, run_id, freq_range)
+                if os.path.exists(done_02_f):
                     done_freq[freq_range] = 1
             freq1 = freq1 + step_freq
             freq2 = freq2 + step_freq
         gap = steps - len(done_freq.keys())
-        if (0 == gap):
+        if 0 == gap:
             break
         else:
-            if (j % 60 == 0):  # report every one minute
+            if j % 60 == 0:  # report every one minute
                 print 'Still need %d freq to be cubed' % gap
             time.sleep(1)
 
     gap = steps - len(done_freq.keys())
-    if (gap > 0):
+    if gap > 0:
         print 'job %d timed out when waiting for concatenation, steps = %d, but done_freq = %d' % (job_id, steps, len(done_freq.keys()))
     else:
         print 'job %d found all sub-cubes are ready' % job_id
@@ -201,8 +192,8 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
     freq1 = min_freq
     freq2 = min_freq + step_freq
     for i in range(steps):
-        if (sel_freq):
-            if (rem and (i == steps - 1)):
+        if sel_freq:
+            if rem and (i == steps - 1):
                 freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
             else:
                 freq_range = str(freq1) + '~' + str(freq2)
@@ -216,7 +207,7 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
         freq2 = freq2 + step_freq
 
         subcube = outfile + '.image'
-        if (not debug):
+        if not debug:
             if os.path.isdir(subcube) == True:
                 # cube_names = np.append(cube_names,subcube)
                 # cube_names = cube_names + [subcube]
@@ -227,7 +218,7 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
             # cube_names = cube_names + [subcube]
             cube_names.append(subcube)
 
-    if (debug):
+    if debug:
         print '\nJob %d: Concatenating all cubes...\n\tia.imageconcat(infiles=%s,outfile=%s,relax=T)' % (job_id, str(cube_names), outname)
     else:
         print 'Start concatenating %s' % str(cube_names)
@@ -292,7 +283,7 @@ step_freq   = {5}
 width_freq  = {6}
 spec_window = {7}
 obsId       = {8}
-'''.format(outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId)
+'''.format(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId)
     if not os.path.exists(outdir):
         os.system('mkdir ' + outdir)
     if not os.path.exists(backup_dir):
@@ -417,9 +408,8 @@ if -1 == clean_tmout:
 bkp_split = int(os.getenv('CH_BKP_SPLIT', '0'))
 sel_freq = int(os.getenv('CH_SLCT_FREQ', '1'))
 
-#
-cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/%s/' % run_id
-out_dir = os.getenv('CH_OUT_DIR', null_str) + '/%s/' % run_id
+cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/'
+out_dir = os.getenv('CH_OUT_DIR', null_str) + '/'
 
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
 
