@@ -21,9 +21,9 @@ def execCmd(cmd, failonerror = True, okErr = []):
     Execute OS command from within Python
     """
     re = commands.getstatusoutput(cmd)
-    if (re[0] != 0 and not (re[0] in okErr)):
+    if re[0] != 0 and not (re[0] in okErr):
         errMsg = 'Fail to execute command: "%s". Exception: %s' % (cmd, re[1])
-        if (failonerror):
+        if failonerror:
             raise Exception(errMsg)
         else:
             print errMsg
@@ -57,11 +57,11 @@ def check_dir(job_id, this_dir, createOnMissing = True):
     """
     if not os.path.exists(this_dir):
         if createOnMissing:
-            if (0 == job_id): #only the first job has the permission to create
+            if 0 == job_id: # only the first job has the permission to create
                 cmd = 'mkdir -p %s' % this_dir
                 execCmd(cmd)
             else:
-                #wait for up to 100 seconds
+                # wait for up to 100 seconds
                 for i in range(split_tmout):
                     time.sleep(1)
                     if os.path.exists(this_dir):
@@ -97,8 +97,8 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
         steps = 1
     cube_names = []
     for i in xrange(job_id, steps, num_jobs):
-        if (sel_freq):
-            if (rem and (i == steps - 1)):
+        if sel_freq:
+            if rem and (i == steps - 1):
                 freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
             else:
                 freq_range = str(freq1) + '~' + str(freq2)
@@ -110,7 +110,7 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
         for j in range(len(in_dirs)):
             # check whether the file exists without issues ...
             workfile = in_dirs[j] + 'vis_' + freq_range
-            if (not debug):
+            if not debug:
                 print workfile
                 print os.path.isdir(workfile)
                 if os.path.isdir(workfile) == True:
@@ -122,9 +122,9 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
                 in_files = in_files + [in_dirs[j] + 'vis_' + freq_range]
 
 
-        #print 'working on: ' + outfile
-        #print 'input visibilities:', in_files
-        #print 'input visibilities:', in_files
+        # print 'working on: ' + outfile
+        # print 'input visibilities:', in_files
+        # print 'input visibilities:', in_files
         if (debug):
             print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_files), outfile)
         else:
@@ -143,10 +143,6 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
                       niter=0,
                       gain=0.1,
                       threshold='0.0mJy',
-#                      phasecenter=['10:01:53.9 02:24:52.0'],
-#                      phasecenter=['10:01:17.3 02:17:24.0'],
-#                      imsize=[256],
-#                      cell=['1.5arcsec'],
                       imsize=[2048],
                       cell=['1.0arcsec'],
                       weighting='natural',
@@ -295,19 +291,19 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
     If spec_window is blank ('') then freq_map is called to define the spw selection
     """
 
-    if (not os.path.exists(outdir)):
+    if not os.path.exists(outdir):
         os.system('mkdir ' + outdir)
-    if (not os.path.exists(backup_dir)):
+    if not os.path.exists(backup_dir):
         os.system('mkdir ' + backup_dir)
 
     steps = (max_freq - min_freq) / step_freq
     rem = (max_freq - min_freq) % step_freq
-    if (rem):
+    if rem:
         steps += 1
     freq1 = min_freq
     freq2 = min_freq + step_freq
 
-    if (not sel_freq):
+    if not sel_freq:
         steps = 1
 
     for i in range(steps):
@@ -322,7 +318,7 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
             spw_range = spec_window
 
         # If no spw is given then calculate from the max and min range
-        if (spec_window == ''):
+        if spec_window == '':
             spw_range = freq_map(freq1,freq2)
 
         no_chan=int(step_freq*1000.0/width_freq)  # MHz/kHz!!
@@ -393,9 +389,8 @@ spec_window = os.getenv('CH_SPW', '*')
 if 'ALL' == spec_window.upper():
     spec_window = '*'
 host_name = os.getenv('HOSTNAME', 'myhost')
-job_id = int(os.getenv('PBS_ARRAYID', '-1'))
-# e.g. 19625[0].pleiades.icrar.org --> 19625
-run_id = os.getenv('CH_RUN_ID', null_str).split('[')[0]
+job_id = int(os.getenv('CH_JOB_ID', '-1'))
+run_id = os.getenv('CH_RUN_ID', null_str)
 obs_dir = os.getenv('CH_OBS_DIR', null_str)
 obs_first = int(os.getenv('CH_OBS_FIRST', null_int))
 obs_last = int(os.getenv('CH_OBS_LAST', null_int))

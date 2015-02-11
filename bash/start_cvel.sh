@@ -1,3 +1,7 @@
+export CH_JOB_ID=101
+export CH_RUN_ID=102
+export CH_NUM_JOB=103
+
 # target field
 export CH_TARGET_FIELD='deepfield'
 
@@ -23,8 +27,8 @@ export CH_OBS_LAST=0
 #	  13     EVLA_L#A0C0#13   2048   TOPO    1367.000        15.625     32000.0      12  RR  LL
 #	  14     EVLA_L#A0C0#14   2048   TOPO    1399.000        15.625     32000.0      12  RR  LL
 
-#export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
-export CH_SPW=14 # ALL, 1~2, etc.ALL means '*'
+export CH_SLCT_FREQ=1 # whether to select frequencies, e.g. either spw = 1:10~11Mhz or spw = 1
+export CH_SPW='' # ALL, 1~2, etc.ALL means '*'
 export CH_FREQ_MIN=$1 # MHz -- must be int (could be float if required, but makecube would need changing)
 export CH_FREQ_MAX=$2 # MHz -- must be int
 export CH_FREQ_STEP=4   # MHz -- must be int
@@ -45,7 +49,7 @@ export CH_CLEAN_TIMEOUT=3600
 
 # create a separate casa_work directory for each casa process
 export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
-# TODO - create it if not there
+
 mkdir -p $CH_CASA_WORK_DIR/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 cd $CH_CASA_WORK_DIR/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 
