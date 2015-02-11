@@ -34,7 +34,8 @@ while [ ! -f "/home/ec2-user/.boto" ]; do
 done
 
 # Run the cvel pipeline
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1 {2} {3} {4} {5}'
+
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} 0 1 TODO'
 
 # Copy files to S3
 #runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py {1} -p 3'
@@ -42,7 +43,7 @@ runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.
 # Unattach the volume and delete it
 #umount /dev/xvdf
 #sleep 10
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volume {6}'
+#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volume {2}'
 
 # Terminate
 #shutdown -h now

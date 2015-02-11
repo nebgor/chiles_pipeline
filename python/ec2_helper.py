@@ -38,12 +38,15 @@ from settings_file import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_
 
 
 class EC2Helper:
-    def __init__(self, aws_access_key_id, aws_secret_access_key):
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None):
         """
         Get an EC2 connection
         """
-        # This relies on a ~/.boto file holding the '<aws access key>', '<aws secret key>'
-        self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+        if aws_access_key_id is not None and aws_secret_access_key is not None:
+            self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+        else:
+            # This relies on a ~/.boto file holding the '<aws access key>', '<aws secret key>'
+            self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
     def build_block_device_map(ephemeral, ebs_size=None):
@@ -186,6 +189,21 @@ class EC2Helper:
         self.ec2_connection.create_tags(volume.id, {'Name': 'CAN BE DELETED: ' + snapshot_name})
 
         return volume, snapshot_name
+
+    def delete_volume(self, volume_id, force):
+        volume = self.ec2_connection.get_all_volumes([volume_id])[0]
+        if volume.status == 'in-use' and force:
+            # Unattach
+            volume.detach()
+
+            for i in range(0, 10):
+                time.sleep(5)
+
+                if volume.status == 'available':
+                    break
+
+        if volume.status == 'available':
+            self.ec2_connection.delete_volume(volume_id)
 
 
 class CancelledException(Exception):

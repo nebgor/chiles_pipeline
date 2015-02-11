@@ -41,6 +41,16 @@ from fabric.utils import fastprint, puts
 from settings_file import USERNAME, AWS_KEY, PIP_PACKAGES
 
 
+FREQUENCY_GROUPS = [
+    [1400, 1404],
+    [1404, 1408],
+    [1408, 1412],
+    [1412, 1416],
+    [1416, 1420],
+    [1420, 1424],
+]
+
+
 def get_logger(level=multiprocessing.SUBDEBUG):
     logger = multiprocessing.get_logger()
     formatter = logging.Formatter('[%(processName)s]:%(asctime)-15s:%(levelname)s:%(module)s:%(message)s')

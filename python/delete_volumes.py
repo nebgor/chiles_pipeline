@@ -25,3 +25,25 @@
 """
 Use boto to delete a volume
 """
+import argparse
+from ec2_helper import EC2Helper
+
+
+def delete_volumes(volume_ids, force, aws_access_key_id=None, aws_secret_access_key=None):
+    ec2_helper = EC2Helper(aws_access_key_id, aws_secret_access_key)
+    for volume_id in volume_ids:
+        ec2_helper.delete_volume(volume_id, force=force)
+
+
+def main():
+    parser = argparse.ArgumentParser('Delete a volume')
+    parser.add_argument('-f', '--force', action="store_true", help='force the delete')
+    parser.add_argument('--aws_access_key_id', help='your aws_access_key_id')
+    parser.add_argument('--aws_secret_access_key', help='your aws_secret_access_key')
+    parser.add_argument('volume_ids', nargs='+', help='the volume ids')
+
+    args = vars(parser.parse_args())
+    delete_volumes(args['volume_ids'], args['force'], args['aws_access_key_id'], args['aws_secret_access_key'])
+
+if __name__ == "__main__":
+    main()

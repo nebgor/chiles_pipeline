@@ -32,7 +32,7 @@ import getpass
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
+from common import make_safe_filename, get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER, FREQUENCY_GROUPS
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL
 from ec2_helper import EC2Helper
 
@@ -44,7 +44,7 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, ami_id, user_data, instance_type, observation_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone):
+    def __init__(self, ami_id, user_data, instance_type, observation_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
@@ -56,6 +56,7 @@ class Task(object):
         self._aws_access_key_id = aws_access_key_id
         self._aws_secret_access_key = aws_secret_access_key
         self._zone = zone
+        self._frequency_groups = frequency_groups
 
     def __call__(self):
         """
@@ -65,7 +66,7 @@ class Task(object):
         ec2_helper = EC2Helper(self._aws_access_key_id, self._aws_secret_access_key)
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone)
         LOGGER.info('observation_id: {0}, volume_name: {1}'.format(self._observation_id, snapshot_name))
-        user_data_mime = self.get_mime_encoded_user_data(self._user_data, snapshot_name, self._observation_id, volume.id)
+        user_data_mime = self.get_mime_encoded_user_data(self._user_data, snapshot_name, self._observation_id, volume.id, self._frequency_groups)
 
         if self._spot_price is not None:
             ec2_instance = ec2_helper.run_spot_instance(
@@ -91,7 +92,7 @@ class Task(object):
         setup_aws_machine(ec2_instance.ip_address, self._aws_access_key_id, self._aws_secret_access_key)
 
     @staticmethod
-    def get_mime_encoded_user_data(data, volume_name, observation_id, volume_id):
+    def get_mime_encoded_user_data(data, volume_name, observation_id, volume_id, frequency_groups):
         """
         AWS allows for a multipart m
         """
@@ -105,6 +106,32 @@ class Task(object):
         return user_data.as_string()
 
 
+def get_frequency_groups(pairs_per_group):
+    """
+    >>> get_frequency_groups(1)
+    [[[1400, 1404]], [[1404, 1408]], [[1408, 1412]], [[1412, 1416]], [[1416, 1420]], [[1420, 1424]]]
+    >>> get_frequency_groups(2)
+    [[[1400, 1404], [1404, 1408]], [[1408, 1412], [1412, 1416]], [[1416, 1420], [1420, 1424]]]
+    >>> get_frequency_groups(3)
+    [[[1400, 1404], [1404, 1408], [1408, 1412]], [[1412, 1416], [1416, 1420], [1420, 1424]]]
+    """
+    frequency_groups = []
+    frequency_group = []
+    counter = 0
+    for frequency_pair in FREQUENCY_GROUPS:
+        frequency_group.append(frequency_pair)
+        counter += 1
+        if counter == pairs_per_group:
+            frequency_groups.append(frequency_group)
+            counter = 0
+            frequency_group = []
+
+    if len(frequency_group) > 0:
+        frequency_groups.append(frequency_group)
+
+    return frequency_groups
+
+
 def start_servers(processes, ami_id, user_data, instance_type, observation_id, snapshot_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
@@ -115,7 +142,7 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, s
         consumer.start()
 
     for snapshot_id in snapshot_ids:
-        for spectral_bands in SPECTRAL_BANDS:
+        for frequency_groups in get_frequency_groups(1):
             tasks.put(
                 Task(
                     ami_id,
@@ -128,7 +155,8 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, s
                     spot_price,
                     aws_access_key_id,
                     aws_secret_access_key,
-                    zone))
+                    zone,
+                    frequency_groups))
 
         # Add a poison pill to shut things down
     for x in range(processes):
