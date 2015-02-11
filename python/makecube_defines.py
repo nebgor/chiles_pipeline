@@ -377,13 +377,13 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
         # as precaution make a backup copy of the split vis files
         # very often when casa crashes, the original file becomes corrupted ...
 
-        if (not debug and bkp_split):
+        if not debug and bkp_split:
             os.system('cp -r ' + outfile + ' '  + backupfile)
 
     done_01_f = createSplitDoneMarker(casa_workdir, run_id, obsId)
-    if (debug):
+    if debug:
         print '\nJob %d: Creating done_01_f: %s' % (job_id, done_01_f)
-    open(done_01_f, 'a').close() #create the file marking the completion of splitting of this obs
+    open(done_01_f, 'a').close() # create the file marking the completion of splitting of this obs
     return
 
 debug = int(os.getenv('CH_MODE_DEBUG', '0'))
