@@ -13,7 +13,7 @@ print 'test'+INPUT_VIS_SUFFIX
 check_dir(vis_dirs)
 check_dir(vis_bk_dirs)
 
-obs_list = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_list = get_my_obs(obs_dir)
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
 

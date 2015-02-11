@@ -9,14 +9,14 @@ execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 check_dir(out_dir)
 
 
-obs_list, all_obs = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_list = get_my_obs(obs_dir)
 obsId_list = []
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
 
 # Wait on clean ...
 
-if (job_id == 0): # only the first job will do the final concatenation
+if job_id == 0: # only the first job will do the final concatenation
     combineAllCubes(cube_dir,outname,freq_min,freq_max,freq_step,casa_workdir,
                     run_id, debug, timeout = clean_tmout)
 
