@@ -144,10 +144,10 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
                       threshold='0.0mJy',
 #                      phasecenter=['10:01:53.9 02:24:52.0'],
 #                      phasecenter=['10:01:17.3 02:17:24.0'],
-                      imsize=[1024],
-                      cell=['1.5arcsec'],
-#                      imsize=[2048],
+#                      imsize=[256],
 #                      cell=['1.5arcsec'],
+                      imsize=[2048],
+                      cell=['1.0arcsec'],
                       weighting='natural',
                       robust=2.0,
                       usescratch=True)
