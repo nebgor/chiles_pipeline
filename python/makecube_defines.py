@@ -12,7 +12,7 @@ import os.path
 
 execfile('/home/ec2-user/chiles_pipeline/python/freq_map.py')
 
-
+casalog.filter('DEBUGGING')
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
 
 
@@ -290,7 +290,17 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
 
     If spec_window is blank ('') then freq_map is called to define the spw selection
     """
-
+    print '''
+infile      = {0}
+outdir      = {1}
+backup_dir  = {2}
+min_freq    = {3}
+max_freq    = {4}
+step_freq   = {5}
+width_freq  = {6}
+spec_window = {7}
+obsId       = {8}
+'''.format(outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId)
     if not os.path.exists(outdir):
         os.system('mkdir ' + outdir)
     if not os.path.exists(backup_dir):
@@ -326,7 +336,7 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
 
         outfile = outdir + 'vis_' + freq_range
         backupfile = backup_dir + 'vis_' + freq_range
-        if (not debug):
+        if not debug:
             os.system('rm -rf ' + outfile)
             os.system('rm -rf ' + backupfile)
             print 'working on: ' + outfile
