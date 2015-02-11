@@ -8,18 +8,10 @@ import os
 
 execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
-#base_path = os.path.dirname(__file__)
-#sys.path.append(os.path.abspath(base_path))
-#
-#from makecube_defines import *
-
-#check_dir(job_id, vis_dirs)
-#check_dir(job_id, vis_bk_dirs)
-check_dir(job_id, cube_dir)
-#check_dir(job_id, out_dir)
+check_dir(cube_dir)
 
 
-obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_list, all_obs = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
 obsId_list = []
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)

@@ -10,10 +10,10 @@ execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 print 'test'+INPUT_VIS_SUFFIX
 # loop through selected obs and cvel. Uses obId to only do subset of possible
 
-check_dir(job_id, vis_dirs)
-check_dir(job_id, vis_bk_dirs)
+check_dir(vis_dirs)
+check_dir(vis_bk_dirs)
 
-obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_list, all_obs = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
 obsId_list = []
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)

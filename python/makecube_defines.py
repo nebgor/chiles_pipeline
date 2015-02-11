@@ -16,7 +16,7 @@ casalog.filter('DEBUGGING')
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
 
 
-def execCmd(cmd, failonerror = True, okErr = []):
+def execCmd(cmd, failonerror=True, okErr=[]):
     """
     Execute OS command from within Python
     """
@@ -30,7 +30,7 @@ def execCmd(cmd, failonerror = True, okErr = []):
     return re
 
 
-def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
+def get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     """
     Return a tupe
 
@@ -41,6 +41,14 @@ def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     process more than one obs
 
     """
+    print '''
+job_id    = {0}
+obs_dir   = {1}
+obs_first = {2}
+obs_last  = {3}
+num_jobs  = {4}
+'''.format(job_id, obs_dir, obs_first, obs_last, num_jobs)
+
     ret = []
     lsre = execCmd('ls %s' % obs_dir)
     all_obs = lsre[1].split('\n')
@@ -51,21 +59,15 @@ def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     return ret, all_obs[obs_first:obs_last + 1]
 
 
-def check_dir(job_id, this_dir, createOnMissing = True):
+def check_dir(this_dir, createOnMissing=True):
     """
     Return    True if the directory is there
     """
     if not os.path.exists(this_dir):
         if createOnMissing:
-            if 0 == job_id: # only the first job has the permission to create
-                cmd = 'mkdir -p %s' % this_dir
-                execCmd(cmd)
-            else:
-                # wait for up to 100 seconds
-                for i in range(split_tmout):
-                    time.sleep(1)
-                    if os.path.exists(this_dir):
-                        break
+            cmd = 'mkdir -p %s' % this_dir
+            execCmd(cmd)
+
             if not os.path.exists(this_dir):
                 raise Exception('Fail to create directory %s' % this_dir)
             return True
@@ -74,10 +76,12 @@ def check_dir(job_id, this_dir, createOnMissing = True):
     else:
         return True
 
+
 def createCubeDoneMarker(casa_workdir, run_id, freq_range):
     return '%s/%s_cube_%s_done' % (casa_workdir, run_id, freq_range.replace('~', '-'))
 
-def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, num_jobs, debug):
+
+def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id, num_jobs, debug):
     """
     adapted from loop_cube.py with
     (1) extra parameters for job management
@@ -86,7 +90,7 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
     """
 
     if (sel_freq):
-        steps = (max_freq - min_freq) / step_freq # a list of all frequency split
+        steps = (max_freq - min_freq) / step_freq  # a list of all frequency split
         rem = (max_freq - min_freq) % step_freq
         if (rem):
             steps += 1
@@ -151,17 +155,17 @@ def do_cube(in_dirs,cube_dir,min_freq,max_freq,step_freq, width_freq, job_id, nu
             except Exception, clEx:
                 print '*********\nClean exception: %s\n***********' % str(clEx)
 
-
         freq1 = freq1 + (num_jobs * step_freq)
         freq2 = freq2 + (num_jobs * step_freq)
 
         done_02_f = createCubeDoneMarker(casa_workdir, run_id, freq_range)
         if (debug):
             print 'Job %d: Creating done_02_f: %s' % (job_id, done_02_f)
-        open(done_02_f, 'a').close() # create the file marking the completion of this freq range
+        open(done_02_f, 'a').close()  # create the file marking the completion of this freq range
     return
 
-def combineAllCubes(cube_dir,outname,min_freq,max_freq,step_freq,casa_workdir,run_id, debug, timeout = 100):
+
+def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workdir, run_id, debug, timeout=100):
     if (sel_freq):
         steps = (max_freq - min_freq) / step_freq
         rem = (max_freq - min_freq) % step_freq
@@ -197,7 +201,7 @@ def combineAllCubes(cube_dir,outname,min_freq,max_freq,step_freq,casa_workdir,ru
         if (0 == gap):
             break
         else:
-            if (j % 60 == 0): # report every one minute
+            if (j % 60 == 0):  # report every one minute
                 print 'Still need %d freq to be cubed' % gap
             time.sleep(1)
 
@@ -228,32 +232,34 @@ def combineAllCubes(cube_dir,outname,min_freq,max_freq,step_freq,casa_workdir,ru
         subcube = outfile + '.image'
         if (not debug):
             if os.path.isdir(subcube) == True:
-                #cube_names = np.append(cube_names,subcube)
+                # cube_names = np.append(cube_names,subcube)
                 # cube_names = cube_names + [subcube]
                 cube_names.append(subcube)
             else:
                 print 'WARNING, subcube is missing : ' + subcube
         else:
-            #cube_names = cube_names + [subcube]
+            # cube_names = cube_names + [subcube]
             cube_names.append(subcube)
 
     if (debug):
         print '\nJob %d: Concatenating all cubes...\n\tia.imageconcat(infiles=%s,outfile=%s,relax=T)' % (job_id, str(cube_names), outname)
     else:
         print 'Start concatenating %s' % str(cube_names)
-        final=ia.imageconcat(infiles=cube_names,outfile=outname,relax=T)
+        final = ia.imageconcat(infiles=cube_names, outfile=outname, relax=T)
         final.done()
 
     return
 
+
 def createSplitDoneMarker(casa_workdir, run_id, obsId):
     return '%s/%s__%s__split_done' % (casa_workdir, run_id, obsId)
 
-def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = 100):
+
+def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout=100):
     """
     """
     print 'Waiting for all obs split to be completed....'
-    done_obs = {} #
+    done_obs = {}  #
     for i in range(timeout):
         for obs in all_obs:
             infile_dir = '%s/%s' % (obs_dir, obs)
@@ -267,7 +273,7 @@ def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = 100)
         if (0 == gap):
             break
         else:
-            if (i % 60 == 0): # report every one minute
+            if (i % 60 == 0):  # report every one minute
                 print 'Still need %d obs to be split' % gap
             time.sleep(1)
 
@@ -329,10 +335,10 @@ obsId       = {8}
 
         # If no spw is given then calculate from the max and min range
         if spec_window == '':
-            spw_range = freq_map(freq1,freq2)
+            spw_range = freq_map(freq1, freq2)
 
-        no_chan=int(step_freq*1000.0/width_freq)  # MHz/kHz!!
-# I think I always want this with cvel.
+        no_chan = int(step_freq * 1000.0 / width_freq)  # MHz/kHz!!
+        # I think I always want this with cvel.
 
         outfile = outdir + 'vis_' + freq_range
         backupfile = backup_dir + 'vis_' + freq_range
@@ -351,8 +357,8 @@ obsId       = {8}
                     outframe='lsrk',
                     interpolation='linear',
                     veltype='radio',
-                    start=str(freq1)+'MHz',
-                    width=str(width_freq)+'kHz',
+                    start=str(freq1) + 'MHz',
+                    width=str(width_freq) + 'kHz',
                     spw=spw_range,
                     combinespws=True,
                     nspw=1,
@@ -360,7 +366,7 @@ obsId       = {8}
                     datacolumn="data")
 
                 # cvel(vis=infile,
-                #       outputvis=outfile,
+                # outputvis=outfile,
                 #       restfreq='1420.405752MHz',
                 #       mode='frequency',
                 #       nchan=no_chan,
@@ -373,8 +379,8 @@ obsId       = {8}
             except Exception, spEx:
                 print '*********\nSplit exception: %s\n***********' % str(spEx)
         else:
-            msg = "\ncvel(vis=%s,\noutputvis=%s,\nstart=%s,width=%s,spw=%s,nchan=%d)"\
-            % (infile, outfile, str(freq1)+'MHz', width_freq, spw_range,no_chan)
+            msg = "\ncvel(vis=%s,\noutputvis=%s,\nstart=%s,width=%s,spw=%s,nchan=%d)" \
+                  % (infile, outfile, str(freq1) + 'MHz', width_freq, spw_range, no_chan)
             print msg
 
         freq1 = freq1 + step_freq
@@ -384,13 +390,14 @@ obsId       = {8}
         # very often when casa crashes, the original file becomes corrupted ...
 
         if not debug and bkp_split:
-            os.system('cp -r ' + outfile + ' '  + backupfile)
+            os.system('cp -r ' + outfile + ' ' + backupfile)
 
     done_01_f = createSplitDoneMarker(casa_workdir, run_id, obsId)
     if debug:
         print '\nJob %d: Creating done_01_f: %s' % (job_id, done_01_f)
-    open(done_01_f, 'a').close() # create the file marking the completion of splitting of this obs
+    open(done_01_f, 'a').close()  # create the file marking the completion of splitting of this obs
     return
+
 
 debug = int(os.getenv('CH_MODE_DEBUG', '0'))
 null_str = 'N/A'

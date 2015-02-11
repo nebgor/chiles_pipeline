@@ -1,6 +1,6 @@
-export CH_JOB_ID=101
-export CH_RUN_ID=102
-export CH_NUM_JOB=103
+export CH_JOB_ID=0
+export CH_RUN_ID=0
+export CH_NUM_JOB=0
 
 # target field
 export CH_TARGET_FIELD='deepfield'
@@ -58,4 +58,3 @@ export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 # run casapy
 casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 #done
-

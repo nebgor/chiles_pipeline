@@ -6,10 +6,10 @@ This module should run together with the casapy: e.g. casapy --logfile casapy.lo
 
 execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
 
-check_dir(job_id, out_dir)
+check_dir(out_dir)
 
 
-obs_list, all_obs = getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs)
+obs_list, all_obs = get_my_obs(job_id, obs_dir, obs_first, obs_last, num_jobs)
 obsId_list = []
 
 print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
