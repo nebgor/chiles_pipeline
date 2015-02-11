@@ -34,7 +34,7 @@
 # |  | |  |\   |       |  |  |  | |  |____ |  |\  \----.|  |____ |__|
 # |__| |__| \__|       |__|  |__| |_______|| _| `._____||_______|(__)
 #
-ami_id = "ami-b5b4c38f"
+ami_id = "ami-8baed9b1"
 subnet_id = "subnet-9d8a72ea"
 key_name = "aws-chiles-sydney"
 security_groups = "sg-e5369a80", "sg-f2369a97"

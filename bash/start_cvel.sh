@@ -77,12 +77,8 @@ mkdir -p $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
 cd $CH_CASA_WORK_DIR/${PBS_JOBID}-${PBS_ARRAYID}
 
 # point to casapy installation
-#CH_CASA_SOURCE=/mnt/gleam/software/casapy-42.0.28322-021-1-64b
-#CH_CASA_SOURCE=/home/apopping/Software/casapy-42.1.29047-001-1-64b
-#CH_CASA_SOURCE=/home/apopping/Software/casapy-41.0.24668-001-64b-2
-#CH_CASA_SOURCE=/home/rdodson/Software/Casa/casapy-42.1.29047-001-1-64b
-# run casapy
 export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
+# run casapy
 casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 #done
 

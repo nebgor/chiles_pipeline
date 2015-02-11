@@ -28,6 +28,7 @@ def execCmd(cmd, failonerror = True, okErr = []):
             print errMsg
     return re
 
+
 def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     """
     Return a tupe
@@ -53,8 +54,8 @@ def checkDir(job_id, this_dir, createOnMissing = True):
     """
     Return    True if the directory is there
     """
-    if (not os.path.exists(this_dir)):
-        if (createOnMissing):
+    if not os.path.exists(this_dir):
+        if createOnMissing:
             if (0 == job_id): #only the first job has the permission to create
                 cmd = 'mkdir -p %s' % this_dir
                 execCmd(cmd)
@@ -62,9 +63,9 @@ def checkDir(job_id, this_dir, createOnMissing = True):
                 #wait for up to 100 seconds
                 for i in range(split_tmout):
                     time.sleep(1)
-                    if (os.path.exists(this_dir)):
+                    if os.path.exists(this_dir):
                         break
-            if (not os.path.exists(this_dir)):
+            if not os.path.exists(this_dir):
                 raise Exception('Fail to create directory %s' % this_dir)
             return True
         else:
@@ -320,9 +321,9 @@ def do_cvel(infile,outdir,backup_dir,min_freq,max_freq,step_freq,width_freq,spec
             spw_range = spec_window
 
         # If no spw is given then calculate from the max and min range
-        if (spec_window == ''): 
+        if (spec_window == ''):
             spw_range = freq_map(freq1,freq2)
-        
+
         no_chan=int(step_freq*1000.0/width_freq)  # MHz/kHz!!
 # I think I always want this with cvel.
 

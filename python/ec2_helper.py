@@ -155,6 +155,7 @@ class EC2Helper:
             time.sleep(5)
 
         if volume_id:
+            LOGGER.info('Attaching {0}'.format(volume_id))
             # When we have an instance id we can attach the volume
             self.ec2_connection.attach_volume(volume_id, instance_id, '/dev/xvdf')
 

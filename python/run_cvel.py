@@ -44,7 +44,10 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, ami_id, user_data, instance_type, observation_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups):
+    def __init__(
+            self,
+            ami_id,
+            user_data, instance_type, observation_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
@@ -57,6 +60,7 @@ class Task(object):
         self._aws_secret_access_key = aws_secret_access_key
         self._zone = zone
         self._frequency_groups = frequency_groups
+        self._counter = counter
 
     def __call__(self):
         """
@@ -76,7 +80,7 @@ class Task(object):
                 self._instance_type,
                 volume.id,
                 self._created_by,
-                self._name + '- {0}'.format(snapshot_name),
+                '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
                 ephemeral=True)
         else:
             ec2_instance = ec2_helper.run_instance(
@@ -85,7 +89,7 @@ class Task(object):
                 self._instance_type,
                 volume.id,
                 self._created_by,
-                self._name + '- {0}'.format(snapshot_name),
+                '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
                 ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
@@ -141,8 +145,9 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, s
         consumer = Consumer(tasks)
         consumer.start()
 
+    counter = 1
     for snapshot_id in snapshot_ids:
-        for frequency_groups in get_frequency_groups(1):
+        for frequency_groups in get_frequency_groups(6):
             tasks.put(
                 Task(
                     ami_id,
@@ -156,7 +161,9 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, s
                     aws_access_key_id,
                     aws_secret_access_key,
                     zone,
-                    frequency_groups))
+                    frequency_groups,
+                    counter))
+            counter += 1
 
         # Add a poison pill to shut things down
     for x in range(processes):
