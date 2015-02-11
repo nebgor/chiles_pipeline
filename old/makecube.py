@@ -41,21 +41,15 @@ def getMyObs(job_id, obs_dir, obs_first, obs_last, num_jobs):
     return ret, all_obs[obs_first:obs_last + 1]
 
 
-def check_dir(job_id, this_dir, createOnMissing = True):
+def check_dir(this_dir, createOnMissing = True):
     """
     Return    True if the directory is there
     """
     if not os.path.exists(this_dir):
         if createOnMissing:
-            if (0 == job_id): #only the first job has the permission to create
-                cmd = 'mkdir -p %s' % this_dir
-                execCmd(cmd)
-            else:
-                #wait for up to 100 seconds
-                for i in range(split_tmout):
-                    time.sleep(1)
-                    if os.path.exists(this_dir):
-                        break
+            cmd = 'mkdir -p %s' % this_dir
+            execCmd(cmd)
+
             if not os.path.exists(this_dir):
                 raise Exception('Fail to create directory %s' % this_dir)
             return True
@@ -387,10 +381,10 @@ sel_freq = int(os.getenv('CH_SLCT_FREQ', '1'))
 cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/%s/' % run_id
 out_dir = os.getenv('CH_OUT_DIR', null_str) + '/%s/' % run_id
 
-check_dir(job_id, vis_dirs)
-check_dir(job_id, vis_bk_dirs)
-check_dir(job_id, cube_dir)
-check_dir(job_id, out_dir)
+check_dir(vis_dirs)
+check_dir(vis_bk_dirs)
+check_dir(cube_dir)
+check_dir(out_dir)
 
 # '/mnt/hidata/chiles/cubes/comb_1255~1280.image'
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)

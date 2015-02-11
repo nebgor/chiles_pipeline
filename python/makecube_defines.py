@@ -59,12 +59,12 @@ num_jobs  = {4}
     return ret, all_obs[obs_first:obs_last + 1]
 
 
-def check_dir(this_dir, createOnMissing=True):
+def check_dir(this_dir, create_on_missing=True):
     """
     Return    True if the directory is there
     """
     if not os.path.exists(this_dir):
-        if createOnMissing:
+        if create_on_missing:
             cmd = 'mkdir -p %s' % this_dir
             execCmd(cmd)
 
