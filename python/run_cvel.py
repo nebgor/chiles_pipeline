@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -32,8 +32,8 @@ import getpass
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS
+from common import get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS
 from ec2_helper import EC2Helper
 
 
@@ -44,11 +44,11 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, ami_id, user_data, instance_type, date, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
+    def __init__(self, ami_id, user_data, instance_type, obs_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
-        self._date = date
+        self._obs_id = obs_id
         self._snapshot_id = snapshot_id
         self._created_by = created_by
         self._name = name
@@ -66,7 +66,7 @@ class Task(object):
         # Get the name of the volume
         ec2_helper = EC2Helper(self._aws_access_key_id, self._aws_secret_access_key)
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone)
-        LOGGER.info('date: {0}, volume_name: {1}'.format(self._date, snapshot_name))
+        LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
         user_data_mime = self.get_mime_encoded_user_data(self._user_data, volume.id)
 
         if self._spot_price is not None:
@@ -103,7 +103,7 @@ class Task(object):
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
 
-        data_formatted = data.format(cvel_pipeline, self._date, volume_id)
+        data_formatted = data.format(cvel_pipeline, self._obs_id, volume_id)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(data_formatted))
         return user_data.as_string()
@@ -144,7 +144,7 @@ def get_frequency_groups(pairs_per_group):
     return frequency_groups
 
 
-def start_servers(processes, ami_id, user_data, instance_type, date, snapshot_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
+def start_servers(processes, ami_id, user_data, instance_type, obs_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -154,24 +154,29 @@ def start_servers(processes, ami_id, user_data, instance_type, date, snapshot_id
         consumer.start()
 
     counter = 1
-    for snapshot_id in snapshot_ids:
-        for frequency_groups in get_frequency_groups(6):
-            tasks.put(
-                Task(
-                    ami_id,
-                    user_data,
-                    instance_type,
-                    date,
-                    snapshot_id,
-                    created_by,
-                    name,
-                    spot_price,
-                    aws_access_key_id,
-                    aws_secret_access_key,
-                    zone,
-                    frequency_groups,
-                    counter))
-            counter += 1
+
+    for obs_id in obs_ids:
+        snapshot_id = OBS_IDS.get(obs_id)
+        if snapshot_id is None:
+            LOGGER.warning('The obs-id: {0} does not exist in the settings file')
+        else:
+            for frequency_groups in get_frequency_groups(6):
+                tasks.put(
+                    Task(
+                        ami_id,
+                        user_data,
+                        instance_type,
+                        obs_id,
+                        snapshot_id,
+                        created_by,
+                        name,
+                        spot_price,
+                        aws_access_key_id,
+                        aws_secret_access_key,
+                        zone,
+                        frequency_groups,
+                        counter))
+                counter += 1
 
         # Add a poison pill to shut things down
     for x in range(processes):
@@ -187,11 +192,12 @@ def check_args(args):
     """
     map_args = {}
 
-    if args['date'] is None:
+    if args['obs_ids'] is None:
         return None
-
-    if args['snap_ids'] is None:
-        return None
+    elif len(args['obs_ids']) == 1 and args['obs_ids'][0] == '*':
+        map_args['obs_ids'] = OBS_IDS
+    else:
+        map_args['obs_ids'] = args['obs_ids']
 
     if args['instance_type'] is None:
         return None
@@ -221,8 +227,7 @@ def main():
     parser.add_argument('aws_access_key_id', help='your aws_access_key_id')
     parser.add_argument('aws_secret_access_key', help='your aws_secret_access_key')
     # parser.add_argument('zone', help='the zone you want to run this in')
-    parser.add_argument('date', help='the date of the observation')
-    parser.add_argument('snap_ids', nargs='+', help='the snapshot ids to use')
+    parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
     args = vars(parser.parse_args())
 
@@ -235,8 +240,7 @@ def main():
             corrected_args['ami_id'],
             corrected_args['user_data'],
             args['instance_type'],
-            make_safe_filename(args['date']),
-            args['snap_ids'],
+            corrected_args['obs_ids'],
             corrected_args['created_by'],
             args['name'],
             corrected_args['spot_price'],
@@ -245,5 +249,5 @@ def main():
             'ap-southeast-2a')
 
 if __name__ == "__main__":
-    # -i r3.xlarge -n "Kevin cvel test" -s 0.10 aws_access_key_id aws_secret_access_key obs-1 snap-e19ba8f7
+    # -i r3.xlarge -n "Kevin cvel test" -s 0.10 aws_access_key_id aws_secret_access_key 20131025_951_4 20131031_951_4
     main()

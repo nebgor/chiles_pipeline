@@ -71,3 +71,5 @@ if exists(config_file_name):
     BASH_SCRIPT_CVEL = config['bash_script_cvel']
     BASH_SCRIPT_CLEAN = config['bash_script_clean']
     BASH_SCRIPT_MAKECUBE = config['bash_script_makecube']
+
+    OBS_IDS = config['obs_ids']
