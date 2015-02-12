@@ -38,12 +38,12 @@ done
 {0}
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 3 {1}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 2 {1}'
 
 # Unattach the volume and delete it
 umount /dev/xvdf
 sleep 10
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volume {2}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volumes.py {2}'
 
 # Terminate
 #shutdown -h now

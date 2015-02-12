@@ -32,7 +32,7 @@ from ec2_helper import EC2Helper
 def delete_volumes(volume_ids, force, aws_access_key_id=None, aws_secret_access_key=None):
     ec2_helper = EC2Helper(aws_access_key_id, aws_secret_access_key)
     for volume_id in volume_ids:
-        ec2_helper.delete_volume(volume_id, force=force)
+        ec2_helper.delete_volume(volume_id)
 
 
 def main():

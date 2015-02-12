@@ -191,18 +191,23 @@ class EC2Helper:
 
         return volume, snapshot_name
 
-    def delete_volume(self, volume_id, force):
+    def delete_volume(self, volume_id):
         volume = self.ec2_connection.get_all_volumes([volume_id])[0]
-        if volume.status == 'in-use' and force:
+        LOGGER.info('status = {0}'.format(volume.status))
+        if volume.status == 'in-use':
             # Unattach
             volume.detach()
 
             for i in range(0, 10):
                 time.sleep(5)
 
+                volume = self.ec2_connection.get_all_volumes([volume_id])[0]
+                LOGGER.info('status = {0}'.format(volume.status))
                 if volume.status == 'available':
                     break
 
+        volume = self.ec2_connection.get_all_volumes([volume_id])[0]
+        LOGGER.info('status = {0}'.format(volume.status))
         if volume.status == 'available':
             self.ec2_connection.delete_volume(volume_id)
 
