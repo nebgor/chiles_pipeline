@@ -102,9 +102,8 @@ class Task(object):
 
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
-        copy_cvel_output = self.build_copy_cvel_output()
 
-        data_formatted = data.format(cvel_pipeline, copy_cvel_output, volume_id)
+        data_formatted = data.format(cvel_pipeline, self._date, volume_id)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(data_formatted))
         return user_data.as_string()
@@ -113,17 +112,8 @@ class Task(object):
         return_string = ''
         for frequnecy_pairs in self._frequency_groups:
             return_string += '''
-# runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} {1}'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} {1}'
 '''.format(frequnecy_pairs[0], frequnecy_pairs[1])
-
-        return return_string
-
-    def build_copy_cvel_output(self):
-        return_string = ''
-        for frequnecy_pairs in self._frequency_groups:
-            return_string += '''
-# runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 3 {0} {1} {2}'
-'''.format(self._date, frequnecy_pairs[0], frequnecy_pairs[1])
 
         return return_string
 

@@ -29,7 +29,7 @@ import argparse
 import fnmatch
 import multiprocessing
 import os
-from os.path import isdir, join
+from os.path import join
 import sys
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
@@ -54,6 +54,7 @@ class Task(object):
         """
         Actually run the job
         """
+        # noinspection PyBroadException
         try:
             make_tarfile(self._output_tar_filename, self._directory_frequency_full)
 
@@ -70,7 +71,7 @@ class Task(object):
             LOGGER.exception('Task died')
 
 
-def copy_files(date, min_freq, max_freq, processes):
+def copy_files(date, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
     # Start the consumers
@@ -90,9 +91,9 @@ def copy_files(date, min_freq, max_freq, processes):
 
             s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
-                '/CVEL/{0}/{1}/log/chiles-output.log'.format(date, ),
+                'CVEL-logs/{0}/{1}/log/chiles-output.log'.format(date, match),
                 '/var/log/chiles-output.log')
-    #s3_helper.add_file_to_bucket(
+    # s3_helper.add_file_to_bucket(
     #    CHILES_BUCKET_NAME,
     #    observation_id + '/CVEL/' + directory_day + '/log/casapy.log',
     #    join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
@@ -108,16 +109,12 @@ def copy_files(date, min_freq, max_freq, processes):
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
     parser.add_argument('date', help='the date of the observation')
-    parser.add_argument('min_freq', help='the minimum frequency of the split')
-    parser.add_argument('max_freq', help='the maximum frequency of the split')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
     date = make_safe_filename(args['date'])
-    min_freq = make_safe_filename(args['min_freq'])
-    max_freq = make_safe_filename(args['max_freq'])
     processes = args['processes']
 
-    copy_files(date, min_freq, max_freq, processes)
+    copy_files(date, processes)
 
 if __name__ == "__main__":
     main()
