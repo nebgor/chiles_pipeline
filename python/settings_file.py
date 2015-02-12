@@ -32,6 +32,7 @@ CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 CHILES_CLEAN_OUTPUT = '/mnt/output/Chiles/split_cubes'
 CHILES_IMGCONCAT_OUTPUT = '/mnt/output/Chiles'
 CHILES_BUCKET_NAME = 'chiles.output.icrar.org'
+CHILES_LOGS = '/home/ec2-user/Chiles/casa_work_dir'
 
 AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
 PIP_PACKAGES = 'fabric configobj boto'

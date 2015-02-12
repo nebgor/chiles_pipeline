@@ -33,7 +33,7 @@ from os.path import join
 import sys
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
-from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
+from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME, CHILES_LOGS
 from s3_helper import S3Helper
 
 
@@ -89,14 +89,13 @@ def copy_files(date, processes):
             output_tar_filename = join(root, match + '.tar.gz')
             queue.put(Task(output_tar_filename, match, date, result_dir))
 
+    for root, dir_names, filenames in os.walk(CHILES_LOGS):
+        for match in fnmatch.filter(filenames, '*.log'):
+            LOGGER.info('Looking at: {0}'.format(join(root, match)))
             s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
-                'CVEL-logs/{0}/{1}/log/chiles-output.log'.format(date, match),
-                '/var/log/chiles-output.log')
-    # s3_helper.add_file_to_bucket(
-    #    CHILES_BUCKET_NAME,
-    #    observation_id + '/CVEL/' + directory_day + '/log/casapy.log',
-    #    join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
+                'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match),
+                join(root, match))
 
     # Add a poison pill to shut things down
     for x in range(processes):
