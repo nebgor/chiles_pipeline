@@ -41,9 +41,9 @@ done
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 3 {1}'
 
 # Unattach the volume and delete it
-#umount /dev/xvdf
-#sleep 10
-#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volume {2}'
+umount /dev/xvdf
+sleep 10
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volume {2}'
 
 # Terminate
 #shutdown -h now

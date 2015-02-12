@@ -99,10 +99,6 @@ def copy_files(date, processes):
 
     # Look in the output directory
     for root, dir_names, filenames in os.walk(CHILES_CVEL_OUTPUT):
-        LOGGER.info('''
-root      = {0}
-dir_names = {1}
-filenames = {2}'''.format(root, dir_names, filenames))
         for match in fnmatch.filter(dir_names, 'vis_*'):
             result_dir = join(root, match)
             LOGGER.info('Looking at: {0}'.format(result_dir))

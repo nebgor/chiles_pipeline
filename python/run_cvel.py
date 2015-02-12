@@ -155,7 +155,7 @@ def start_servers(processes, ami_id, user_data, instance_type, date, snapshot_id
 
     counter = 1
     for snapshot_id in snapshot_ids:
-        for frequency_groups in get_frequency_groups(3):
+        for frequency_groups in get_frequency_groups(6):
             tasks.put(
                 Task(
                     ami_id,
