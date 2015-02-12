@@ -13,6 +13,10 @@ def freq_map(low_req,hi_req):
 
     >>> freq_map(1360,1400)
     '13~14'
+
+    >>> freq_map(1400,1412)
+    '14~14'
+
     """
 
     # SpwID  Name           #Chans   Frame   Ch0(MHz)   Ch0(MHz)   Ch0(MHz)ChanWid(kHz)  TotBW(kHz) BBC Num  Corrs
@@ -37,7 +41,7 @@ def freq_map(low_req,hi_req):
     if_low=-1
     if_hi=-1
 
-    for nif_low in range(0,15):
+    for nif_low in range(0,16):
         f=f_tab[nif_low]
         #print nif_low,f
         if (int(f[0])>(int(low_req)-1)):
