@@ -40,7 +40,7 @@ from s3_helper import S3Helper
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task(object):
+class Task1(object):
     """
     The actual task
     """
@@ -68,7 +68,25 @@ class Task(object):
             # Clean up
             os.remove(self._output_tar_filename)
         except Exception:
-            LOGGER.exception('Task died')
+            LOGGER.exception('Task1 died')
+
+
+class Task2(object):
+    def __init__(self, filename, bucket_location):
+        self._filename = filename
+        self._bucket_location = bucket_location
+
+    def __call__(self):
+        # noinspection PyBroadException
+        try:
+            LOGGER.info('Copying {0} to s3{1}'.format(self._filename, self._bucket_location))
+            s3_helper = S3Helper()
+            s3_helper.add_file_to_bucket(
+                CHILES_BUCKET_NAME,
+                self._bucket_location,
+                self._filename)
+        except Exception:
+            LOGGER.exception('Task1 died')
 
 
 def copy_files(date, processes):
@@ -78,24 +96,24 @@ def copy_files(date, processes):
     for x in range(processes):
         consumer = Consumer(queue)
         consumer.start()
-    s3_helper = S3Helper()
 
     # Look in the output directory
     for root, dir_names, filenames in os.walk(CHILES_CVEL_OUTPUT):
+        LOGGER.info('''
+root      = {0}
+dir_names = {1}
+filenames = {2}'''.format(root, dir_names, filenames))
         for match in fnmatch.filter(dir_names, 'vis_*'):
             result_dir = join(root, match)
             LOGGER.info('Looking at: {0}'.format(result_dir))
 
             output_tar_filename = join(root, match + '.tar.gz')
-            queue.put(Task(output_tar_filename, match, date, result_dir))
+            queue.put(Task1(output_tar_filename, match, date, result_dir))
 
     for root, dir_names, filenames in os.walk(CHILES_LOGS):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
-            s3_helper.add_file_to_bucket(
-                CHILES_BUCKET_NAME,
-                'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match),
-                join(root, match))
+            queue.put(Task2(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
