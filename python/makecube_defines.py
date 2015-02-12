@@ -10,6 +10,8 @@ import commands
 import time
 import os.path
 from freq_map import freq_map
+from taskinit import casalog
+from mstransform import mstransform
 
 
 casalog.filter('DEBUGGING')
@@ -22,11 +24,11 @@ def execCmd(cmd, failonerror=True, okErr=[]):
     """
     re = commands.getstatusoutput(cmd)
     if re[0] != 0 and not (re[0] in okErr):
-        errMsg = 'Fail to execute command: "%s". Exception: %s' % (cmd, re[1])
+        errmsg = 'Fail to execute command: "%s". Exception: %s' % (cmd, re[1])
         if failonerror:
-            raise Exception(errMsg)
+            raise Exception(errmsg)
         else:
-            print errMsg
+            print errmsg
     return re
 
 
@@ -66,10 +68,10 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
     (3) deal with (max_freq - min_freq) % width_freq > 0
     """
 
-    if (sel_freq):
+    if sel_freq:
         steps = (max_freq - min_freq) / step_freq  # a list of all frequency split
         rem = (max_freq - min_freq) % step_freq
-        if (rem):
+        if rem:
             steps += 1
 
         freq1 = min_freq + job_id * step_freq
@@ -94,7 +96,7 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
             if not debug:
                 print workfile
                 print os.path.isdir(workfile)
-                if os.path.isdir(workfile) == True:
+                if os.path.isdir(workfile):
                     # make a visfile with all the directories
                     in_files = in_files + [in_dirs[j] + 'vis_' + freq_range]
                 else:
@@ -102,11 +104,10 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
             else:
                 in_files = in_files + [in_dirs[j] + 'vis_' + freq_range]
 
-
         # print 'working on: ' + outfile
         # print 'input visibilities:', in_files
         # print 'input visibilities:', in_files
-        if (debug):
+        if debug:
             print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_files), outfile)
         else:
             print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_files), outfile)
@@ -136,14 +137,14 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
         freq2 = freq2 + (num_jobs * step_freq)
 
         done_02_f = create_cube_done_marker(casa_workdir, run_id, freq_range)
-        if (debug):
+        if debug:
             print 'Job %d: Creating done_02_f: %s' % (job_id, done_02_f)
         open(done_02_f, 'a').close()  # create the file marking the completion of this freq range
     return
 
 
 def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workdir, run_id, debug, timeout=100):
-    if (sel_freq):
+    if sel_freq:
         steps = (max_freq - min_freq) / step_freq
         rem = (max_freq - min_freq) % step_freq
         if (rem):
@@ -208,7 +209,7 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
 
         subcube = outfile + '.image'
         if not debug:
-            if os.path.isdir(subcube) == True:
+            if os.path.isdir(subcube):
                 # cube_names = np.append(cube_names,subcube)
                 # cube_names = cube_names + [subcube]
                 cube_names.append(subcube)
@@ -327,7 +328,7 @@ obsId       = {8}
                 mstransform(
                     vis=infile,
                     outputvis=outfile,
-                    regridms=T,
+                    regridms=True,
                     restfreq='1420.405752MHz',
                     mode='frequency',
                     nchan=no_chan,
@@ -412,4 +413,3 @@ cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/'
 out_dir = os.getenv('CH_OUT_DIR', null_str) + '/'
 
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
-

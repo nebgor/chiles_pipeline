@@ -26,6 +26,7 @@
 Copy the CVEL output files to S3
 """
 import argparse
+import fnmatch
 import multiprocessing
 import os
 from os.path import isdir, join
@@ -43,12 +44,11 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day):
+    def __init__(self, output_tar_filename, frequency_band, date, directory_frequency_full):
         self._output_tar_filename = output_tar_filename
+        self._frequency_band = frequency_band
+        self._date = date
         self._directory_frequency_full = directory_frequency_full
-        self._observation_id = observation_id
-        self._directory_frequency = directory_frequency
-        self._directory_day = directory_day
 
     def __call__(self):
         """
@@ -61,7 +61,7 @@ class Task(object):
             s3_helper = S3Helper()
             s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
-                self._observation_id + '/CVEL/' + self._directory_frequency + '/' + self._directory_day + '/data.tar.gz',
+                'CVEL/{0}/{1}/data.tar.gz'.format(self._frequency_band, self._date),
                 self._output_tar_filename)
 
             # Clean up
@@ -70,7 +70,7 @@ class Task(object):
             LOGGER.exception('Task died')
 
 
-def copy_files(observation_id, processes):
+def copy_files(date, min_freq, max_freq, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
     # Start the consumers
@@ -80,25 +80,22 @@ def copy_files(observation_id, processes):
     s3_helper = S3Helper()
 
     # Look in the output directory
-    for directory_day in os.listdir(CHILES_CVEL_OUTPUT):
-        if isdir(join(CHILES_CVEL_OUTPUT, directory_day)):
-            path_frequency = join(CHILES_CVEL_OUTPUT, directory_day, 'data1')
-            LOGGER.info('path_frequency: {0}'.format(path_frequency))
-            for directory_frequency in os.listdir(path_frequency):
-                directory_frequency_full = join(path_frequency, directory_frequency)
-                if directory_frequency.startswith('vis_') and isdir(directory_frequency_full):
-                    LOGGER.info('directory_frequency: {0}, directory_frequency_full: {1}'.format(directory_frequency, directory_frequency_full))
-                    output_tar_filename = join(path_frequency, directory_frequency + '.tar.gz')
-                    queue.put(Task(output_tar_filename, directory_frequency_full, observation_id, directory_frequency, directory_day))
+    for root, dir_names, filenames in os.walk(CHILES_CVEL_OUTPUT):
+        for match in fnmatch.filter(dir_names, 'vis_*'):
+            result_dir = join(root, match)
+            LOGGER.info('Looking at: {0}'.format(result_dir))
 
-        s3_helper.add_file_to_bucket(
-            CHILES_BUCKET_NAME,
-            observation_id + '/CVEL/' + directory_day + '/log/chiles-output.log',
-            '/var/log/chiles-output.log')
-        s3_helper.add_file_to_bucket(
-            CHILES_BUCKET_NAME,
-            observation_id + '/CVEL/' + directory_day + '/log/casapy.log',
-            join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
+            output_tar_filename = join(root, match + '.tar.gz')
+            queue.put(Task(output_tar_filename, match, date, result_dir))
+
+            s3_helper.add_file_to_bucket(
+                CHILES_BUCKET_NAME,
+                '/CVEL/{0}/{1}/log/chiles-output.log'.format(date, ),
+                '/var/log/chiles-output.log')
+    #s3_helper.add_file_to_bucket(
+    #    CHILES_BUCKET_NAME,
+    #    observation_id + '/CVEL/' + directory_day + '/log/casapy.log',
+    #    join('/home/ec2-user/Chiles/casa_work_dir/{0}-0/casapy.log'.format(directory_day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
@@ -110,13 +107,17 @@ def copy_files(observation_id, processes):
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
-    parser.add_argument('obs_id', help='the observation id')
+    parser.add_argument('date', help='the date of the observation')
+    parser.add_argument('min_freq', help='the minimum frequency of the split')
+    parser.add_argument('max_freq', help='the maximum frequency of the split')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
-    observation_id = make_safe_filename(args['obs_id'])
+    date = make_safe_filename(args['date'])
+    min_freq = make_safe_filename(args['min_freq'])
+    max_freq = make_safe_filename(args['max_freq'])
     processes = args['processes']
 
-    copy_files(observation_id, processes)
+    copy_files(date, min_freq, max_freq, processes)
 
 if __name__ == "__main__":
     main()

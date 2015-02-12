@@ -37,6 +37,15 @@ AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
 PIP_PACKAGES = 'fabric configobj boto'
 USERNAME = 'ec2-user'
 
+FREQUENCY_GROUPS = [
+    [1400, 1404],
+    [1404, 1408],
+    [1408, 1412],
+    [1412, 1416],
+    [1416, 1420],
+    [1420, 1424],
+    ]
+
 AWS_AMI_ID = None
 AWS_KEY_NAME = None
 AWS_SECURITY_GROUPS = None

@@ -32,8 +32,8 @@ import getpass
 import multiprocessing
 import sys
 
-from common import make_safe_filename, get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER, FREQUENCY_GROUPS
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL
+from common import make_safe_filename, get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS
 from ec2_helper import EC2Helper
 
 
