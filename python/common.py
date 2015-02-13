@@ -29,7 +29,7 @@ from contextlib import closing
 from email.mime.text import MIMEText
 import logging
 import multiprocessing
-from os.path import join, dirname, basename
+from os.path import join, dirname, basename, expanduser
 import re
 import tarfile
 import unicodedata
@@ -95,6 +95,14 @@ def make_safe_filename(name):
     return name
 
 
+def get_boto_data():
+    dot_boto = join(expanduser('~'), '.boto')
+    with open(dot_boto, 'r') as my_file:
+        data = my_file.read()
+
+    return data
+
+
 def get_script(file_name):
     """
     Get the script from the bash directory
@@ -131,7 +139,7 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
 ''')
 
 
-def setup_aws_machine(hostname, aws_access_key_id, aws_secret_access_key):
+def setup_aws_machine(hostname):
     LOGGER.info('Waiting for the ssh daemon to start up')
     for i in range(12):
         fastprint('.')
@@ -141,11 +149,8 @@ def setup_aws_machine(hostname, aws_access_key_id, aws_secret_access_key):
         with cd('/home/ec2-user/chiles_pipeline'):
             run('git pull')
         sudo('pip install {0}'.format(PIP_PACKAGES))
-        run('''echo "[Credentials]
-aws_access_key_id = {0}
-aws_secret_access_key = {1}
-
-" > /home/ec2-user/.boto'''.format(aws_access_key_id, aws_secret_access_key))
+        run('''echo "{0}
+" > /home/ec2-user/.boto'''.format(get_boto_data()))
 
 
 def make_tarfile(output_filename, source_dir):

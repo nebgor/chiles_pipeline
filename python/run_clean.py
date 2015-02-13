@@ -33,7 +33,7 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_aws_machine, get_cloud_init, Consumer, make_safe_filename, LOGGER
+from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
@@ -45,23 +45,33 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price):
+    def __init__(
+            self,
+            ami_id,
+            user_data,
+            instance_type,
+            frequency_id,
+            created_by,
+            name,
+            spot_price,
+            zone):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
-        self._observation_id = observation_id
         self._frequency_id = frequency_id
         self._created_by = created_by
         self._name = name
         self._spot_price = spot_price
+        self._zone = zone
 
     def __call__(self):
         """
         Actually run the job
         """
-        LOGGER.info('observation_id: {0}, frequency_id: {1}'.format(self._observation_id, self._frequency_id))
+        LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
-        user_data_mime = get_mime_encoded_user_data(self._user_data, self._observation_id, self._frequency_id)
+        user_data_mime = get_mime_encoded_user_data(self._user_data, self._frequency_id)
+        LOGGER.info('{0}'.format(user_data_mime))
 
         if self._spot_price is not None:
             ec2_instance = ec2_helper.run_spot_instance(
@@ -70,7 +80,7 @@ class Task(object):
                 user_data_mime,
                 self._instance_type, None,
                 self._created_by,
-                self._name + '- {0}'.format(self._frequency_id),
+                '{0}-{1}'.format(self._frequency_id, self._name),
                 ephemeral=True)
         else:
             ec2_instance = ec2_helper.run_instance(
@@ -79,14 +89,23 @@ class Task(object):
                 self._instance_type,
                 None,
                 self._created_by,
-                self._name + '- {0}'.format(self._frequency_id),
+                '{0}-{1}'.format(self._frequency_id, self._name),
                 ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
         setup_aws_machine(ec2_instance.ip_address)
 
 
-def start_servers(processes, ami_id, user_data, instance_type, observation_id, frequency_ids, created_by, name, spot_price=None):
+def start_servers(
+        processes,
+        ami_id,
+        user_data,
+        instance_type,
+        frequency_ids,
+        created_by,
+        name,
+        spot_price=None,
+        zone=None):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -96,7 +115,16 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, f
         consumer.start()
 
     for frequency_id in frequency_ids:
-        tasks.put(Task(ami_id, user_data, instance_type, observation_id, frequency_id, created_by, name, spot_price))
+        tasks.put(
+            Task(
+                ami_id,
+                user_data,
+                instance_type,
+                frequency_id,
+                created_by,
+                name,
+                spot_price,
+                zone))
 
         # Add a poison pill to shut things down
     for x in range(processes):
@@ -106,7 +134,7 @@ def start_servers(processes, ami_id, user_data, instance_type, observation_id, f
     tasks.join()
 
 
-def get_mime_encoded_user_data(data, observation_id, frequency_id):
+def get_mime_encoded_user_data(data, frequency_id):
     """
     AWS allows for a multipart m
     """
@@ -121,7 +149,7 @@ def get_mime_encoded_user_data(data, observation_id, frequency_id):
     user_data = MIMEMultipart()
     user_data.attach(get_cloud_init())
 
-    data_formatted = data.format(observation_id, frequency_id, min_freq, max_freq)
+    data_formatted = data.format(frequency_id, min_freq, max_freq)
     user_data.attach(MIMEText(data_formatted))
     return user_data.as_string()
 
@@ -131,9 +159,6 @@ def check_args(args):
     Check the arguments and prompt for new ones
     """
     map_args = {}
-
-    if args['obs_id'] is None:
-        return None
 
     if args['frequencies'] is None:
         return None
@@ -162,8 +187,7 @@ def main():
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
-    parser.add_argument('obs_id', help='the observation id')
-    parser.add_argument('frequencies', nargs='+', help='the frequencies to use')
+    parser.add_argument('frequencies', nargs='+', help='the frequencies to use (vis_14XX~14YY')
 
     args = vars(parser.parse_args())
 
@@ -176,11 +200,11 @@ def main():
             corrected_args['ami_id'],
             corrected_args['user_data'],
             args['instance_type'],
-            make_safe_filename(args['obs_id']),
             args['frequencies'],
             corrected_args['created_by'],
             args['name'],
-            corrected_args['spot_price'])
+            corrected_args['spot_price'],
+            'ap-southeast-2a')
 
 if __name__ == "__main__":
     # -p 3 -i r3.2xlarge -n "Kevin clean test" -s 0.10 obs-1 vis_1407~1411 vis_1411~1415 vis_1415~1419

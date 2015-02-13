@@ -44,7 +44,19 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, ami_id, user_data, instance_type, obs_id, snapshot_id, created_by, name, spot_price, aws_access_key_id, aws_secret_access_key, zone, frequency_groups, counter):
+    def __init__(
+            self,
+            ami_id,
+            user_data,
+            instance_type,
+            obs_id,
+            snapshot_id,
+            created_by,
+            name,
+            spot_price,
+            zone,
+            frequency_groups,
+            counter):
         self._ami_id = ami_id
         self._user_data = user_data
         self._instance_type = instance_type
@@ -53,8 +65,6 @@ class Task(object):
         self._created_by = created_by
         self._name = name
         self._spot_price = spot_price
-        self._aws_access_key_id = aws_access_key_id
-        self._aws_secret_access_key = aws_secret_access_key
         self._zone = zone
         self._frequency_groups = frequency_groups
         self._counter = counter
@@ -64,7 +74,7 @@ class Task(object):
         Actually run the job
         """
         # Get the name of the volume
-        ec2_helper = EC2Helper(self._aws_access_key_id, self._aws_secret_access_key)
+        ec2_helper = EC2Helper()
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone)
         LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
         user_data_mime = self.get_mime_encoded_user_data(self._user_data, volume.id)
@@ -90,7 +100,7 @@ class Task(object):
                 ephemeral=True)
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_aws_machine(ec2_instance.ip_address, self._aws_access_key_id, self._aws_secret_access_key)
+        setup_aws_machine(ec2_instance.ip_address)
 
     def get_mime_encoded_user_data(self, data, volume_id):
         """
@@ -144,7 +154,16 @@ def get_frequency_groups(pairs_per_group):
     return frequency_groups
 
 
-def start_servers(processes, ami_id, user_data, instance_type, obs_ids, created_by, name, spot_price=None, aws_access_key_id=None, aws_secret_access_key=None, zone=None):
+def start_servers(
+        processes,
+        ami_id,
+        user_data,
+        instance_type,
+        obs_ids,
+        created_by,
+        name,
+        spot_price=None,
+        zone=None):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -154,7 +173,6 @@ def start_servers(processes, ami_id, user_data, instance_type, obs_ids, created_
         consumer.start()
 
     counter = 1
-
     for obs_id in obs_ids:
         snapshot_id = OBS_IDS.get(obs_id)
         if snapshot_id is None:
@@ -171,8 +189,6 @@ def start_servers(processes, ami_id, user_data, instance_type, obs_ids, created_
                         created_by,
                         name,
                         spot_price,
-                        aws_access_key_id,
-                        aws_secret_access_key,
                         zone,
                         frequency_groups,
                         counter))
@@ -195,7 +211,7 @@ def check_args(args):
     if args['obs_ids'] is None:
         return None
     elif len(args['obs_ids']) == 1 and args['obs_ids'][0] == '*':
-        map_args['obs_ids'] = OBS_IDS
+        map_args['obs_ids'] = OBS_IDS.keys()
     else:
         map_args['obs_ids'] = args['obs_ids']
 
@@ -224,9 +240,6 @@ def main():
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
 
-    parser.add_argument('aws_access_key_id', help='your aws_access_key_id')
-    parser.add_argument('aws_secret_access_key', help='your aws_secret_access_key')
-    # parser.add_argument('zone', help='the zone you want to run this in')
     parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
     args = vars(parser.parse_args())
@@ -244,8 +257,6 @@ def main():
             corrected_args['created_by'],
             args['name'],
             corrected_args['spot_price'],
-            args['aws_access_key_id'],
-            args['aws_secret_access_key'],
             'ap-southeast-2a')
 
 if __name__ == "__main__":

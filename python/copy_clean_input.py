@@ -32,7 +32,7 @@ import sys
 import os
 import tarfile
 
-from common import make_safe_filename, Consumer, LOGGER
+from common import Consumer, LOGGER
 from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -53,6 +53,7 @@ class Task(object):
         """
         Actually run the job
         """
+        # noinspection PyBroadException
         try:
             LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
             if not os.path.exists(self._directory):
@@ -62,14 +63,14 @@ class Task(object):
                 tar.extractall(path=self._directory)
 
             os.remove(self._tar_file)
-        except:
+        except Exception:
             LOGGER.exception('Task died')
 
 
-def copy_files(observation_id, frequency_id, processes):
+def copy_files(frequency_id, processes):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
-    LOGGER.info('Scanning bucket: {0}, observation_id: {1}, frequency_id: {2}'.format(bucket, observation_id, frequency_id))
+    LOGGER.info('Scanning bucket: {0}, frequency_id: {1}'.format(bucket, frequency_id))
 
     # Create the queue
     queue = multiprocessing.JoinableQueue()
@@ -79,13 +80,12 @@ def copy_files(observation_id, frequency_id, processes):
         consumer = Consumer(queue)
         consumer.start()
 
-    for key in bucket.list(prefix='{0}/CVEL/{1}'.format(observation_id, frequency_id)):
+    for key in bucket.list(prefix='CVEL/{0}'.format(frequency_id)):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('/data.tar.gz'):
             elements = key.key.split('/')
-            #directory = '/tmp/output/Chiles/split_vis/{0}/data1/'.format(elements[2])
-            directory = '/mnt/output/Chiles/split_vis/{1}/{0}/'.format(elements[3], observation_id)
+            directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
@@ -101,16 +101,14 @@ def copy_files(observation_id, frequency_id, processes):
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output from S3')
-    parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('freq_id', help='the frequency id')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
 
     args = vars(parser.parse_args())
-    observation_id = make_safe_filename(args['obs_id'])
     frequency_id = args['freq_id']
     processes = args['processes']
 
-    copy_files(observation_id, frequency_id, processes)
+    copy_files(frequency_id, processes)
 
 if __name__ == "__main__":
     main()
