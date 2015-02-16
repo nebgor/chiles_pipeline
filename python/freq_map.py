@@ -7,10 +7,10 @@ def freq_map(low_req,hi_req,*args):
 
     Return the Spectral Window Required given the lower and upper bounds requested.
     The requests are compared to the 3 possible freq ranges (starting at 941, 946 or 951 MHz).
-    2 MHz buffer is added to these values. 
+    2 MHz buffer is added to these values.
     2MHz is equiv to 40km/s, which covers the range of calculated observatory velocities of ~+-30km/s
 
-    Future: We could use the _actual_ spectral windows for each day to return a smaller range. 
+    Future: We could use the _actual_ spectral windows for each day to return a smaller range.
     Additional parameters would need to be passed (just the data file name?)
 
     >>> freq_map(951,956)
@@ -66,17 +66,17 @@ def freq_map(low_req,hi_req,*args):
     ifn_hi=2
 
     if (args):
-     if (args[0]==941):
-	ifn_low=0
-	ifn_hi=0
+        if (args[0]==941):
+            ifn_low=0
+            ifn_hi=0
 
-     if (args[0]==946):
-	ifn_low=1
-	ifn_hi=1
+        if (args[0]==946):
+            ifn_low=1
+            ifn_hi=1
 
-     if (args[0]==951):
-	ifn_low=2
-	ifn_hi=2
+        if (args[0]==951):
+            ifn_low=2
+            ifn_hi=2
 
     for nif_low in range(0,16):
         f=f_tab[nif_low]

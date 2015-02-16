@@ -8,6 +8,7 @@ This module contains all the setups and the defines
 
 import os
 import commands
+import re
 import time
 import os.path
 from echo import echo, dump_all
@@ -259,7 +260,7 @@ obsId       = {8}
     if (bottom_edge):
      bedge=bottom_edge.group(0)
      bedge=int(bedge[1:4])
-    
+
     if (not sel_freq):
         steps = 1
 
