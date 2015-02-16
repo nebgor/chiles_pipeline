@@ -33,6 +33,7 @@ import multiprocessing
 import sys
 
 from common import get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
+from echo import dump_all
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS
 from ec2_helper import EC2Helper
 
@@ -151,6 +152,7 @@ def get_frequency_groups(pairs_per_group):
     if len(frequency_group) > 0:
         frequency_groups.append(frequency_group)
 
+    dump_all()
     return frequency_groups
 
 

@@ -11,7 +11,7 @@ import commands
 import re
 import time
 import os.path
-from echo import echo, dump_all, add_variables
+from echo import echo, dump_all
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
@@ -234,17 +234,6 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
 
     If spec_window is blank ('') then freq_map is called to define the spw selection
     """
-    print '''
-infile      = {0}
-outdir      = {1}
-backup_dir  = {2}
-min_freq    = {3}
-max_freq    = {4}
-step_freq   = {5}
-width_freq  = {6}
-spec_window = {7}
-obsId       = {8}
-'''.format(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId)
     if not os.path.exists(outdir):
         os.system('mkdir ' + outdir)
     if not os.path.exists(backup_dir):
@@ -390,13 +379,3 @@ out_dir = os.getenv('CH_OUT_DIR', null_str) + '/'
 
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
 
-
-add_variables(
-    [debug,
-     spec_window,
-     host_name,
-     job_id,
-     run_id,
-     obs_dir,
-     obs_first,
-     ])

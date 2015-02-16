@@ -1,11 +1,8 @@
 """
 Echo the arguments passed to a function
 """
-from weakref import WeakSet
-import sys
+import inspect
 
-
-set_variables = WeakSet()
 
 def format_arg_value(arg_val):
     """ Return a string representing a (name, value) pair.
@@ -51,30 +48,13 @@ def echo(fn):
     return wrapped
 
 
-def add_variable(variable):
-    set_variables.add(variable)
-
-
-def add_variables(variables):
-    for variable in variables:
-        set_variables.add(variable)
-
 def dump_all():
-    """
-    Dump all the inscope variables
-    :return:
-    """
-    print '''
-##### dump_all globals #####'''
-    for xxx_module in list(sys.modules.keys()):
-        for xxx_name in xxx_module.globals():
-            if xxx_name != '__builtins__' and xxx_name != '__doc__':
-                xxx_my_value = eval(xxx_name)
-                print '{0}({1})\t=\t{2}'.format(xxx_name, type(xxx_name), xxx_my_value)
+    stack = inspect.stack()
+    caller = stack[1][0]
+    caller_vars = caller.f_globals
+    caller_vars.update(caller.f_locals)
 
-    print '''
-##### dump_all variables #####'''
-    for xxx_name in set_variables:
-        print '{0}({1})\t=\t{2}'.format(xxx_name.__name__, type(xxx_name), xxx_name)
-    print '''
-##### dump_all #####'''
+    for key, value in caller_vars.iteritems():
+        if str(type(value)) != '''<type 'module'>''' \
+                and str(type(value)) != '''<type 'type'>''':
+            print '{0}({1}): {2}'.format(key, type(value), value)

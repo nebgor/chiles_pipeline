@@ -20,7 +20,6 @@ for root, dir_names, filenames in os.walk(vis_dirs):
     for match in fnmatch.filter(dir_names, 'vis_*'):
         vis_dirs_cube.append('{0}'.format(join(root, match)))
 
-
 dump_all()
 do_cube(vis_dirs_cube, cube_dir, freq_min, freq_max, freq_step, freq_width)
 
