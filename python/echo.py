@@ -11,7 +11,7 @@ def format_arg_value(arg_val):
     'x=(1, 2, 3)'
     """
     arg, val = arg_val
-    return "%s=%r" % (arg, val)
+    return '{0}={1}'.format(arg, val)
 
 
 def name(item):
@@ -43,7 +43,16 @@ def echo(fn, write=sys.stdout.write):
                      for a in argnames[len(v):] if a not in k]
         nameless = map(repr, v[argcount:])
         keyword = map(format_arg_value, k.items())
-        args = positional + defaulted + nameless + keyword
-        write("%s(%s)\n" % (name(fn), ", ".join(args)))
+        write('{0}({1},{2},{3},{4})\n'.format(name(fn), positional, defaulted, nameless, keyword))
         return fn(*v, **k)
     return wrapped
+
+
+def dump_all():
+    """
+    Dump all the inscope variables
+    :return:
+    """
+    for name in dir():
+        my_value = eval(name)
+        sys.stdout.write('{0}({1}\t=\t{2}'.format(name, type(name), my_value))

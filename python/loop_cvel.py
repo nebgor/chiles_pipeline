@@ -4,6 +4,7 @@ Taken from makecube.py extracting the loop over cvel
 This module should run together with the casapy: e.g. casapy --nologger -c loop_cvel.py
 """
 import os
+from echo import dump_all
 from makecube_defines import INPUT_VIS_SUFFIX, check_dir, get_my_obs, vis_bk_dirs, vis_dirs, obs_dir, execCmd, do_cvel, freq_max, freq_min, freq_step, freq_width, spec_window, run_id
 
 
@@ -36,4 +37,6 @@ for obs in obs_list:
     obsId = os.path.basename(infile_dir).replace('_FINAL_PRODUCTS', '')
     outdir = '%s/%s/' % (vis_dirs, obsId)
     backup_dir = '%s/%s/' % (vis_bk_dirs, obsId)
+
+    dump_all()
     do_cvel(infile, outdir, backup_dir, freq_min, freq_max, freq_step, freq_width, spec_window, obsId)
