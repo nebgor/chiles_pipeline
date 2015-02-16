@@ -13,7 +13,7 @@ from echo import echo
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
-from deconvolve import clean
+from clean import clean
 
 
 casalog.filter('DEBUGGING')
