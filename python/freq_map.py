@@ -1,4 +1,4 @@
-from common import echo
+from echo import echo
 
 
 @echo
