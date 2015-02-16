@@ -39,7 +39,6 @@ def freq_map(low_req,hi_req,*args):
 
     >>> freq_map(1400,1404)
     '14~14'
-
     """
 
     # SpwID  Name           #Chans   Frame   Ch0(MHz)   Ch0(MHz)   Ch0(MHz)ChanWid(kHz)  TotBW(kHz) BBC Num  Corrs
