@@ -113,7 +113,7 @@ def copy_files(date, processes):
             queue.put(Task2(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
 
     today = datetime.date.today()
-    queue.put(Task2('/var/logs/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
+    queue.put(Task2('/var/log/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):

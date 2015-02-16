@@ -1,6 +1,7 @@
 """
 Echo the arguments passed to a function
 """
+import collections
 import inspect
 from types import InstanceType, NoneType
 
@@ -55,8 +56,18 @@ def dump_all():
     caller_vars = caller.f_globals
     caller_vars.update(caller.f_locals)
 
-    for key, value in caller_vars.iteritems():
-        if isinstance(value, bool) \
+    print '''##### dump_all #####
+{0}'''.format(caller)
+    ordered_dictionary = collections.OrderedDict(sorted(caller_vars.items()))
+    for key, value in ordered_dictionary.iteritems():
+        if key == '__builtins__' \
+                or key == '__name__' \
+                or key == '__file__' \
+                or key == '__package__' \
+                or key == '__doc__':
+            # Ignore this one
+            pass
+        elif isinstance(value, bool) \
                 or isinstance(value, int) \
                 or isinstance(value, long) \
                 or isinstance(value, float) \
@@ -68,3 +79,4 @@ def dump_all():
                 or isinstance(value, NoneType):
             print '{0}({1}): {2}'.format(key, type(value), value)
 
+    print '''##### dump_all end #####'''

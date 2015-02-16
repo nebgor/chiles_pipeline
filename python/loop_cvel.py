@@ -15,12 +15,7 @@ check_dir(vis_dirs)
 check_dir(vis_bk_dirs)
 
 obs_list = get_my_obs(obs_dir)
-
-print '''
-obs_list = {0}
-vis_dirs = {1}
-run_id   = {2}
-obs_dir  = {3}'''.format(str(obs_list), vis_dirs, run_id, obs_dir)
+dump_all()
 
 for obs in obs_list:
     infile_dir = '%s/%s' % (obs_dir, obs)
