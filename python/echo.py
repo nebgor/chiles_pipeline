@@ -19,7 +19,7 @@ def name(item):
     return item.__name__
 
 
-def echo(fn, write=sys.stdout.write):
+def echo(fn):
     """ Echo calls to a function.
 
     Returns a decorated version of the input function which "echoes" calls
@@ -43,7 +43,7 @@ def echo(fn, write=sys.stdout.write):
                      for a in argnames[len(v):] if a not in k]
         nameless = map(repr, v[argcount:])
         keyword = map(format_arg_value, k.items())
-        write('{0}({1},{2},{3},{4})\n'.format(name(fn), positional, defaulted, nameless, keyword))
+        print '{0}({1},{2},{3},{4})'.format(name(fn), positional, defaulted, nameless, keyword)
         return fn(*v, **k)
     return wrapped
 
@@ -53,6 +53,8 @@ def dump_all():
     Dump all the inscope variables
     :return:
     """
+    print '''
+##### dump_all #####'''
     for name in dir():
         my_value = eval(name)
-        sys.stdout.write('{0}({1}\t=\t{2}'.format(name, type(name), my_value))
+        print '{0}({1}\t=\t{2}'.format(name, type(name), my_value)
