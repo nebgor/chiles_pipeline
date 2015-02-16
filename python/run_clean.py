@@ -33,7 +33,7 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER
+from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER, echo
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 
@@ -154,6 +154,7 @@ def get_mime_encoded_user_data(data, frequency_id):
     return user_data.as_string()
 
 
+@echo
 def check_args(args):
     """
     Check the arguments and prompt for new ones
@@ -207,5 +208,5 @@ def main():
             'ap-southeast-2a')
 
 if __name__ == "__main__":
-    # -p 3 -i r3.2xlarge -n "Kevin clean test" -s 0.10 obs-1 vis_1407~1411 vis_1411~1415 vis_1415~1419
+    # -p 3 -i r3.2xlarge -n "Kevin clean test" -s 0.10 vis_1400~1404
     main()

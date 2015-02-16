@@ -9,15 +9,18 @@ import os
 import commands
 import time
 import os.path
+from common import echo
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
+from deconvolve import clean
 
 
 casalog.filter('DEBUGGING')
 INPUT_VIS_SUFFIX = '_calibrated_deepfield.ms'
 
 
+@echo
 def execCmd(cmd, failonerror=True, okErr=[]):
     """
     Execute OS command from within Python
@@ -32,12 +35,14 @@ def execCmd(cmd, failonerror=True, okErr=[]):
     return re
 
 
+@echo
 def get_my_obs(obs_dir):
     lsre = execCmd('ls %s' % obs_dir)
     all_obs = lsre[1].split('\n')
     return all_obs
 
 
+@echo
 def check_dir(this_dir, create_on_missing=True):
     """
     Return    True if the directory is there
@@ -56,89 +61,42 @@ def check_dir(this_dir, create_on_missing=True):
         return True
 
 
+@echo
 def create_cube_done_marker(casa_workdir, run_id, freq_range):
     return '%s/%s_cube_%s_done' % (casa_workdir, run_id, freq_range.replace('~', '-'))
 
 
-def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id, num_jobs, debug):
-    """
-    adapted from loop_cube.py with
-    (1) extra parameters for job management
-    (2) remove the concatenation, move it outside
-    (3) deal with (max_freq - min_freq) % width_freq > 0
-    """
-
-    if sel_freq:
-        steps = (max_freq - min_freq) / step_freq  # a list of all frequency split
-        rem = (max_freq - min_freq) % step_freq
-        if rem:
-            steps += 1
-
-        freq1 = min_freq + job_id * step_freq
-        freq2 = freq1 + step_freq
+@echo
+def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq):
+    outfile = os.join(cube_dir, 'cube_{0}~{1}'.format(min_freq, max_freq))
+    if debug:
+        print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
     else:
-        steps = 1
-    cube_names = []
-    for i in xrange(job_id, steps, num_jobs):
-        if sel_freq:
-            if rem and (i == steps - 1):
-                freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
-            else:
-                freq_range = str(freq1) + '~' + str(freq2)
-        else:
-            freq_range = 'min~max'
-        in_files = []
-        outfile = cube_dir + 'cube_' + freq_range
-
-        for j in range(len(in_dirs)):
-            # check whether the file exists without issues ...
-            workfile = in_dirs[j] + 'vis_' + freq_range
-            if not debug:
-                print workfile
-                print os.path.isdir(workfile)
-                if os.path.isdir(workfile):
-                    # make a visfile with all the directories
-                    in_files = in_files + [in_dirs[j] + 'vis_' + freq_range]
-                else:
-                    print 'WARNING, file is missing: ' + workfile
-            else:
-                in_files = in_files + [in_dirs[j] + 'vis_' + freq_range]
-
-        # print 'working on: ' + outfile
-        # print 'input visibilities:', in_files
-        # print 'input visibilities:', in_files
-        if debug:
-            print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_files), outfile)
-        else:
-            print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_files), outfile)
-            try:
-                clean(vis=in_files,
-                      imagename=outfile,
-                      field='deepfield',
-                      spw='',
-                      mode='frequency',
-                      restfreq='1420.405752MHz',
-                      nchan=-1,
-                      start='',
-                      width='',
-                      interpolation='nearest',
-                      niter=0,
-                      gain=0.1,
-                      threshold='0.0mJy',
-                      imsize=[2048],
-                      cell=['1.0arcsec'],
-                      weighting='natural',
-                      robust=2.0,
-                      usescratch=True)
-            except Exception, clEx:
-                print '*********\nClean exception: %s\n***********' % str(clEx)
-
-        freq1 = freq1 + (num_jobs * step_freq)
-        freq2 = freq2 + (num_jobs * step_freq)
-
-    return
+        print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
+        try:
+            clean(vis=in_dirs,
+                  imagename=outfile,
+                  field='deepfield',
+                  spw='',
+                  mode='frequency',
+                  restfreq='1420.405752MHz',
+                  nchan=-1,
+                  start='',
+                  width='',
+                  interpolation='nearest',
+                  niter=0,
+                  gain=0.1,
+                  threshold='0.0mJy',
+                  imsize=[2048],
+                  cell=['1.0arcsec'],
+                  weighting='natural',
+                  robust=2.0,
+                  usescratch=True)
+        except Exception, clEx:
+            print '*********\nClean exception: %s\n***********' % str(clEx)
 
 
+@echo
 def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workdir, run_id, debug, timeout=100):
     if sel_freq:
         steps = (max_freq - min_freq) / step_freq
@@ -225,10 +183,12 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
     return
 
 
+@echo
 def createSplitDoneMarker(casa_workdir, run_id, obsId):
     return '%s/%s__%s__split_done' % (casa_workdir, run_id, obsId)
 
 
+@echo
 def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout=100):
     """
     """
@@ -261,6 +221,7 @@ def checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout=100):
 
 # load all environment variables to set up configuration
 
+@echo
 def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_freq, spec_window, obsId):
     """
     Adapted from loop.split.py with changes

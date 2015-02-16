@@ -1,4 +1,7 @@
+from common import echo
 
+
+@echo
 def freq_map(low_req,hi_req):
     """
 

@@ -16,7 +16,7 @@ check_dir(vis_bk_dirs)
 obs_list = get_my_obs(obs_dir)
 
 print '''
-myobs    = {0}
+obs_list = {0}
 vis_dirs = {1}
 run_id   = {2}'''.format(str(obs_list), vis_dirs, run_id)
 
