@@ -2,6 +2,7 @@
 Echo the arguments passed to a function
 """
 import inspect
+from types import InstanceType, NoneType
 
 
 def format_arg_value(arg_val):
@@ -55,6 +56,15 @@ def dump_all():
     caller_vars.update(caller.f_locals)
 
     for key, value in caller_vars.iteritems():
-        if str(type(value)) != '''<type 'module'>''' \
-                and str(type(value)) != '''<type 'type'>''':
+        if isinstance(value, bool) \
+                or isinstance(value, int) \
+                or isinstance(value, long) \
+                or isinstance(value, float) \
+                or isinstance(value, str) \
+                or isinstance(value, tuple) \
+                or isinstance(value, list) \
+                or isinstance(value, dict) \
+                or isinstance(value, InstanceType) \
+                or isinstance(value, NoneType):
             print '{0}({1}): {2}'.format(key, type(value), value)
+
