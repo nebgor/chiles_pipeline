@@ -2,6 +2,7 @@
 Taken from makecube.py extracting the loop over cvel
 
 This module contains all the setups and the defines
+15/02/15 --- Merge chiles and chiles_pipeline
 
 """
 
