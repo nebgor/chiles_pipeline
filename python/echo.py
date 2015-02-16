@@ -1,8 +1,11 @@
 """
 Echo the arguments passed to a function
 """
+from weakref import WeakSet
 import sys
 
+
+set_variables = WeakSet()
 
 def format_arg_value(arg_val):
     """ Return a string representing a (name, value) pair.
@@ -48,6 +51,14 @@ def echo(fn):
     return wrapped
 
 
+def add_variable(variable):
+    set_variables.add(variable)
+
+
+def add_variables(variables):
+    for variable in variables:
+        set_variables.add(variable)
+
 def dump_all():
     """
     Dump all the inscope variables
@@ -62,10 +73,8 @@ def dump_all():
                 print '{0}({1})\t=\t{2}'.format(xxx_name, type(xxx_name), xxx_my_value)
 
     print '''
-##### dump_all locals #####'''
-    for xxx_name in locals():
-        if xxx_name != 'xxx_name' and xxx_name != 'xxx_my_value':
-            xxx_my_value = eval(name)
-            print '{0}({1})\t=\t{2}'.format(xxx_name, type(xxx_name), xxx_my_value)
+##### dump_all variables #####'''
+    for xxx_name in set_variables:
+        print '{0}({1})\t=\t{2}'.format(xxx_name.__name__, type(xxx_name), xxx_name)
     print '''
 ##### dump_all #####'''

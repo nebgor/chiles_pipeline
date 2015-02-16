@@ -11,7 +11,7 @@ import commands
 import re
 import time
 import os.path
-from echo import echo, dump_all
+from echo import echo, dump_all, add_variables
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
@@ -389,3 +389,14 @@ cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/'
 out_dir = os.getenv('CH_OUT_DIR', null_str) + '/'
 
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
+
+
+add_variables(
+    [debug,
+     spec_window,
+     host_name,
+     job_id,
+     run_id,
+     obs_dir,
+     obs_first,
+     ])
