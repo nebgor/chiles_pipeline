@@ -2,6 +2,7 @@
 Taken from makecube.py extracting the loop over cvel
 
 This module contains all the setups and the defines
+15/02/15 --- Merge chiles and chiles_pipeline
 
 """
 
@@ -254,17 +255,32 @@ obsId       = {8}
         steps += 1
     freq1 = min_freq
     freq2 = min_freq + step_freq
-
-    if not sel_freq:
+    bottom_edge = re.search('_[0-9]{3}_',infile)
+    if (bottom_edge):
+     bedge=bottom_edge.group(0)
+     bedge=int(bedge[1:4])
+    
+    if (not sel_freq):
         steps = 1
 
     for i in range(steps):
-        if sel_freq:
-            if rem and (i == steps - 1):
+        if (sel_freq):
+            #if (rem and (i == steps - 1)):
+            #    freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
+            #else:
+            #    freq_range = str(freq1) + '~' + str(freq2)
+            if (rem and (i == steps - 1)):
                 freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
+                cvel_freq_range = '%f~%f' % (min_freq - 2 + i * step_freq, max_freq + 2)
             else:
                 freq_range = str(freq1) + '~' + str(freq2)
+                cvel_freq_range =  str(int(freq1-2)) + '~' + str(int(freq2+2))
             spw_range = spec_window + ':' + freq_range + 'MHz'
+            cvel_spw_range = spec_window + ':' + cvel_freq_range + 'MHz'
+            # spanning spectral windows and selecting freq fails
+            # so use freq_map
+            # THEREFORE ~10 lines above are IGNORED!!
+            cvel_spw_range = freq_map(freq1, freq2, bedge)
         else:
             freq_range = 'min~max'
             spw_range = spec_window
@@ -296,7 +312,7 @@ obsId       = {8}
                     veltype='radio',
                     start=str(freq1) + 'MHz',
                     width=str(width_freq) + 'kHz',
-                    spw=spw_range,
+                    spw=cvel_spw_range,
                     combinespws=True,
                     nspw=1,
                     createmms=False,
@@ -316,8 +332,8 @@ obsId       = {8}
             except Exception, spEx:
                 print '*********\nSplit exception: %s\n***********' % str(spEx)
         else:
-            msg = "\ncvel(vis=%s,\noutputvis=%s,\nstart=%s,width=%s,spw=%s,nchan=%d)" \
-                  % (infile, outfile, str(freq1) + 'MHz', width_freq, spw_range, no_chan)
+            msg = "\nmstransform(vis=%s,\noutputvis=%s,\nstart=%s,width=%s,spw=%s,nchan=%d)"\
+            % (infile, outfile, str(freq1)+'MHz', width_freq, cvel_spw_range,no_chan)
             print msg
 
         freq1 = freq1 + step_freq
