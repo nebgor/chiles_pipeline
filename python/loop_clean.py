@@ -5,21 +5,14 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 """
 from glob import glob
 import os
-
-execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
+from makecube_defines import check_dir, cube_dir, obs_dir, get_my_obs, vis_dirs, run_id, do_cube, freq_min, freq_max, freq_step, freq_width, job_id, num_jobs, debug
 
 check_dir(cube_dir)
 
+print '''
+vis_dirs = {0}
+run_id   = {1}'''.format(vis_dirs, run_id)
 
-obs_list = get_my_obs(obs_dir)
-obsId_list = []
-
-print "myobs = \t%s\nvis_dirs = \t%s\nrun_id = \t%s" % (str(obs_list), vis_dirs, run_id)
-
-# Wait on split ...
-# done_obs = checkIfAllObsSplitDone(casa_workdir, job_id, run_id, all_obs, timeout = split_tmout)
-
-# this is only for Amazon
 done_obs = {}
 obslist = glob('%s/*' % vis_dirs)
 for obsfile in obslist:
@@ -31,4 +24,4 @@ for obsId in done_obs.keys():
 
 do_cube(vis_dirs_cube, cube_dir, freq_min, freq_max, freq_step, freq_width, job_id, num_jobs, debug)
 
-    # Done
+# Done

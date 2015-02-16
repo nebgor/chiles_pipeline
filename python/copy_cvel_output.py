@@ -31,6 +31,7 @@ import multiprocessing
 import os
 from os.path import join
 import sys
+import datetime
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
 from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME, CHILES_LOGS
@@ -110,6 +111,9 @@ def copy_files(date, processes):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             queue.put(Task2(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
+
+    today = datetime.date.today()
+    queue.put(Task2('/var/logs/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):

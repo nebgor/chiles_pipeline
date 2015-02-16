@@ -136,10 +136,6 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq, job_id
         freq1 = freq1 + (num_jobs * step_freq)
         freq2 = freq2 + (num_jobs * step_freq)
 
-        done_02_f = create_cube_done_marker(casa_workdir, run_id, freq_range)
-        if debug:
-            print 'Job %d: Creating done_02_f: %s' % (job_id, done_02_f)
-        open(done_02_f, 'a').close()  # create the file marking the completion of this freq range
     return
 
 
