@@ -72,7 +72,7 @@ class Task1(object):
             LOGGER.exception('Task1 died')
 
 
-class Task2(object):
+class CopyTask(object):
     def __init__(self, filename, bucket_location):
         self._filename = filename
         self._bucket_location = bucket_location
@@ -87,7 +87,7 @@ class Task2(object):
                 self._bucket_location,
                 self._filename)
         except Exception:
-            LOGGER.exception('Task1 died')
+            LOGGER.exception('CopyTask died')
 
 
 def copy_files(date, processes):
@@ -110,10 +110,10 @@ def copy_files(date, processes):
     for root, dir_names, filenames in os.walk(CHILES_LOGS):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
-            queue.put(Task2(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
+            queue.put(CopyTask(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
 
     today = datetime.date.today()
-    queue.put(Task2('/var/log/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
+    queue.put(CopyTask('/var/log/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):

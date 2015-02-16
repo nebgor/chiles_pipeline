@@ -9,6 +9,7 @@ This module contains all the setups and the defines
 import os
 import commands
 import re
+import shutil
 import time
 import os.path
 from echo import echo, dump_all
@@ -71,10 +72,9 @@ def create_cube_done_marker(casa_workdir, run_id, freq_range):
 @echo
 def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq):
     outfile = os.path.join(cube_dir, 'cube_{0}~{1}'.format(min_freq, max_freq))
-    if debug:
-        print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
-    else:
-        print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
+    print '''
+Job {0}: clean(vis={1}, imagename={2})'''.format(job_id, str(in_dirs), outfile)
+    if not debug:
         try:
             dump_all()
             clean(vis=in_dirs,
@@ -246,20 +246,20 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
     freq1 = min_freq
     freq2 = min_freq + step_freq
     bottom_edge = re.search('_[0-9]{3}_',infile)
-    if (bottom_edge):
-     bedge=bottom_edge.group(0)
-     bedge=int(bedge[1:4])
+    if bottom_edge:
+        bedge = bottom_edge.group(0)
+        bedge = int(bedge[1:4])
 
-    if (not sel_freq):
+    if not sel_freq:
         steps = 1
 
     for i in range(steps):
-        if (sel_freq):
+        if sel_freq:
             #if (rem and (i == steps - 1)):
             #    freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
             #else:
             #    freq_range = str(freq1) + '~' + str(freq2)
-            if (rem and (i == steps - 1)):
+            if rem and i == steps - 1:
                 freq_range = '%d~%d' % (min_freq + i * step_freq, max_freq)
                 cvel_freq_range = '%f~%f' % (min_freq - 2 + i * step_freq, max_freq + 2)
             else:
@@ -285,8 +285,8 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
         outfile = outdir + 'vis_' + freq_range
         backupfile = backup_dir + 'vis_' + freq_range
         if not debug:
-            os.system('rm -rf ' + outfile)
-            os.system('rm -rf ' + backupfile)
+            shutil.rmtree(outfile)
+            shutil.rmtree(backupfile)
             print 'working on: ' + outfile
             try:
                 dump_all()
@@ -322,23 +322,18 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
             except Exception, spEx:
                 print '*********\nSplit exception: %s\n***********' % str(spEx)
         else:
-            msg = "\nmstransform(vis=%s,\noutputvis=%s,\nstart=%s,width=%s,spw=%s,nchan=%d)"\
-            % (infile, outfile, str(freq1)+'MHz', width_freq, cvel_spw_range,no_chan)
+            msg = '''
+mstransform(vis=%s,
+outputvis=%s,
+start=%s,
+width=%s,
+spw=%s,
+nchan=%d)'''.format(infile, outfile, str(freq1)+'MHz', width_freq, cvel_spw_range, no_chan)
             print msg
 
         freq1 = freq1 + step_freq
         freq2 = freq2 + step_freq
 
-        # as precaution make a backup copy of the split vis files
-        # very often when casa crashes, the original file becomes corrupted ...
-
-        if not debug and bkp_split:
-            os.system('cp -r ' + outfile + ' ' + backupfile)
-
-    done_01_f = createSplitDoneMarker(casa_workdir, run_id, obsId)
-    if debug:
-        print '\nJob %d: Creating done_01_f: %s' % (job_id, done_01_f)
-    open(done_01_f, 'a').close()  # create the file marking the completion of splitting of this obs
     return
 
 
@@ -378,4 +373,3 @@ cube_dir = os.getenv('CH_CUBE_DIR', null_str) + '/'
 out_dir = os.getenv('CH_OUT_DIR', null_str) + '/'
 
 outname = '%s/comb_%d~%d.image' % (out_dir, freq_min, freq_max)
-
