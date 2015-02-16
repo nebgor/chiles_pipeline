@@ -2,22 +2,42 @@ from echo import echo
 
 
 @echo
-def freq_map(low_req,hi_req):
+def freq_map(low_req,hi_req,*args):
     """
 
     Return the Spectral Window Required given the lower and upper bounds requested.
-    1 MHz buffer is added to these values
+    The requests are compared to the 3 possible freq ranges (starting at 941, 946 or 951 MHz).
+    2 MHz buffer is added to these values. 
+    2MHz is equiv to 40km/s, which covers the range of calculated observatory velocities of ~+-30km/s
 
-    >>> freq_map(1200,1210)
-    '8~8'
+    Future: We could use the _actual_ spectral windows for each day to return a smaller range. 
+    Additional parameters would need to be passed (just the data file name?)
+
+    >>> freq_map(951,956)
+    '0~0'
 
     >>> freq_map(951,983)
     '0~1'
 
+    >>> freq_map(973,978,951)
+    '0~0'
+
+    >>> freq_map(973,983,951)
+    '0~1'
+
+    >>> freq_map(1009,1013,946)
+    '1~2'
+
+    >>> freq_map(1009,1013,951)
+    '1~2'
+
+    >>> freq_map(1200,1210)
+    '8~8'
+
     >>> freq_map(1360,1400)
     '13~14'
 
-    >>> freq_map(1400,1412)
+    >>> freq_map(1400,1404)
     '14~14'
 
     """
@@ -41,13 +61,28 @@ def freq_map(low_req,hi_req):
 
     f_tab=[[ 941.00,   946.00,   951.00],[ 973.00,   978.00,   983.00],[1005.00,  1010.00,  1015.00],[1037.00,  1042.00,  1047.00],[1069.00,  1074.00,  1079.00],[1101.00,  1106.00,  1111.00],[1133.00,  1138.00,  1143.00],[1165.00,  1170.00,  1175.00],[1197.00,  1202.00,  1207.00],[1229.00,  1234.00,  1239.00],[1261.00,  1266.00,  1271.00],[1293.00,  1298.00,  1303.00],[1325.00,  1330.00,  1335.00],[1357.00,  1362.00,  1367.00],[1389.00,  1394.00,  1399.00],[1421.00,  1426.00,  1431.00]]
 
-    if_low=-1
-    if_hi=-1
+    if_low=0
+    if_hi=14
+    ifn_low=0
+    ifn_hi=2
+
+    if (args):
+     if (args[0]==941):
+	ifn_low=0
+	ifn_hi=0
+
+     if (args[0]==946):
+	ifn_low=1
+	ifn_hi=1
+
+     if (args[0]==951):
+	ifn_low=2
+	ifn_hi=2
 
     for nif_low in range(0,16):
         f=f_tab[nif_low]
         #print nif_low,f
-        if (int(f[0])>(int(low_req)-1)):
+        if ((f[ifn_low])>((low_req)-2)):
             if_low=nif_low-1
             #print 'Using '+str(if_low)+' for lower SPW edge'
             nif_low=14
@@ -56,7 +91,7 @@ def freq_map(low_req,hi_req):
     for nif_hi in range(0,16):
         f=f_tab[nif_hi]
         #print nif_hi,f
-        if (f[2]>(hi_req+1)):
+        if (f[ifn_hi]>(hi_req+2)):
             if_hi=nif_hi-1
             #print 'Using '+str(if_hi)+' for upper SPW edge'
             nif_hi=14
