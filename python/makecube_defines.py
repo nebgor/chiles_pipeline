@@ -9,7 +9,7 @@ import os
 import commands
 import time
 import os.path
-from echo import echo
+from echo import echo, dump_all
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
@@ -68,12 +68,13 @@ def create_cube_done_marker(casa_workdir, run_id, freq_range):
 
 @echo
 def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq):
-    outfile = os.join(cube_dir, 'cube_{0}~{1}'.format(min_freq, max_freq))
+    outfile = os.path.join(cube_dir, 'cube_{0}~{1}'.format(min_freq, max_freq))
     if debug:
         print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
     else:
         print '\nJob %d: clean(vis=%s,\timagename=%s)' % (job_id, str(in_dirs), outfile)
         try:
+            dump_all()
             clean(vis=in_dirs,
                   imagename=outfile,
                   field='deepfield',
@@ -282,6 +283,7 @@ obsId       = {8}
             os.system('rm -rf ' + backupfile)
             print 'working on: ' + outfile
             try:
+                dump_all()
                 mstransform(
                     vis=infile,
                     outputvis=outfile,
