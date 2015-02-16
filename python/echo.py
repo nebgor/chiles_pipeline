@@ -57,7 +57,7 @@ def dump_all():
     caller_vars.update(caller.f_locals)
 
     print '''##### dump_all #####
-{0}'''.format(caller)
+{0}:{1} {2}'''.format(stack[1][1], stack[1][2], stack[1][3])
     ordered_dictionary = collections.OrderedDict(sorted(caller_vars.items()))
     for key, value in ordered_dictionary.iteritems():
         if key == '__builtins__' \
