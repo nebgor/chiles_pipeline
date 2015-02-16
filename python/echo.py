@@ -14,6 +14,11 @@ def format_arg_value(arg_val):
     return "%s=%r" % (arg, val)
 
 
+def name(item):
+    """ Return an item's name."""
+    return item.__name__
+
+
 def echo(fn, write=sys.stdout.write):
     """ Echo calls to a function.
 
