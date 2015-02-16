@@ -37,7 +37,6 @@ import time
 
 from fabric.api import settings, cd, sudo, run
 from fabric.utils import fastprint, puts
-import sys
 
 from settings_file import USERNAME, AWS_KEY, PIP_PACKAGES
 
@@ -158,43 +157,3 @@ def make_tarfile(output_filename, source_dir):
     LOGGER.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
     with closing(tarfile.open(output_filename, "w:gz")) as tar:
         tar.add(source_dir, arcname=basename(source_dir))
-
-
-def format_arg_value(arg_val):
-    """ Return a string representing a (name, value) pair.
-
-    >>> format_arg_value(('x', (1, 2, 3)))
-    'x=(1, 2, 3)'
-    """
-    arg, val = arg_val
-    return "%s=%r" % (arg, val)
-
-
-def echo(fn, write=sys.stdout.write):
-    """ Echo calls to a function.
-
-    Returns a decorated version of the input function which "echoes" calls
-    made to it by writing out the function's name and the arguments it was
-    called with.
-    """
-    import functools
-    # Unpack function's arg count, arg names, arg defaults
-    code = fn.func_code
-    argcount = code.co_argcount
-    argnames = code.co_varnames[:argcount]
-    fn_defaults = fn.func_defaults or list()
-    argdefs = dict(zip(argnames[-len(fn_defaults):], fn_defaults))
-
-    @functools.wraps(fn)
-    def wrapped(*v, **k):
-        # Collect function arguments by chaining together positional,
-        # defaulted, extra positional and keyword arguments.
-        positional = map(format_arg_value, zip(argnames, v))
-        defaulted = [format_arg_value((a, argdefs[a]))
-                     for a in argnames[len(v):] if a not in k]
-        nameless = map(repr, v[argcount:])
-        keyword = map(format_arg_value, k.items())
-        args = positional + defaulted + nameless + keyword
-        write("%s(%s)\n" % (name(fn), ", ".join(args)))
-        return fn(*v, **k)
-    return wrapped

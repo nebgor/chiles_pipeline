@@ -33,7 +33,8 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER, echo
+from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER
+from echo import echo
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN
 from ec2_helper import EC2Helper
 

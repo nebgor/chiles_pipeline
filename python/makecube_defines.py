@@ -9,7 +9,7 @@ import os
 import commands
 import time
 import os.path
-from common import echo
+from echo import echo
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
