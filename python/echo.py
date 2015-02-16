@@ -54,7 +54,14 @@ def dump_all():
     :return:
     """
     print '''
-##### dump_all #####'''
-    for name in dir():
+##### dump_all globals #####'''
+    for name in globals():
         my_value = eval(name)
-        print '{0}({1}\t=\t{2}'.format(name, type(name), my_value)
+        print '{0}({1})\t=\t{2}'.format(name, type(name), my_value)
+    print '''
+##### dump_all locals #####'''
+    for name in locals():
+        my_value = eval(name)
+        print '{0}({1})\t=\t{2}'.format(name, type(name), my_value)
+    print '''
+##### dump_all #####'''
