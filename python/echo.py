@@ -55,13 +55,17 @@ def dump_all():
     """
     print '''
 ##### dump_all globals #####'''
-    for name in globals():
-        my_value = eval(name)
-        print '{0}({1})\t=\t{2}'.format(name, type(name), my_value)
+    for xxx_module in list(sys.modules.keys()):
+        for xxx_name in xxx_module.globals():
+            if xxx_name != '__builtins__' and xxx_name != '__doc__':
+                xxx_my_value = eval(xxx_name)
+                print '{0}({1})\t=\t{2}'.format(xxx_name, type(xxx_name), xxx_my_value)
+
     print '''
 ##### dump_all locals #####'''
-    for name in locals():
-        my_value = eval(name)
-        print '{0}({1})\t=\t{2}'.format(name, type(name), my_value)
+    for xxx_name in locals():
+        if xxx_name != 'xxx_name' and xxx_name != 'xxx_my_value':
+            xxx_my_value = eval(name)
+            print '{0}({1})\t=\t{2}'.format(xxx_name, type(xxx_name), xxx_my_value)
     print '''
 ##### dump_all #####'''
