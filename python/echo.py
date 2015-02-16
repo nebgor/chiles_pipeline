@@ -43,8 +43,7 @@ def echo(fn, write=sys.stdout.write):
                      for a in argnames[len(v):] if a not in k]
         nameless = map(repr, v[argcount:])
         keyword = map(format_arg_value, k.items())
-        args = positional + defaulted + nameless + keyword
-        write('{0}({1})\n'.format(name(fn), ', '.join(args)))
+        write('{0}({1},{2},{3},{4})\n'.format(name(fn), positional, defaulted, nameless, keyword))
         return fn(*v, **k)
     return wrapped
 
