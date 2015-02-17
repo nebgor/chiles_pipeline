@@ -18,11 +18,10 @@ obs_list = get_my_obs(obs_dir)
 dump_all()
 
 for obs in obs_list:
-    infile_dir = '%s/%s' % (obs_dir, obs)
-    lsre = execCmd('ls %s' % infile_dir)
+    infile_dir = os.path.join(obs_dir, obs)
 
     infile = None
-    for ff in lsre[1].split('\n'):
+    for ff in os.listdir(infile_dir):
         if ff.endswith(INPUT_VIS_SUFFIX):
             infile = '%s/%s' % (infile_dir, ff)
     if not infile:

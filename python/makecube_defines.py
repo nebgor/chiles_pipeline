@@ -5,7 +5,6 @@ This module contains all the setups and the defines
 15/02/15 --- Merge chiles and chiles_pipeline
 
 """
-
 import os
 import commands
 import re
@@ -40,9 +39,7 @@ def execCmd(cmd, failonerror=True, okErr=[]):
 
 @echo
 def get_my_obs(obs_dir):
-    lsre = execCmd('ls %s' % obs_dir)
-    all_obs = lsre[1].split('\n')
-    return all_obs
+    return os.listdir(obs_dir)
 
 
 @echo
@@ -285,8 +282,10 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
         outfile = outdir + 'vis_' + freq_range
         backupfile = backup_dir + 'vis_' + freq_range
         if not debug:
-            shutil.rmtree(outfile)
-            shutil.rmtree(backupfile)
+            if os.path.exists(outfile):
+                shutil.rmtree(outfile)
+            if os.path.exists(backupfile):
+                shutil.rmtree(backupfile)
             print 'working on: ' + outfile
             try:
                 dump_all()
