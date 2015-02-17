@@ -21,6 +21,9 @@ while [ ! -f "/home/ec2-user/.boto" ]; do
 done
 sleep 5
 
+# We need lots and lots of files open for the clean process
+ulimit -n 8196
+
 # Copy files from S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'
 

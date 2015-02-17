@@ -33,13 +33,14 @@ from os.path import basename, exists
 import sys
 import tarfile
 
-from common import make_safe_filename, LOGGER, Consumer
+from common import LOGGER, Consumer
 from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 DIRECTORY = '/mnt/output/Chiles/'
+
 
 class Task(object):
     """
@@ -54,6 +55,7 @@ class Task(object):
         """
         Actually run the job
         """
+        # noinspection PyBroadException
         try:
             LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
             if not os.path.exists(self._directory):
@@ -63,11 +65,11 @@ class Task(object):
                 tar.extractall(path=self._directory)
 
             os.remove(self._tar_file)
-        except:
+        except Exception:
             LOGGER.exception('Task died')
 
 
-def copy_files(observation_id, processes):
+def copy_files(processes):
     # Create the directory
     if not exists(DIRECTORY):
         os.makedirs(DIRECTORY)
@@ -75,7 +77,7 @@ def copy_files(observation_id, processes):
     # Scan the bucket
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
-    LOGGER.info('Scanning bucket: {0}, observation_id: {1}'.format(bucket, observation_id))
+    LOGGER.info('Scanning bucket: {0}/CLEAN'.format(bucket))
 
     # Create the queue
     queue = multiprocessing.JoinableQueue()
@@ -85,7 +87,7 @@ def copy_files(observation_id, processes):
         consumer = Consumer(queue)
         consumer.start()
 
-    for key in bucket.list(prefix='{0}/CLEAN'.format(observation_id)):
+    for key in bucket.list(prefix='CLEAN'):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('.image.tar.gz'):
@@ -103,14 +105,12 @@ def copy_files(observation_id, processes):
 
 def main():
     parser = argparse.ArgumentParser('Copy the CLEAN output from S3')
-    parser.add_argument('obs_id', help='the observation id')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
 
     args = vars(parser.parse_args())
-    observation_id = make_safe_filename(args['obs_id'])
     processes = args['processes']
 
-    copy_files(observation_id, processes)
+    copy_files(processes)
 
 if __name__ == "__main__":
     main()

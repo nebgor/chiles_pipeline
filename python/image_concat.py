@@ -26,6 +26,7 @@
 
 """
 import os
+from echo import dump_all
 
 MNT_OUTPUT_CHILES = '/mnt/output/Chiles/'
 
@@ -37,6 +38,7 @@ for dir_name in sorted(os.listdir(MNT_OUTPUT_CHILES)):
         print 'Adding: {0}'.format(path_join)
         cube_names.append(path_join)
 
+dump_all()
 print 'Start concatenating %s' % str(cube_names)
 final=ia.imageconcat(infiles=cube_names, outfile=out_name, relax=True)
 final.done()
