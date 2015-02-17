@@ -151,7 +151,6 @@ def get_frequency_groups(pairs_per_group):
     if len(frequency_group) > 0:
         frequency_groups.append(frequency_group)
 
-    dump_all()
     return frequency_groups
 
 

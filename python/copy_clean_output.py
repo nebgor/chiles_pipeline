@@ -77,14 +77,13 @@ def copy_files(frequency_id, processes):
         consumer.start()
 
     # Look in the output directory
-    directory_data = join(CHILES_CLEAN_OUTPUT, frequency_id)
-    LOGGER.info('directory_data: {0}'.format(directory_data))
-    for dir_name in os.listdir(directory_data):
+    LOGGER.info('directory_data: {0}'.format(CHILES_CLEAN_OUTPUT))
+    for dir_name in os.listdir(CHILES_CLEAN_OUTPUT):
         LOGGER.info('dir_name: {0}'.format(dir_name))
-        if isdir(join(directory_data, dir_name)) and dir_name.startswith('cube_'):
+        if isdir(join(CHILES_CLEAN_OUTPUT, dir_name)) and dir_name.startswith('cube_'):
             LOGGER.info('dir_name: {0}'.format(dir_name))
-            output_tar_filename = join(directory_data, dir_name + '.tar.gz')
-            queue.put(Task(output_tar_filename, frequency_id, join(directory_data, dir_name)))
+            output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar.gz')
+            queue.put(Task(output_tar_filename, frequency_id, join(CHILES_CLEAN_OUTPUT, dir_name)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
