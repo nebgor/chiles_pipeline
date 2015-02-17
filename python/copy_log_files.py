@@ -23,52 +23,43 @@
 #    MA 02111-1307  USA
 #
 """
-Copy the clean output
+Copy the log files to S3
 """
 import argparse
+import fnmatch
 import multiprocessing
 import os
-from os.path import join, isdir, basename
+from os.path import join
 import sys
+import datetime
 
-from common import Consumer, make_tarfile, LOGGER
-from settings_file import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
+from common import Consumer, LOGGER
+from settings_file import CHILES_BUCKET_NAME, CHILES_LOGS
 from s3_helper import S3Helper
+
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, output_tar_filename, frequency_id, directory_to_save):
-        self._output_tar_filename = output_tar_filename
-        self._frequency_id = frequency_id
-        self._directory_to_save = directory_to_save
+class CopyTask(object):
+    def __init__(self, filename, bucket_location):
+        self._filename = filename
+        self._bucket_location = bucket_location
 
     def __call__(self):
-        """
-        Actually run the job
-        """
         # noinspection PyBroadException
         try:
-            make_tarfile(self._output_tar_filename, self._directory_to_save)
-
-            LOGGER.info('Copying {0} to s3'.format(self._output_tar_filename))
+            LOGGER.info('Copying {0} to s3{1}'.format(self._filename, self._bucket_location))
             s3_helper = S3Helper()
-            s3_helper.add_file_to_bucket_multipart(
+            s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
-                '/CLEAN/{0}/{1}'.format(self._frequency_id, basename(self._output_tar_filename)),
-                self._output_tar_filename)
-
-            # Clean up
-            os.remove(self._output_tar_filename)
+                self._bucket_location,
+                self._filename)
         except Exception:
-            LOGGER.exception('Task died')
+            LOGGER.exception('CopyTask died')
 
 
-def copy_files(frequency_id, processes):
+def copy_files(s3_tag, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
     # Start the consumers
@@ -77,14 +68,13 @@ def copy_files(frequency_id, processes):
         consumer.start()
 
     # Look in the output directory
-    directory_data = join(CHILES_CLEAN_OUTPUT, frequency_id)
-    LOGGER.info('directory_data: {0}'.format(directory_data))
-    for dir_name in os.listdir(directory_data):
-        LOGGER.info('dir_name: {0}'.format(dir_name))
-        if isdir(join(directory_data, dir_name)) and dir_name.startswith('cube_'):
-            LOGGER.info('dir_name: {0}'.format(dir_name))
-            output_tar_filename = join(directory_data, dir_name + '.tar.gz')
-            queue.put(Task(output_tar_filename, frequency_id, join(directory_data, dir_name)))
+    today = datetime.date.today()
+    for root, dir_names, filenames in os.walk(CHILES_LOGS):
+        for match in fnmatch.filter(filenames, '*.log'):
+            LOGGER.info('Looking at: {0}'.format(join(root, match)))
+            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
+
+    queue.put(CopyTask('/var/log/chiles-output.log', '{0}/{1}{2:02d}{3:02d}/chiles-output.log'.format(s3_tag, today.year, today.month, today.day)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
@@ -95,14 +85,15 @@ def copy_files(frequency_id, processes):
 
 
 def main():
-    parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
-    parser.add_argument('frequency_id', help='the frequency id')
+    parser = argparse.ArgumentParser('Copy the log files to the correct place in S3')
+    parser.add_argument('s3_tag', help='the s3 tag to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
-    frequency_id = args['frequency_id']
+    s3_tag = args['s3_tag']
+
     processes = args['processes']
 
-    copy_files(frequency_id, processes)
+    copy_files(s3_tag, processes)
 
 if __name__ == "__main__":
     main()

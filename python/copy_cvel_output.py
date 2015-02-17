@@ -31,17 +31,16 @@ import multiprocessing
 import os
 from os.path import join
 import sys
-import datetime
 
 from common import make_safe_filename, Consumer, make_tarfile, LOGGER
-from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME, CHILES_LOGS
+from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task1(object):
+class Task(object):
     """
     The actual task
     """
@@ -72,24 +71,6 @@ class Task1(object):
             LOGGER.exception('Task1 died')
 
 
-class CopyTask(object):
-    def __init__(self, filename, bucket_location):
-        self._filename = filename
-        self._bucket_location = bucket_location
-
-    def __call__(self):
-        # noinspection PyBroadException
-        try:
-            LOGGER.info('Copying {0} to s3{1}'.format(self._filename, self._bucket_location))
-            s3_helper = S3Helper()
-            s3_helper.add_file_to_bucket(
-                CHILES_BUCKET_NAME,
-                self._bucket_location,
-                self._filename)
-        except Exception:
-            LOGGER.exception('CopyTask died')
-
-
 def copy_files(date, processes):
     # Create the queue
     queue = multiprocessing.JoinableQueue()
@@ -105,15 +86,7 @@ def copy_files(date, processes):
             LOGGER.info('Looking at: {0}'.format(result_dir))
 
             output_tar_filename = join(root, match + '.tar.gz')
-            queue.put(Task1(output_tar_filename, match, date, result_dir))
-
-    for root, dir_names, filenames in os.walk(CHILES_LOGS):
-        for match in fnmatch.filter(filenames, '*.log'):
-            LOGGER.info('Looking at: {0}'.format(join(root, match)))
-            queue.put(CopyTask(join(root, match), 'CVEL-logs/{0}/{1}/log/{2}'.format(date, root, match)))
-
-    today = datetime.date.today()
-    queue.put(CopyTask('/var/log/chiles-output.log', 'CVEL-logs/{0}/{1}{2}{3}/chiles-output.log'.format(date, today.year, today.month, today.day)))
+            queue.put(Task(output_tar_filename, match, date, result_dir))
 
     # Add a poison pill to shut things down
     for x in range(processes):

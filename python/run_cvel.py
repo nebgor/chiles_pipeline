@@ -108,7 +108,6 @@ class Task(object):
         AWS allows for a multipart m
         """
         user_data = MIMEMultipart()
-
         user_data.attach(get_cloud_init())
 
         # Build the strings we need

@@ -45,7 +45,7 @@ def echo(fn):
                      for a in argnames[len(v):] if a not in k]
         nameless = map(repr, v[argcount:])
         keyword = map(format_arg_value, k.items())
-        print '{0}({1},{2},{3},{4})'.format(name(fn), positional, defaulted, nameless, keyword)
+        print 'echo: {0}({1},{2},{3},{4})'.format(name(fn), positional, defaulted, nameless, keyword)
         return fn(*v, **k)
     return wrapped
 
@@ -56,7 +56,7 @@ def dump_all():
     caller_vars = caller.f_globals
     caller_vars.update(caller.f_locals)
 
-    print '''##### dump_all #####
+    print '''##### dump_all start #####
 {0}:{1} {2}'''.format(stack[1][1], stack[1][2], stack[1][3])
     ordered_dictionary = collections.OrderedDict(sorted(caller_vars.items()))
     for key, value in ordered_dictionary.iteritems():

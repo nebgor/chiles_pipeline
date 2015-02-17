@@ -209,5 +209,5 @@ def main():
             'ap-southeast-2a')
 
 if __name__ == "__main__":
-    # -p 3 -i r3.2xlarge -n "Kevin clean test" -s 0.10 vis_1400~1404
+    # -i r3.2xlarge -n "Kevin CLEAN" -s 0.10 vis_1400~1404
     main()
