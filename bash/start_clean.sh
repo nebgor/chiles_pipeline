@@ -48,7 +48,7 @@ export CH_SPLIT_TIMEOUT=3600 # 1 hour
 export CH_CLEAN_TIMEOUT=3600
 
 # create a separate casa_work directory for each casa process
-export CH_CASA_WORK_DIR=/mnt/output/Chiles/casa_work_dir
+export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
 
 mkdir -p ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 cd ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
