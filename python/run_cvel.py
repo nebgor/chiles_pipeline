@@ -261,5 +261,5 @@ def main():
             'ap-southeast-2a')
 
 if __name__ == "__main__":
-    # -i r3.xlarge -n "Kevin cvel test" -s 0.10 aws_access_key_id aws_secret_access_key 20131025_951_4 20131031_951_4
+    # -i r3.xlarge -n "Kevin cvel test" -s 0.10 20131025_951_4 20131031_951_4
     main()

@@ -49,7 +49,7 @@ class CopyTask(object):
     def __call__(self):
         # noinspection PyBroadException
         try:
-            LOGGER.info('Copying {0} to s3{1}'.format(self._filename, self._bucket_location))
+            LOGGER.info('Copying {0} to s3:{1}'.format(self._filename, self._bucket_location))
             s3_helper = S3Helper()
             s3_helper.add_file_to_bucket(
                 CHILES_BUCKET_NAME,
