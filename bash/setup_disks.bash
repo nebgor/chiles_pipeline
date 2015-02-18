@@ -65,9 +65,16 @@ if [ -b "/dev/xvdb" ]; then
         mkdir -p /mnt/output
         mount -t ext4 -o noatime /dev/md0 /mnt/output
     elif (( ephemeral_count == 1 )); then
-        # The ephemeral disk is mounted on /media/ephemeral0
-        rm -f /mnt/output
-        ln -s /media/ephemeral0 /mnt/output
+        if mountpoint -q "/media/ephemeral0" ; then
+            # The ephemeral disk is usually mounted on /media/ephemeral0
+            rm -f /mnt/output
+            ln -s /media/ephemeral0 /mnt/output
+        else
+            # The ephemeral disk is not mounted on /media/ephemeral0 so mount it
+            mkdir -p /mnt/output
+            mkfs.ext4 /dev/xvdb
+            mount /dev/xvdb /mnt/output
+        fi
     else
         mkdir -p /mnt/output
         mkfs.ext4 /dev/xvdb

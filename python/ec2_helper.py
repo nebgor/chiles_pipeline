@@ -98,14 +98,14 @@ class EC2Helper:
 
         LOGGER.info('Assigning the tags')
         self.ec2_connection.create_tags([instance.id],
-                                        {'CVEL': '{0}'.format(ami_id),
+                                        {'AMI': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})
 
         return instance
 
-    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details=None, ephemeral=False):
+    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details, ephemeral=False):
         """
         Run the ami as a spot instance
         """
@@ -167,7 +167,7 @@ class EC2Helper:
         # Give it time to settle down
         LOGGER.info('Assigning the tags')
         self.ec2_connection.create_tags([instance_id],
-                                        {'CVEL': '{0}'.format(ami_id),
+                                        {'AMI': '{0}'.format(ami_id),
                                          'Name': '{0}'.format(name),
                                          'Volume_id': '{0}'.format(volume_id),
                                          'Created By': '{0}'.format(created_by)})

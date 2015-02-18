@@ -93,6 +93,7 @@ class Task(object):
                 volume.id,
                 self._created_by,
                 '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
+                # TODO
                 ephemeral=True)
         else:
             ec2_instance = ec2_helper.run_instance(
