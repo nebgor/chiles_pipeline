@@ -49,7 +49,7 @@ class EC2Helper:
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
-    def build_block_device_map(ephemeral, ebs_size=None):
+    def build_block_device_map(ephemeral, number_ephemeral_disks=1, ebs_size=None):
         bdm = blockdevicemapping.BlockDeviceMapping()
 
         if ephemeral:
@@ -57,6 +57,11 @@ class EC2Helper:
             xvdb = BlockDeviceType()
             xvdb.ephemeral_name = 'ephemeral0'
             bdm['/dev/xvdb'] = xvdb
+
+            if number_ephemeral_disks == 2:
+                xvdc = BlockDeviceType()
+                xvdc.ephemeral_name = 'ephemeral1'
+                bdm['/dev/xvdc'] = xvdc
 
         if ebs_size:
             xvdc = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
@@ -100,12 +105,12 @@ class EC2Helper:
 
         return instance
 
-    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, ephemeral=False):
+    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details=None, ephemeral=False):
         """
         Run the ami as a spot instance
         """
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(ephemeral)
+        bdm = self.build_block_device_map(ephemeral, instance_details[2])
         spot_request = self.ec2_connection.request_spot_instances(spot_price,
                                                                   image_id=ami_id,
                                                                   count=1,

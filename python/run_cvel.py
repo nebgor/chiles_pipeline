@@ -34,7 +34,7 @@ import sys
 
 from common import get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
 from echo import dump_all
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
 from ec2_helper import EC2Helper
 
 
@@ -49,6 +49,7 @@ class Task(object):
             self,
             ami_id,
             user_data,
+            setup_disks,
             instance_type,
             obs_id,
             snapshot_id,
@@ -56,10 +57,12 @@ class Task(object):
             name,
             spot_price,
             zone,
+            instance_details,
             frequency_groups,
             counter):
         self._ami_id = ami_id
         self._user_data = user_data
+        self._setup_disks = setup_disks
         self._instance_type = instance_type
         self._obs_id = obs_id
         self._snapshot_id = snapshot_id
@@ -67,6 +70,7 @@ class Task(object):
         self._name = name
         self._spot_price = spot_price
         self._zone = zone
+        self._instance_details = instance_details
         self._frequency_groups = frequency_groups
         self._counter = counter
 
@@ -158,12 +162,14 @@ def start_servers(
         processes,
         ami_id,
         user_data,
+        setup_disks,
         instance_type,
         obs_ids,
         created_by,
         name,
-        spot_price=None,
-        zone=None):
+        instance_details,
+        spot_price,
+        zone):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -183,6 +189,7 @@ def start_servers(
                     Task(
                         ami_id,
                         user_data,
+                        setup_disks,
                         instance_type,
                         obs_id,
                         snapshot_id,
@@ -190,6 +197,7 @@ def start_servers(
                         name,
                         spot_price,
                         zone,
+                        instance_details,
                         frequency_groups,
                         counter))
                 counter += 1
@@ -221,11 +229,27 @@ def check_args(args):
     if args['name'] is None:
         return None
 
+    instance_details = AWS_INSTANCES.get(args['instance_type'])
+    if instance_details is None:
+        LOGGER.error('The instance type {0} is not supported.'.format(args['instance_type']))
+        return None
+    else:
+        LOGGER.info(
+            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB'.format(
+                args['instance_type'],
+                instance_details[0],
+                instance_details[1],
+                instance_details[2],
+                instance_details[3]))
+
     map_args.update({
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
         'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
         'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
-        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CVEL)})
+        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CVEL),
+        'setup_disks': get_script(BASH_SCRIPT_SETUP_DISKS),
+        'instance_details': instance_details,
+    })
 
     return map_args
 
@@ -252,10 +276,12 @@ def main():
             args['processes'],
             corrected_args['ami_id'],
             corrected_args['user_data'],
+            corrected_args['setup_disks'],
             args['instance_type'],
             corrected_args['obs_ids'],
             corrected_args['created_by'],
             args['name'],
+            corrected_args['instance_details'],
             corrected_args['spot_price'],
             'ap-southeast-2a')
 

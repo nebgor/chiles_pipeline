@@ -6,14 +6,16 @@
 # |_| \_|\___/ |_| |_____|
 #
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
-# Setup the ephemeral disk
+# Setup the ephemeral disks
+df -h
+
 if [ -b "/dev/xvdb" ]; then
 
     METADATA_URL_BASE="http://169.254.169.254/latest"
 
     yum -y -d0 install mdadm curl
 
-    # Configure Raid - take into account xvdb or sdb
+    # Configure Raid if needed - taking into account xvdb or sdb
     root_drive=`df -h | grep -v grep | awk 'NR==2{print $1}'`
 
     if [ "$root_drive" == "/dev/xvda1" ]; then
@@ -58,10 +60,9 @@ if [ -b "/dev/xvdb" ]; then
 
         partprobe
         mdadm --create --verbose /dev/md0 --level=0 -c256 --raid-devices=$ephemeral_count $drives
-        # echo DEVICE $drives | tee /etc/mdadm.conf
-        # mdadm --detail --scan | tee -a /etc/mdadm.conf
         blockdev --setra 65536 /dev/md0
-        mkfs -t ext4 /dev/md0
+        mkfs.ext4 /dev/md0
+        mkdir -p /mnt/output
         mount -t ext4 -o noatime /dev/md0 /mnt/output
     elif (( ephemeral_count == 1 )); then
         # The ephemeral disk is mounted on /media/ephemeral0

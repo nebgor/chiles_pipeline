@@ -86,6 +86,7 @@ class Task(object):
                 self._instance_type, None,
                 self._created_by,
                 '{0}-{1}'.format(self._frequency_id, self._name),
+                instance_details=self._instance_details,
                 ephemeral=True)
         else:
             ec2_instance = ec2_helper.run_instance(
