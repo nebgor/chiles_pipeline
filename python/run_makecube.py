@@ -62,6 +62,8 @@ def start_servers(
     LOGGER.info('obs_id: {0}'.format(obs_id))
     ec2_helper = EC2Helper()
     user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks)
+    LOGGER.info('{0}'.format(user_data_mime))
+
     if spot_price is not None:
         ec2_instance = ec2_helper.run_spot_instance(
             ami_id,

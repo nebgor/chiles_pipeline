@@ -1,3 +1,4 @@
+#!/bin/bash
 export CH_JOB_ID=0
 export CH_RUN_ID=0
 export CH_NUM_JOB=0
