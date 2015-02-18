@@ -9,7 +9,7 @@
 # Setup the ephemeral disk
 if [ -b "/dev/xvdb" ]; then
 
-    METADATA_URL_BASE="http://169.254.169.254/latest/meta-data/"
+    METADATA_URL_BASE="http://169.254.169.254/latest"
 
     yum -y -d0 install mdadm curl
 
@@ -48,8 +48,8 @@ if [ -b "/dev/xvdb" ]; then
       fi
     done
 
-    echo "Ephemeral count = $ephemeral_count"
-    if [ "$ephemeral_count" > 1 ]; then
+    echo "ephemeral_count = $ephemeral_count"
+    if (( ephemeral_count > 1 )); then
         umount /media/ephemeral0
         # overwrite first few blocks in case there is a filesystem, otherwise mdadm will prompt for input
         for drive in $drives; do
@@ -63,7 +63,7 @@ if [ -b "/dev/xvdb" ]; then
         blockdev --setra 65536 /dev/md0
         mkfs -t ext4 /dev/md0
         mount -t ext4 -o noatime /dev/md0 /mnt/output
-    elif [ "$ephemeral_count" = 1 ]; then
+    elif (( ephemeral_count == 1 )); then
         # The ephemeral disk is mounted on /media/ephemeral0
         rm -f /mnt/output
         ln -s /media/ephemeral0 /mnt/output

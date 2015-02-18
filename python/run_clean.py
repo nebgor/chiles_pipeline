@@ -56,7 +56,8 @@ class Task(object):
             created_by,
             name,
             spot_price,
-            zone):
+            zone,
+            instance_details):
         self._ami_id = ami_id
         self._user_data = user_data
         self._setup_disks = setup_disks
@@ -66,6 +67,7 @@ class Task(object):
         self._name = name
         self._spot_price = spot_price
         self._zone = zone
+        self._instance_details = instance_details
 
     def __call__(self):
         """
@@ -108,8 +110,9 @@ def start_servers(
         frequency_ids,
         created_by,
         name,
-        spot_price=None,
-        zone=None):
+        instance_details,
+        spot_price,
+        zone):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -129,7 +132,8 @@ def start_servers(
                 created_by,
                 name,
                 spot_price,
-                zone))
+                zone,
+                instance_details))
 
         # Add a poison pill to shut things down
     for x in range(processes):
@@ -194,6 +198,7 @@ def check_args(args):
         'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
         'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CLEAN),
         'setup_disks': get_script(BASH_SCRIPT_SETUP_DISKS),
+        'instance_details': instance_details,
     })
     return map_args
 
@@ -224,6 +229,7 @@ def main():
             args['frequencies'],
             corrected_args['created_by'],
             args['name'],
+            corrected_args['instance_details'],
             corrected_args['spot_price'],
             'ap-southeast-2a')
 
