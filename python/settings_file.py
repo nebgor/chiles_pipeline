@@ -56,6 +56,25 @@ AWS_REGION = None
 BASH_SCRIPT_CVEL = None
 BASH_SCRIPT_CLEAN = None
 BASH_SCRIPT_MAKECUBE = None
+BASH_SCRIPT_SETUP_DISKS = 'setup_disks.bash'
+
+# [vCPU, Mem, Num Disks, Size]
+AWS_INSTANCES = {
+    'm3.medium': [1, 3.75, 1, 4],
+    'm3.large': [2, 7.5, 1, 32],
+    'm3.xlarge': [4, 15, 2, 40],
+    'm3.2xlarge': [8, 30, 2, 80],
+    'c3.large': [2, 3.75, 2, 16],
+    'c3.xlarge': [4, 7.5, 2, 40],
+    'c3.2xlarge': [8, 15, 2, 80],
+    'c3.4xlarge': [16, 30, 2, 160],
+    'c3.8xlarge': [32, 60, 2, 320],
+    'r3.large': [2, 15, 1, 32],
+    'r3.xlarge': [4, 30.5, 1, 80],
+    'r3.2xlarge': [8, 61, 1, 160],
+    'r3.4xlarge': [16, 122, 1, 320],
+    'r3.8xlarge': [32, 244, 2, 320],
+}
 
 config_file_name = dirname(__file__) + '/chiles.settings'
 if exists(config_file_name):

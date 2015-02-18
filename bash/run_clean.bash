@@ -1,28 +1,22 @@
-#!/bin/bash -vx
+#  _   _  ___ _____ _____
+# | \ | |/ _ \_   _| ____|
+# |  \| | | | || | |  _|
+# | |\  | |_| || | | |___
+# |_| \_|\___/ |_| |_____|
+#
+# The disk setup is done in the setup_disks.bash script
+#
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
-# Setup the ephemeral disk
-if [ -b "/dev/xvdb" ]; then
-  if mountpoint -q "/media/ephemeral0" ; then
-    # The ephemeral disk is mounted on /media/ephemeral0
-    rm -f /mnt/output
-    ln -s /media/ephemeral0 /mnt/output
-  else
-    mkdir -p /mnt/output
-    mkfs.ext4 /dev/xvdb
-    mount /dev/xvdb /mnt/output
-  fi
-fi
-chmod oug+wrx /mnt/output
 
-# Wait for the boto file to be created
-while [ ! -f "/home/ec2-user/.boto" ]; do
-  echo Sleeping
-  sleep 30
-done
-sleep 5
+# Clean uses a lot of memory so make a swap on the disk
+/bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count=32
+chown root:root /mnt/output/swapfile
+chmod 600 /mnt/output/swapfile
+/sbin/mkswap /mnt/output/swapfile
+/sbin/swapon /mnt/output/swapfile
 
 # We need lots and lots of files open for the clean process
-ulimit -n 8196
+ulimit -n 8192
 
 # Copy files from S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'

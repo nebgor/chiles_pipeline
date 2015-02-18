@@ -1,27 +1,84 @@
-#!/bin/bash
+#!/bin/bash -vx
+#  _   _  ___ _____ _____
+# | \ | |/ _ \_   _| ____|
+# |  \| | | | || | |  _|
+# | |\  | |_| || | | |___
+# |_| \_|\___/ |_| |_____|
+#
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 # Setup the ephemeral disk
 if [ -b "/dev/xvdb" ]; then
-  if mountpoint -q "/media/ephemeral0" ; then
-    # The ephemeral disk is mounted on /media/ephemeral0
-    rm -f /mnt/data2
-    ln -s /media/ephemeral0 /mnt/data2
-  else
-    mkdir -p /mnt/data2
-    mkfs.ext4 /dev/xvdb
-    mount /dev/xvdb /mnt/data2
-  fi
+
+    METADATA_URL_BASE="http://169.254.169.254/latest/meta-data/"
+
+    yum -y -d0 install mdadm curl
+
+    # Configure Raid - take into account xvdb or sdb
+    root_drive=`df -h | grep -v grep | awk 'NR==2{print $1}'`
+
+    if [ "$root_drive" == "/dev/xvda1" ]; then
+      echo "Detected 'xvd' drive naming scheme (root: $root_drive)"
+      DRIVE_SCHEME='xvd'
+    else
+      echo "Detected 'sd' drive naming scheme (root: $root_drive)"
+      DRIVE_SCHEME='sd'
+    fi
+
+    # figure out how many ephemerals we have by querying the metadata API, and then:
+    #  - convert the drive name returned from the API to the hosts DRIVE_SCHEME, if necessary
+    #  - verify a matching device is available in /dev/
+    drives=""
+    ephemeral_count=0
+    ephemerals=$(curl --silent $METADATA_URL_BASE/meta-data/block-device-mapping/ | grep ephemeral)
+    for e in $ephemerals; do
+      echo "Probing $e .."
+      device_name=$(curl --silent $METADATA_URL_BASE/meta-data/block-device-mapping/$e)
+      # might have to convert 'sdb' -> 'xvdb'
+      device_name=$(echo $device_name | sed "s/sd/$DRIVE_SCHEME/")
+      device_path="/dev/$device_name"
+
+      # test that the device actually exists since you can request more ephemeral drives than are available
+      # for an instance type and the meta-data API will happily tell you it exists when it really does not.
+      if [ -b $device_path ]; then
+        echo "Detected ephemeral disk: $device_path"
+        drives="$drives $device_path"
+        ephemeral_count=$((ephemeral_count + 1 ))
+      else
+        echo "Ephemeral disk $e, $device_path is not present. skipping"
+      fi
+    done
+
+    echo "Ephemeral count = $ephemeral_count"
+    if [ "$ephemeral_count" > 1 ]; then
+        umount /media/ephemeral0
+        # overwrite first few blocks in case there is a filesystem, otherwise mdadm will prompt for input
+        for drive in $drives; do
+          dd if=/dev/zero of=$drive bs=4096 count=1024
+        done
+
+        partprobe
+        mdadm --create --verbose /dev/md0 --level=0 -c256 --raid-devices=$ephemeral_count $drives
+        # echo DEVICE $drives | tee /etc/mdadm.conf
+        # mdadm --detail --scan | tee -a /etc/mdadm.conf
+        blockdev --setra 65536 /dev/md0
+        mkfs -t ext4 /dev/md0
+        mount -t ext4 -o noatime /dev/md0 /mnt/output
+    elif [ "$ephemeral_count" = 1 ]; then
+        # The ephemeral disk is mounted on /media/ephemeral0
+        rm -f /mnt/output
+        ln -s /media/ephemeral0 /mnt/output
+    else
+        mkdir -p /mnt/output
+        mkfs.ext4 /dev/xvdb
+        mount /dev/xvdb /mnt/output
+    fi
 fi
-chmod oug+wrx /mnt/data2
+chmod oug+wrx /mnt/output
 
-# As we might need to wait for the mount point to arrive as it can only be attached
-# after the instance is running
-sleep 10
-while [ ! -b "/dev/xvdf" ]; do
-  echo Sleeping
-  sleep 10
+# Wait for the boto file to be created
+while [ ! -f "/home/ec2-user/.boto" ]; do
+    echo Sleeping
+    sleep 30
 done
+sleep 5
 
-# Now mount the data disk
-mkdir -p /mnt/data1
-mount /dev/xvdf /mnt/data1

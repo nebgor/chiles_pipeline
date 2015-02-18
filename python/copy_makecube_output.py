@@ -30,22 +30,20 @@ import os
 from os.path import join, isdir, basename
 import sys
 
-from common import make_safe_filename, Consumer, make_tarfile, LOGGER
+from common import make_safe_filename, make_tarfile, LOGGER
 from settings_file import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
 from s3_helper import S3Helper
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def copy_files(observation_id, processes):
-    # Create the helper
-    s3_helper = S3Helper()
-
+def copy_files(cube):
     # Look in the output directory
-    directory_to_save = join(CHILES_IMGCONCAT_OUTPUT, observation_id) + '.cube'
+    directory_to_save = join(CHILES_IMGCONCAT_OUTPUT, cube) + '.cube'
     if isdir(directory_to_save):
         LOGGER.info('dir_name: {0}'.format(directory_to_save))
         output_tar_filename = directory_to_save + '.tar.gz'
+        # noinspection PyBroadException
         try:
             make_tarfile(output_tar_filename, directory_to_save)
 
@@ -53,7 +51,7 @@ def copy_files(observation_id, processes):
             s3_helper = S3Helper()
             s3_helper.add_file_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
-                observation_id + '/IMGCONCAT/' + basename(output_tar_filename),
+                'IMGCONCAT/{0}' + basename(output_tar_filename),
                 output_tar_filename)
 
             # Clean up
@@ -61,25 +59,14 @@ def copy_files(observation_id, processes):
         except Exception:
             LOGGER.exception('Task died')
 
-    s3_helper.add_file_to_bucket(
-        CHILES_BUCKET_NAME,
-        observation_id + '/IMGCONCAT/log/chiles-output.log',
-        '/var/log/chiles-output.log')
-    s3_helper.add_file_to_bucket(
-        CHILES_BUCKET_NAME,
-        observation_id + '/IMGCONCAT/log/casapy.log',
-        join('/mnt/output/Chiles/casa_work_dir/casapy.log'.format(observation_id)))
-
 
 def main():
     parser = argparse.ArgumentParser('Copy the IMGCONCAT output to the correct place in S3')
-    parser.add_argument('obs_id', help='the observation id')
-    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+    parser.add_argument('cube', help='the cube id')
     args = vars(parser.parse_args())
-    observation_id = make_safe_filename(args['obs_id'])
-    processes = args['processes']
+    cube = make_safe_filename(args['cube'])
 
-    copy_files(observation_id, processes)
+    copy_files(cube)
 
 if __name__ == "__main__":
     main()

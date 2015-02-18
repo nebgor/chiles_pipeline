@@ -35,7 +35,7 @@ import sys
 
 from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER
 from echo import echo
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN, BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES
 from ec2_helper import EC2Helper
 
 
@@ -50,6 +50,7 @@ class Task(object):
             self,
             ami_id,
             user_data,
+            setup_disks,
             instance_type,
             frequency_id,
             created_by,
@@ -58,6 +59,7 @@ class Task(object):
             zone):
         self._ami_id = ami_id
         self._user_data = user_data
+        self._setup_disks = setup_disks
         self._instance_type = instance_type
         self._frequency_id = frequency_id
         self._created_by = created_by
@@ -71,7 +73,7 @@ class Task(object):
         """
         LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
-        user_data_mime = get_mime_encoded_user_data(self._user_data, self._frequency_id)
+        user_data_mime = get_mime_encoded_user_data(self._user_data, self._frequency_id, self._setup_disks)
         LOGGER.info('{0}'.format(user_data_mime))
 
         if self._spot_price is not None:
@@ -101,6 +103,7 @@ def start_servers(
         processes,
         ami_id,
         user_data,
+        setup_disks,
         instance_type,
         frequency_ids,
         created_by,
@@ -120,6 +123,7 @@ def start_servers(
             Task(
                 ami_id,
                 user_data,
+                setup_disks,
                 instance_type,
                 frequency_id,
                 created_by,
@@ -135,7 +139,7 @@ def start_servers(
     tasks.join()
 
 
-def get_mime_encoded_user_data(data, frequency_id):
+def get_mime_encoded_user_data(data, frequency_id, setup_disks):
     """
     AWS allows for a multipart m
     """
@@ -151,7 +155,7 @@ def get_mime_encoded_user_data(data, frequency_id):
     user_data.attach(get_cloud_init())
 
     data_formatted = data.format(frequency_id, min_freq, max_freq)
-    user_data.attach(MIMEText(data_formatted))
+    user_data.attach(MIMEText(setup_disks + data_formatted))
     return user_data.as_string()
 
 
@@ -171,12 +175,26 @@ def check_args(args):
     if args['name'] is None:
         return None
 
+    instance_details = AWS_INSTANCES.get(args['instance_type'])
+    if instance_details is None:
+        LOGGER.error('The instance type {0} is not supported.'.format(args['instance_type']))
+        return None
+    else:
+        LOGGER.info(
+            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB'.format(
+                args['instance_type'],
+                instance_details[0],
+                instance_details[1],
+                instance_details[2],
+                instance_details[3]))
+
     map_args.update({
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
         'created_by': args['created_by'] if args['created_by'] is not None else getpass.getuser(),
         'spot_price': args['spot_price'] if args['spot_price'] is not None else None,
-        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CLEAN)})
-
+        'user_data': get_script(args['bash_script'] if args['bash_script'] is not None else BASH_SCRIPT_CLEAN),
+        'setup_disks': get_script(BASH_SCRIPT_SETUP_DISKS),
+    })
     return map_args
 
 
@@ -201,6 +219,7 @@ def main():
             args['processes'],
             corrected_args['ami_id'],
             corrected_args['user_data'],
+            corrected_args['setup_disks'],
             args['instance_type'],
             args['frequencies'],
             corrected_args['created_by'],
