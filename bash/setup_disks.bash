@@ -7,6 +7,8 @@
 #
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 # Setup the ephemeral disks
+
+# Print into the logs the disk free
 df -h
 
 if [ -b "/dev/xvdb" ]; then
@@ -82,6 +84,9 @@ if [ -b "/dev/xvdb" ]; then
     fi
 fi
 chmod oug+wrx /mnt/output
+
+# Print into the logs the disk free
+df -h
 
 # Wait for the boto file to be created
 while [ ! -f "/home/ec2-user/.boto" ]; do

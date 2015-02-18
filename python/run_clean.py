@@ -75,7 +75,7 @@ class Task(object):
         """
         LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
-        user_data_mime = get_mime_encoded_user_data(self._user_data, self._frequency_id, self._setup_disks)
+        user_data_mime = self.get_mime_encoded_user_data()
         LOGGER.info('{0}'.format(user_data_mime))
 
         if self._spot_price is not None:
@@ -100,6 +100,35 @@ class Task(object):
 
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
         setup_aws_machine(ec2_instance.ip_address)
+
+    def get_mime_encoded_user_data(self):
+        """
+        AWS allows for a multipart m
+        """
+        # Split the frequencies
+        index_underscore = find(self._frequency_id, '_')
+        index_tilde = find(self._frequency_id, '~')
+        min_freq = self._frequency_id[index_underscore + 1:index_tilde]
+        max_freq = self._frequency_id[index_tilde + 1:]
+        LOGGER.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
+
+        # Build the mime message
+        user_data = MIMEMultipart()
+        user_data.attach(get_cloud_init())
+
+        swap_size = self.get_swap_size()
+        data_formatted = self._user_data.format(self._frequency_id, min_freq, max_freq, swap_size)
+        user_data.attach(MIMEText(self._setup_disks + data_formatted))
+        return user_data.as_string()
+
+    def get_swap_size(self):
+        ephemeral_size = self._instance_details[2] * self._instance_details[3]
+        if ephemeral_size > 100:
+            return 32
+        elif ephemeral_size > 32:
+            return 8
+        else:
+            return 1
 
 
 def start_servers(
@@ -142,26 +171,6 @@ def start_servers(
 
     # Wait for the queue to terminate
     tasks.join()
-
-
-def get_mime_encoded_user_data(data, frequency_id, setup_disks):
-    """
-    AWS allows for a multipart m
-    """
-    # Split the frequencies
-    index_underscore = find(frequency_id, '_')
-    index_tilde = find(frequency_id, '~')
-    min_freq = frequency_id[index_underscore + 1:index_tilde]
-    max_freq = frequency_id[index_tilde + 1:]
-    LOGGER.info('min_freq: {0}, max_freq: {1}'.format(min_freq, max_freq))
-
-    # Build the mime message
-    user_data = MIMEMultipart()
-    user_data.attach(get_cloud_init())
-
-    data_formatted = data.format(frequency_id, min_freq, max_freq)
-    user_data.attach(MIMEText(setup_disks + data_formatted))
-    return user_data.as_string()
 
 
 @echo

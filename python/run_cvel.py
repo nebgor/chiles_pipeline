@@ -33,7 +33,6 @@ import multiprocessing
 import sys
 
 from common import get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
-from echo import dump_all
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
 from ec2_helper import EC2Helper
 
@@ -82,7 +81,7 @@ class Task(object):
         ec2_helper = EC2Helper()
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone)
         LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
-        user_data_mime = self.get_mime_encoded_user_data(self._user_data, volume.id)
+        user_data_mime = self.get_mime_encoded_user_data(volume.id)
 
         if self._spot_price is not None:
             ec2_instance = ec2_helper.run_spot_instance(
@@ -93,7 +92,7 @@ class Task(object):
                 volume.id,
                 self._created_by,
                 '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
-                # TODO
+                self._instance_details,
                 ephemeral=True)
         else:
             ec2_instance = ec2_helper.run_instance(
@@ -108,7 +107,7 @@ class Task(object):
         # Setup boto via SSH so we don't pass our keys etc in "the clear"
         setup_aws_machine(ec2_instance.ip_address)
 
-    def get_mime_encoded_user_data(self, data, volume_id):
+    def get_mime_encoded_user_data(self, volume_id):
         """
         AWS allows for a multipart m
         """
@@ -118,9 +117,9 @@ class Task(object):
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
 
-        data_formatted = data.format(cvel_pipeline, self._obs_id, volume_id)
+        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id)
         LOGGER.info(data_formatted)
-        user_data.attach(MIMEText(data_formatted))
+        user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
 
     def build_cvel_pipeline(self):

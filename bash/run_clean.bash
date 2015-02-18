@@ -9,7 +9,7 @@
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 
 # Clean uses a lot of memory so make a swap on the disk
-/bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count=32
+/bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count={3}
 chown root:root /mnt/output/swapfile
 chmod 600 /mnt/output/swapfile
 /sbin/mkswap /mnt/output/swapfile

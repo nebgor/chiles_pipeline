@@ -111,16 +111,17 @@ class EC2Helper:
         """
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
         bdm = self.build_block_device_map(ephemeral, instance_details[2])
-        spot_request = self.ec2_connection.request_spot_instances(spot_price,
-                                                                  image_id=ami_id,
-                                                                  count=1,
-                                                                  valid_until=now_plus.isoformat(),
-                                                                  instance_type=instance_type,
-                                                                  subnet_id=AWS_SUBNET_ID,
-                                                                  key_name=AWS_KEY_NAME,
-                                                                  security_group_ids=AWS_SECURITY_GROUPS,
-                                                                  user_data=user_data,
-                                                                  block_device_map=bdm)
+        spot_request = self.ec2_connection.request_spot_instances(
+            spot_price,
+            image_id=ami_id,
+            count=1,
+            valid_until=now_plus.isoformat(),
+            instance_type=instance_type,
+            subnet_id=AWS_SUBNET_ID,
+            key_name=AWS_KEY_NAME,
+            security_group_ids=AWS_SECURITY_GROUPS,
+            user_data=user_data,
+            block_device_map=bdm)
 
         # Wait for EC2 to provision the instance
         time.sleep(10)
@@ -166,11 +167,14 @@ class EC2Helper:
 
         # Give it time to settle down
         LOGGER.info('Assigning the tags')
-        self.ec2_connection.create_tags([instance_id],
-                                        {'AMI': '{0}'.format(ami_id),
-                                         'Name': '{0}'.format(name),
-                                         'Volume_id': '{0}'.format(volume_id),
-                                         'Created By': '{0}'.format(created_by)})
+        self.ec2_connection.create_tags(
+            [instance_id],
+            {
+                'AMI': '{0}'.format(ami_id),
+                'Name': '{0}'.format(name),
+                'Volume_id': '{0}'.format(volume_id),
+                'Created By': '{0}'.format(created_by)
+            })
 
         return instance
 
