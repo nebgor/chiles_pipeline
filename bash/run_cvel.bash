@@ -8,6 +8,19 @@
 #
 # When this is run as a user data start up script is is run as root - BE CAREFUL!!!
 
+# As we might need to wait for the mount point to arrive as it can only be attached
+# after the instance is running
+sleep 10
+while [ ! -b "/dev/xvdf" ]; do
+  echo Sleeping
+  sleep 30
+done
+
+# Now mount the data disk
+mkdir -p /mnt/Data/data1
+mount /dev/xvdf /mnt/Data/data1
+chmod -R oug+r /mnt/Data/data1
+
 # Run the cvel pipeline
 ##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
 {0}

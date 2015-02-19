@@ -28,6 +28,7 @@ Copy the clean output
 import argparse
 import os
 from os.path import join, isdir, basename
+import shutil
 import sys
 
 from common import make_safe_filename, make_tarfile, LOGGER
@@ -38,6 +39,13 @@ LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 def copy_files(cube):
+    # We need to clear some space as the tar takes a lot of space
+    for dir_name in os.listdir(CHILES_IMGCONCAT_OUTPUT):
+        LOGGER.info('dir_name: {0}'.format(dir_name))
+        if isdir(join(CHILES_IMGCONCAT_OUTPUT, dir_name)) and dir_name.endswith('.image'):
+            LOGGER.info('removing: {0}'.format(dir_name))
+            shutil.rmtree(join(CHILES_IMGCONCAT_OUTPUT, dir_name), ignore_errors=True)
+
     # Look in the output directory
     directory_to_save = join(CHILES_IMGCONCAT_OUTPUT, cube) + '.cube'
     if isdir(directory_to_save):
@@ -51,7 +59,7 @@ def copy_files(cube):
             s3_helper = S3Helper()
             s3_helper.add_file_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
-                'IMGCONCAT/{0}' + basename(output_tar_filename),
+                'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
                 output_tar_filename)
 
             # Clean up

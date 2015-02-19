@@ -184,7 +184,7 @@ def start_servers(
         if snapshot_id is None:
             LOGGER.warning('The obs-id: {0} does not exist in the settings file')
         else:
-            for frequency_groups in get_frequency_groups(6):
+            for frequency_groups in get_frequency_groups(12):
                 tasks.put(
                     Task(
                         ami_id,
@@ -199,7 +199,9 @@ def start_servers(
                         zone,
                         instance_details,
                         frequency_groups,
-                        counter))
+                        counter
+                    )
+                )
                 counter += 1
 
         # Add a poison pill to shut things down
