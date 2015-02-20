@@ -81,7 +81,7 @@ class Task(object):
         ec2_helper = EC2Helper()
         iops = None
         if self._instance_details.iops_support:
-            iops = 1000
+            iops = 500
         volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone, iops=iops)
         LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
         user_data_mime = self.get_mime_encoded_user_data(volume.id)
