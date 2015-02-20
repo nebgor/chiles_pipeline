@@ -151,7 +151,7 @@ runcmd:
  - pip install {0}
 
 write_files:
- - context: |
+ - content: |
 {1}
    path: /etc/boto.cfg
 
