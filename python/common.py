@@ -147,7 +147,7 @@ write_files:
    {1}
 
 # Log all cloud-init process output (info & errors) to a logfile
-output : { all : ">> /var/log/chiles-output.log" }
+output : {{ all : ">> /var/log/chiles-output.log" }}
 
 # Final_message written to log when cloud-init processes are finished
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
