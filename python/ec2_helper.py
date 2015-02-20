@@ -110,7 +110,7 @@ class EC2Helper:
         Run the ami as a spot instance
         """
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(ephemeral, instance_details[2])
+        bdm = self.build_block_device_map(ephemeral, instance_details.number_disks)
         spot_request = self.ec2_connection.request_spot_instances(
             spot_price,
             image_id=ami_id,

@@ -238,12 +238,13 @@ def check_args(args):
         return None
     else:
         LOGGER.info(
-            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB'.format(
+            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB, IOPS: {5}'.format(
                 args['instance_type'],
-                instance_details[0],
-                instance_details[1],
-                instance_details[2],
-                instance_details[3]))
+                instance_details.vCPU,
+                instance_details.memory,
+                instance_details.number_disks,
+                instance_details.size,
+                instance_details.iops_support))
 
     map_args.update({
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
