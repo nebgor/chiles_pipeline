@@ -32,6 +32,7 @@ import multiprocessing
 from os.path import join, dirname, basename, expanduser
 import re
 import tarfile
+from textwrap import TextWrapper
 import unicodedata
 
 from settings_file import PIP_PACKAGES
@@ -111,6 +112,16 @@ def get_script(file_name):
     return data
 
 
+def yaml_text(input_text):
+    """
+    Yaml's the text
+    """
+    list_lines = []
+    for line in input_text.split('\n'):
+        list_lines.append('    ' + line)
+    return '\n'.join(list_lines)
+
+
 def get_cloud_init():
     return MIMEText('''
 #cloud-config
@@ -142,16 +153,16 @@ runcmd:
  - pip install {0}
 
 write_files:
- - path: /etc/boto.cfg
  - context: |
-   {1}
+{1}
+ - path: /etc/boto.cfg
 
 # Log all cloud-init process output (info & errors) to a logfile
 output : {{ all : ">> /var/log/chiles-output.log" }}
 
 # Final_message written to log when cloud-init processes are finished
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
-'''.format(PIP_PACKAGES, get_boto_data()))
+'''.format(PIP_PACKAGES, yaml_text(get_boto_data())))
 
 
 def make_tarfile(output_filename, source_dir):
