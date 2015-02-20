@@ -118,7 +118,7 @@ def yaml_text(input_text):
     """
     list_lines = []
     for line in input_text.split('\n'):
-        list_lines.append('    ' + line)
+        list_lines.append('      ' + line)
     return '\n'.join(list_lines)
 
 
@@ -132,12 +132,10 @@ repo_upgrade: all
 packages:
  - wget
  - git
- - python-pip
  - libXrandr
  - libXfixes
  - libXcursor
  - libXinerama
- - libXvfd
  - htop
  - sysstat
 
@@ -149,13 +147,13 @@ power_state:
  timeout: 120
 
 runcmd:
- - cd /home/ec2-user/chiles_pipeline ; git pull
+ - (cd /home/ec2-user/chiles_pipeline ; git pull)
  - pip install {0}
 
 write_files:
  - context: |
 {1}
- - path: /etc/boto.cfg
+   path: /etc/boto.cfg
 
 # Log all cloud-init process output (info & errors) to a logfile
 output : {{ all : ">> /var/log/chiles-output.log" }}
