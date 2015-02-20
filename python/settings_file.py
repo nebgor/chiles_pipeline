@@ -28,6 +28,15 @@ Chiles settings
 from os.path import exists, dirname, expanduser
 from configobj import ConfigObj
 
+class AwsInstance:
+    def __init__(self, vCPU, memory, number_disks, size, iops_support):
+        self.vCPU = vCPU
+        self.memory = memory
+        self.number_disks = number_disks
+        self.size = size
+        self.iops_support = iops_support
+
+
 CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 CHILES_CLEAN_OUTPUT = '/mnt/output/Chiles/split_cubes'
 CHILES_IMGCONCAT_OUTPUT = '/mnt/output/Chiles'
@@ -41,7 +50,7 @@ USERNAME = 'ec2-user'
 FREQUENCY_WIDTH = 4
 FREQUENCY_GROUPS = []
 
-# for bottom_freq in range(1200, 1424, FREQUENCY_WIDTH):
+#for bottom_freq in range(1200, 1424, FREQUENCY_WIDTH):
 for bottom_freq in range(1200, 1204, FREQUENCY_WIDTH):
     FREQUENCY_GROUPS.append([bottom_freq, bottom_freq + FREQUENCY_WIDTH])
 
@@ -56,22 +65,22 @@ BASH_SCRIPT_CLEAN = None
 BASH_SCRIPT_MAKECUBE = None
 BASH_SCRIPT_SETUP_DISKS = 'setup_disks.bash'
 
-# [vCPU, Mem, Num Disks, Size]
+# AwsInstance(vCPU, Mem, Num Disks, Size, IOPS support)
 AWS_INSTANCES = {
-    'm3.medium': [1, 3.75, 1, 4],
-    'm3.large': [2, 7.5, 1, 32],
-    'm3.xlarge': [4, 15, 2, 40],
-    'm3.2xlarge': [8, 30, 2, 80],
-    'c3.large': [2, 3.75, 2, 16],
-    'c3.xlarge': [4, 7.5, 2, 40],
-    'c3.2xlarge': [8, 15, 2, 80],
-    'c3.4xlarge': [16, 30, 2, 160],
-    'c3.8xlarge': [32, 60, 2, 320],
-    'r3.large': [2, 15, 1, 32],
-    'r3.xlarge': [4, 30.5, 1, 80],
-    'r3.2xlarge': [8, 61, 1, 160],
-    'r3.4xlarge': [16, 122, 1, 320],
-    'r3.8xlarge': [32, 244, 2, 320],
+    'm3.medium': AwsInstance(1, 3.75, 1, 4, False),
+    'm3.large': AwsInstance(2, 7.5, 1, 32, False),
+    'm3.xlarge': AwsInstance(4, 15, 2, 40, True),
+    'm3.2xlarge': AwsInstance(8, 30, 2, 80, True),
+    'c3.large': AwsInstance(2, 3.75, 2, 16, False),
+    'c3.xlarge': AwsInstance(4, 7.5, 2, 40, True),
+    'c3.2xlarge': AwsInstance(8, 15, 2, 80, True),
+    'c3.4xlarge': AwsInstance(16, 30, 2, 160, True),
+    'c3.8xlarge': AwsInstance(32, 60, 2, 320, True),
+    'r3.large': AwsInstance(2, 15, 1, 32, False),
+    'r3.xlarge': AwsInstance(4, 30.5, 1, 80, True),
+    'r3.2xlarge': AwsInstance(8, 61, 1, 160, True),
+    'r3.4xlarge': AwsInstance(16, 122, 1, 320, True),
+    'r3.8xlarge': AwsInstance(32, 244, 2, 320, True),
 }
 
 config_file_name = dirname(__file__) + '/chiles.settings'

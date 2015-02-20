@@ -44,6 +44,7 @@ def copy_files(date, vis_file):
     s3_helper = S3Helper()
     # Look in the output directory
     for root, dir_names, filenames in os.walk(CHILES_CVEL_OUTPUT):
+        LOGGER.info('root: {0}, dir_names: {1}, filenames: {2}'.format(root, dir_names, filenames))
         for match in fnmatch.filter(dir_names, vis_file):
             result_dir = join(root, match)
             LOGGER.info('Working on: {0}'.format(result_dir))

@@ -26,8 +26,6 @@ chmod -R oug+r /mnt/Data/data1
 ##### runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_ obs-id' #####
 {0}
 
-# Copy files to S3
-
 # Copy log files to S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}'
 

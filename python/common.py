@@ -136,6 +136,7 @@ packages:
  - libXinerama
  - htop
  - sysstat
+ - iotop
 
 # Add a kill command so if it goes TU we will kill the instance
 power_state:
