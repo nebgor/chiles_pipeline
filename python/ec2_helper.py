@@ -193,7 +193,11 @@ class EC2Helper:
 
     def create_volume(self, snapshot_id, zone, iops=None):
         snapshot = self.ec2_connection.get_all_snapshots([snapshot_id])
-        volume = self.ec2_connection.create_volume(None, zone, snapshot=snapshot_id, volume_type='gp2', iops=iops)
+        if iops is None:
+            volume_type = 'gp2'
+        else:
+            volume_type = 'io1'
+        volume = self.ec2_connection.create_volume(None, zone, snapshot=snapshot_id, volume_type=volume_type, iops=iops)
         snapshot_name = snapshot[0].tags['Name']
 
         self.ec2_connection.create_tags(volume.id, {'Name': 'CAN BE DELETED: ' + snapshot_name})
