@@ -33,12 +33,8 @@ from os.path import join, dirname, basename, expanduser
 import re
 import tarfile
 import unicodedata
-import time
 
-from fabric.api import settings, cd, sudo, run
-from fabric.utils import fastprint, puts
-
-from settings_file import USERNAME, AWS_KEY, PIP_PACKAGES
+from settings_file import PIP_PACKAGES
 
 
 def get_logger(level=multiprocessing.SUBDEBUG):
@@ -74,8 +70,8 @@ class Consumer(multiprocessing.Process):
             LOGGER.info('Getting a task')
             next_task = self._queue.get()
             if next_task is None:
-                # Poison pill means shutdown
-                LOGGER.info('Exiting')
+                # Poison pill means shutdown this consumer
+                LOGGER.info('Exiting consumer')
                 self._queue.task_done()
                 return
             LOGGER.info('Executing the task')
@@ -130,27 +126,32 @@ packages:
  - libXfixes
  - libXcursor
  - libXinerama
+ - libXvfd
+ - htop
+ - sysstat
+
+# Add a kill command so if it goes TU we will kill the instance
+power_state:
+ delay: "+1440"
+ mode: halt
+ message: Kill command executed
+ timeout: 120
+
+runcmd:
+ - cd /home/ec2-user/chiles_pipeline ; git pull
+ - pip install {0}
+
+write_files:
+ - path: /etc/boto.cfg
+ - context: |
+   {1}
 
 # Log all cloud-init process output (info & errors) to a logfile
 output : { all : ">> /var/log/chiles-output.log" }
 
 # Final_message written to log when cloud-init processes are finished
 final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
-''')
-
-
-def setup_aws_machine(hostname):
-    LOGGER.info('Waiting for the ssh daemon to start up')
-    for i in range(12):
-        fastprint('.')
-        time.sleep(5)
-    puts('.')
-    with settings(user=USERNAME, key_filename=AWS_KEY, host_string=hostname, connection_attempts=5, timeout=30):
-        with cd('/home/ec2-user/chiles_pipeline'):
-            run('git pull')
-        sudo('pip install {0}'.format(PIP_PACKAGES))
-        run('''echo "{0}
-" > /home/ec2-user/.boto'''.format(get_boto_data()))
+'''.format(PIP_PACKAGES, get_boto_data()))
 
 
 def make_tarfile(output_filename, source_dir):

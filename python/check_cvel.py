@@ -23,21 +23,22 @@
 #    MA 02111-1307  USA
 #
 """
-Get the snapshot ids and dates
+Check the CVEL output
 """
-import argparse
 import collections
 import logging
 from ec2_helper import EC2Helper
+from s3_helper import S3Helper
+from settings_file import CHILES_BUCKET_NAME, FREQUENCY_GROUPS
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 
 
-def main():
+def get_snapshots():
     ec2_helper = EC2Helper()
     connection = ec2_helper.ec2_connection
-    settings = {}
+    snapshots = []
     for snapshot in connection.get_all_snapshots(owner='self'):
         name = snapshot.tags.get('Name')
         if name is None:
@@ -45,18 +46,60 @@ def main():
         elif snapshot.status == 'completed':
             LOG.info('Looking at {0} - {1}'.format(snapshot.id, snapshot.tags['Name']))
             if snapshot.tags['Name'].endswith('_FINAL_PRODUCTS'):
-                settings[name[:-15]] = snapshot.id
+                snapshots.append(str(name[:-15]))
         else:
             LOG.info('Looking at {0} - {1} which is {2}'.format(snapshot.id, snapshot.tags['Name'], snapshot.status))
-    ordered_dictionary = collections.OrderedDict(sorted(settings.items()))
 
+    return snapshots
+
+
+def get_cvel():
+    s3_helper = S3Helper()
+    bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
+    cvel_data = []
+    for key in bucket.list(prefix='CVEL/'):
+        LOG.info('Checking {0}'.format(key.key))
+        elements = key.key.split('/')
+        cvel_data.append([str(elements[2]), str(elements[1])])
+
+    return cvel_data
+
+
+def swap_underscores(text):
+    return text.replace('-', '_')
+
+
+def analyse_data(snapshots, cvel_entries):
+    # Build the expected list
+    expected_combinations = {}
+    for key in snapshots:
+        expected_combinations[key] = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS ]
+
+    for element in cvel_entries:
+        key = swap_underscores(element[0])
+        frequencies = expected_combinations[key]
+        frequencies.remove(element[1])
+
+    number_entries = len(FREQUENCY_GROUPS)
+    ordered_dictionary = collections.OrderedDict(sorted(expected_combinations.items()))
     output = '\n'
-
     for key, value in ordered_dictionary.iteritems():
-        output += '''{0} = "{1}"
-'''.format(key, value)
-
+        if len(value) == number_entries:
+            output += '{0} = "All"\n'.format(key)
+        else:
+            output += '{0} = "{1}"\n'.format(key, value)
     LOG.info(output)
+
+    return ordered_dictionary
+
+
+def main():
+    # Get the data we need
+    snapshots = get_snapshots()
+    cvel_entries = get_cvel()
+
+    analyse_data(snapshots, cvel_entries)
+
 
 if __name__ == "__main__":
     main()

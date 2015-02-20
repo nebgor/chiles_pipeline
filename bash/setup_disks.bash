@@ -87,11 +87,3 @@ chmod oug+wrx /mnt/output
 
 # Print into the logs the disk free
 df -h
-
-# Wait for the boto file to be created
-while [ ! -f "/home/ec2-user/.boto" ]; do
-    echo Sleeping
-    sleep 30
-done
-sleep 5
-

@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
 
-from common import LOGGER, make_safe_filename, get_script, get_cloud_init, setup_aws_machine
+from common import LOGGER, make_safe_filename, get_script, get_cloud_init
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
 from ec2_helper import EC2Helper
 
@@ -65,7 +65,7 @@ def start_servers(
     LOGGER.info('{0}'.format(user_data_mime))
 
     if spot_price is not None:
-        ec2_instance = ec2_helper.run_spot_instance(
+        ec2_helper.run_spot_instance(
             ami_id,
             spot_price,
             user_data_mime,
@@ -75,7 +75,7 @@ def start_servers(
             instance_details=instance_details,
             ephemeral=True)
     else:
-        ec2_instance = ec2_helper.run_instance(
+        ec2_helper.run_instance(
             ami_id,
             user_data_mime,
             instance_type,
@@ -83,9 +83,6 @@ def start_servers(
             created_by,
             name + '- {0}'.format(obs_id),
             ephemeral=True)
-
-    # Setup boto via SSH so we don't pass our keys etc in "the clear"
-    setup_aws_machine(ec2_instance.ip_address)
 
 
 def check_args(args):

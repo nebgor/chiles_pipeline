@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -26,6 +26,7 @@
 A helper for S3
 """
 import socket
+import tarfile
 import time
 import math
 import mimetypes
@@ -34,8 +35,9 @@ import os
 
 import boto
 from boto.s3.key import Key
+import multiprocessing
 
-from common import LOGGER
+from common import LOGGER, Consumer
 
 from file_chunk_io import FileChunkIO
 
@@ -150,3 +152,43 @@ class S3Helper:
             mp.complete_upload()
         else:
             mp.cancel_upload()
+
+    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, parallel_processes=4, reduced_redundancy=True):
+        """
+        Parallel multipart upload.
+        """
+        LOGGER.info(
+            'bucket_name: {0}, key_name: {1}, source_path: {2}, parallel_processes: {3}, reduced_redundancy: {4}'.format(
+                bucket_name,
+                key_name,
+                source_path,
+                parallel_processes,
+                reduced_redundancy
+            )
+        )
+        bucket = self.get_bucket(bucket_name)
+
+        task_queue = multiprocessing.JoinableQueue()
+
+        # Start the consumers
+        for x in range(parallel_processes):
+            consumer = Consumer(task_queue)
+            consumer.start()
+
+        headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
+        mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
+
+        #tar = tarfile.open(mode="w|gz", fileobj=TODO)
+        #
+        #for file in files:
+        #    tar.add(file)
+        #
+        #tar.close()
+
+        # Add a poison pill to shut things down
+        for x in range(parallel_processes):
+            task_queue.put(None)
+
+        # Wait for the queue to terminate
+
+        task_queue.join()

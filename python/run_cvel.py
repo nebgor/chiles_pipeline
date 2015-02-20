@@ -32,7 +32,7 @@ import getpass
 import multiprocessing
 import sys
 
-from common import get_cloud_init, setup_aws_machine, get_script, Consumer, LOGGER
+from common import get_cloud_init, get_script, Consumer, LOGGER
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
 from ec2_helper import EC2Helper
 
@@ -84,18 +84,18 @@ class Task(object):
         user_data_mime = self.get_mime_encoded_user_data(volume.id)
 
         if self._spot_price is not None:
-            ec2_instance = ec2_helper.run_spot_instance(
+            ec2_helper.run_spot_instance(
                 self._ami_id,
                 self._spot_price,
                 user_data_mime,
                 self._instance_type,
                 volume.id,
                 self._created_by,
-                '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
+                '{1}-{2}-{0}'.format(self._name, snapshot_name, self._counter),
                 self._instance_details,
                 ephemeral=True)
         else:
-            ec2_instance = ec2_helper.run_instance(
+            ec2_helper.run_instance(
                 self._ami_id,
                 user_data_mime,
                 self._instance_type,
@@ -103,9 +103,6 @@ class Task(object):
                 self._created_by,
                 '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
                 ephemeral=True)
-
-        # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_aws_machine(ec2_instance.ip_address)
 
     def get_mime_encoded_user_data(self, volume_id):
         """

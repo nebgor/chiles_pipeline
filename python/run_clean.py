@@ -4,7 +4,7 @@
 #    Perth WA 6009
 #    Australia
 #
-#    Copyright by UWA, 2012-2014
+#    Copyright by UWA, 2012-2015
 #    All rights reserved
 #
 #    This library is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@ import multiprocessing
 from string import find
 import sys
 
-from common import get_script, setup_aws_machine, get_cloud_init, Consumer, LOGGER
+from common import get_script, get_cloud_init, Consumer, LOGGER
 from echo import echo
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN, BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES
 from ec2_helper import EC2Helper
@@ -79,7 +79,7 @@ class Task(object):
         LOGGER.info('{0}'.format(user_data_mime))
 
         if self._spot_price is not None:
-            ec2_instance = ec2_helper.run_spot_instance(
+            ec2_helper.run_spot_instance(
                 self._ami_id,
                 self._spot_price,
                 user_data_mime,
@@ -89,7 +89,7 @@ class Task(object):
                 instance_details=self._instance_details,
                 ephemeral=True)
         else:
-            ec2_instance = ec2_helper.run_instance(
+            ec2_helper.run_instance(
                 self._ami_id,
                 user_data_mime,
                 self._instance_type,
@@ -97,9 +97,6 @@ class Task(object):
                 self._created_by,
                 '{0}-{1}'.format(self._frequency_id, self._name),
                 ephemeral=True)
-
-        # Setup boto via SSH so we don't pass our keys etc in "the clear"
-        setup_aws_machine(ec2_instance.ip_address)
 
     def get_mime_encoded_user_data(self):
         """
