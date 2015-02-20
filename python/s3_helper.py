@@ -25,6 +25,7 @@
 """
 A helper for S3
 """
+from os.path import join
 import socket
 import tarfile
 import time
@@ -36,6 +37,7 @@ import os
 import boto
 from boto.s3.key import Key
 import multiprocessing
+from cStringIO import StringIO
 
 from common import LOGGER, Consumer
 
@@ -153,7 +155,7 @@ class S3Helper:
         else:
             mp.cancel_upload()
 
-    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, parallel_processes=4, reduced_redundancy=True):
+    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, gzip=True, parallel_processes=4, reduced_redundancy=True):
         """
         Parallel multipart upload.
         """
@@ -177,18 +179,74 @@ class S3Helper:
 
         headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
         mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
+        s3_feeder = S3Feeder(task_queue, mp)
 
-        #tar = tarfile.open(mode="w|gz", fileobj=TODO)
-        #
-        #for file in files:
-        #    tar.add(file)
-        #
-        #tar.close()
+        if gzip:
+            mode = "w|gz"
+        else:
+            mode = "w|"
+        tar = tarfile.open(mode=mode, fileobj=s3_feeder)
+
+        complete = True
+        # noinspection PyBroadException
+        try:
+            for entry in os.listdir(source_path):
+                full_filename = join(source_path, entry)
+                tar.add(full_filename, arcname=entry)
+
+            tar.close()
+            s3_feeder.close()
+        except Exception:
+            complete = False
 
         # Add a poison pill to shut things down
         for x in range(parallel_processes):
             task_queue.put(None)
 
         # Wait for the queue to terminate
-
         task_queue.join()
+
+        # Finish the upload
+        if complete:
+            mp.complete_upload()
+        else:
+            mp.cancel_upload()
+
+
+class MultipartTask(object):
+    def __init__(self, data, part_num, multipart_upload):
+        self._data = data
+        self._part_num = part_num
+        self._multipart_upload = multipart_upload
+
+    def __call__(self):
+        # noinspection PyBroadException
+        try:
+            LOGGER.info('Writing part {0} - {1} bytes'.format(self._part_num, len(self._data)))
+            fp = StringIO(self._data)
+            self._multipart_upload.upload_part_from_file(fp=fp, part_num=self._part_num)
+        except Exception:
+            LOGGER.exception('Exception executing the task')
+
+
+class S3Feeder:
+    def __init__(self, queue, multipart_upload):
+        self._buffer = ""
+        self._bufsize = 5242880
+        self._part_num = 1
+        self._queue = queue
+        self._multipart_upload = multipart_upload
+        self._closed = False
+
+    def write(self, data):
+        self._buffer += data
+        while len(self._buffer) > self._bufsize:
+            self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
+            self._part_num += 1
+            self._buffer = self._buffer[self._bufsize:]
+
+    def close(self):
+        if not self._closed:
+            self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
+            self._part_num += 1
+            self._closed = True

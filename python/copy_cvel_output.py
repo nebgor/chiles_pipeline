@@ -27,12 +27,12 @@ Copy the CVEL output files to S3
 """
 import argparse
 import fnmatch
-import multiprocessing
 import os
 from os.path import join
+import shutil
 import sys
 
-from common import make_safe_filename, Consumer, make_tarfile, LOGGER
+from common import make_safe_filename, LOGGER
 from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -40,71 +40,29 @@ from s3_helper import S3Helper
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, output_tar_filename, frequency_band, date, directory_frequency_full):
-        self._output_tar_filename = output_tar_filename
-        self._frequency_band = frequency_band
-        self._date = date
-        self._directory_frequency_full = directory_frequency_full
-
-    def __call__(self):
-        """
-        Actually run the job
-        """
-        # noinspection PyBroadException
-        try:
-            make_tarfile(self._output_tar_filename, self._directory_frequency_full)
-
-            LOGGER.info('Copying {0} to s3'.format(self._output_tar_filename))
-            s3_helper = S3Helper()
-            s3_helper.add_file_to_bucket(
-                CHILES_BUCKET_NAME,
-                'CVEL/{0}/{1}/data.tar.gz'.format(self._frequency_band, self._date),
-                self._output_tar_filename)
-
-            # Clean up
-            os.remove(self._output_tar_filename)
-        except Exception:
-            LOGGER.exception('Task1 died')
-
-
-def copy_files(date, processes):
-    # Create the queue
-    queue = multiprocessing.JoinableQueue()
-    # Start the consumers
-    for x in range(processes):
-        consumer = Consumer(queue)
-        consumer.start()
-
+def copy_files(date, vis_file):
+    s3_helper = S3Helper()
     # Look in the output directory
     for root, dir_names, filenames in os.walk(CHILES_CVEL_OUTPUT):
-        for match in fnmatch.filter(dir_names, 'vis_*'):
+        for match in fnmatch.filter(dir_names, vis_file):
             result_dir = join(root, match)
-            LOGGER.info('Looking at: {0}'.format(result_dir))
+            LOGGER.info('Working on: {0}'.format(result_dir))
+            s3_helper.add_tar_to_bucket_multipart(
+                CHILES_BUCKET_NAME,
+                'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
+                result_dir)
 
-            output_tar_filename = join(root, match + '.tar.gz')
-            queue.put(Task(output_tar_filename, match, date, result_dir))
-
-    # Add a poison pill to shut things down
-    for x in range(processes):
-        queue.put(None)
-
-    # Wait for the queue to terminate
-    queue.join()
-
+            shutil.rmtree(result_dir, ignore_errors=True)
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
+    parser.add_argument('vis_file', help='the visibilites file')
     parser.add_argument('date', help='the date of the observation')
-    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
     date = make_safe_filename(args['date'])
-    processes = args['processes']
+    vis_file = args['vis_file']
 
-    copy_files(date, processes)
+    copy_files(date, vis_file)
 
 if __name__ == "__main__":
     main()

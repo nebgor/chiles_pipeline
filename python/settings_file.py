@@ -41,7 +41,8 @@ USERNAME = 'ec2-user'
 FREQUENCY_WIDTH = 4
 FREQUENCY_GROUPS = []
 
-for bottom_freq in range(1200, 1424, FREQUENCY_WIDTH):
+# for bottom_freq in range(1200, 1424, FREQUENCY_WIDTH):
+for bottom_freq in range(1200, 1204, FREQUENCY_WIDTH):
     FREQUENCY_GROUPS.append([bottom_freq, bottom_freq + FREQUENCY_WIDTH])
 
 AWS_AMI_ID = None

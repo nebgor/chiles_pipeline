@@ -32,9 +32,7 @@ import multiprocessing
 from os.path import join, dirname, basename, expanduser
 import re
 import tarfile
-from textwrap import TextWrapper
 import unicodedata
-
 from settings_file import PIP_PACKAGES
 
 

@@ -23,10 +23,10 @@ chmod -R oug+r /mnt/Data/data1
 
 # Run the cvel pipeline
 ##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
+##### runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_ obs-id' #####
 {0}
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 2 {1}'
 
 # Copy log files to S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}'
@@ -37,4 +37,4 @@ sleep 10
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volumes.py {2}'
 
 # Terminate
-shutdown -h now
+#shutdown -h now
