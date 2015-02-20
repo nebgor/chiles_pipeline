@@ -33,6 +33,7 @@ import shutil
 import sys
 
 from common import make_safe_filename, LOGGER
+from echo import echo
 from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -40,6 +41,7 @@ from s3_helper import S3Helper
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
+@echo
 def copy_files(date, vis_file):
     s3_helper = S3Helper()
     # Look in the output directory
@@ -54,6 +56,7 @@ def copy_files(date, vis_file):
                 result_dir)
 
             shutil.rmtree(result_dir, ignore_errors=True)
+
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')

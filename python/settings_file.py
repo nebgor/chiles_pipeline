@@ -28,6 +28,7 @@ Chiles settings
 from os.path import exists, dirname, expanduser
 from configobj import ConfigObj
 
+
 class AwsInstance:
     def __init__(self, vCPU, memory, number_disks, size, iops_support):
         self.vCPU = vCPU
