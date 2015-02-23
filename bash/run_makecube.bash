@@ -8,6 +8,11 @@
 #
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
+# Install the latest versions of the Python libraries and pull the latest code
+pip install {5}
+cd /home/ec2-user/chiles_pipeline
+git pull
+
 # Copy files from S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 4'
 

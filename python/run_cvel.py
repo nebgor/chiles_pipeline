@@ -34,7 +34,7 @@ import sys
 import datetime
 
 from common import get_cloud_init, get_script, Consumer, LOGGER
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
 
@@ -120,7 +120,7 @@ class Task(object):
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
 
-        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id, self._now, self._counter)
+        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id, self._now, self._counter, PIP_PACKAGES)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
