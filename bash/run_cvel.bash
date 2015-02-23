@@ -6,7 +6,7 @@
 #
 # The disk setup is done in the setup_disks.bash script
 #
-# When this is run as a user data start up script is is run as root - BE CAREFUL!!!
+# When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # As we might need to wait for the mount point to arrive as it can only be attached
 # after the instance is running
@@ -27,7 +27,7 @@ chmod -R oug+r /mnt/Data/data1
 {0}
 
 # Copy log files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{3}-{4}/{1}'
 
 # Unattach the volume and delete it
 umount /dev/xvdf

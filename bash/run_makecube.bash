@@ -6,7 +6,7 @@
 #
 # The disk setup is done in the setup_disks.bash script
 #
-# When this is run as a user data start up script is is run as root - BE CAREFUL!!!
+# When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # Copy files from S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 4'

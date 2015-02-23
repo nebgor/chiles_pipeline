@@ -6,7 +6,7 @@
 #
 # The disk setup is done in the setup_disks.bash script
 #
-# When this is run as a user data start up script is is run as root - BE CAREFUL!!!
+# When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # Clean uses a lot of memory so make a swap on the disk
 /bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count={3}

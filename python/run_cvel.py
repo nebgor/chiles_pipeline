@@ -31,6 +31,7 @@ from email.mime.text import MIMEText
 import getpass
 import multiprocessing
 import sys
+import datetime
 
 from common import get_cloud_init, get_script, Consumer, LOGGER
 from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
@@ -72,6 +73,8 @@ class Task(object):
         self._instance_details = instance_details
         self._frequency_groups = frequency_groups
         self._counter = counter
+        now = datetime.datetime.now()
+        self._now = now.strftime('%Y-%m-%d')
 
     def __call__(self):
         """
@@ -117,7 +120,7 @@ class Task(object):
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
 
-        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id)
+        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id, date, self._counter)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
@@ -185,7 +188,7 @@ def start_servers(
         if snapshot_id is None:
             LOGGER.warning('The obs-id: {0} does not exist in the settings file')
         else:
-            for frequency_groups in get_frequency_groups(16):
+            for frequency_groups in get_frequency_groups(8):
                 tasks.put(
                     Task(
                         ami_id,
