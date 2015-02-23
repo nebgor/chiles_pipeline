@@ -35,7 +35,7 @@ import re
 import shutil
 import time
 import os.path
-from echo import echo, dump_all
+from echo import echo
 from freq_map import freq_map
 from taskinit import casalog
 from mstransform import mstransform
@@ -97,7 +97,7 @@ def do_cube(in_dirs, cube_dir, min_freq, max_freq, step_freq, width_freq):
 Job {0}: clean(vis={1}, imagename={2})'''.format(job_id, str(in_dirs), outfile)
     if not debug:
         try:
-            dump_all()
+            # dump_all()
             clean(vis=in_dirs,
                   imagename=outfile,
                   field='deepfield',
@@ -312,7 +312,7 @@ def do_cvel(infile, outdir, backup_dir, min_freq, max_freq, step_freq, width_fre
                 shutil.rmtree(backupfile)
             print 'working on: ' + outfile
             try:
-                dump_all()
+                # dump_all()
                 mstransform(
                     vis=infile,
                     outputvis=outfile,
