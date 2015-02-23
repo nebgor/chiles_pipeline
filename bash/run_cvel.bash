@@ -27,7 +27,7 @@ chmod -R oug+r /mnt/Data/data1
 {0}
 
 # Copy log files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{3}-{4}/{1}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{3}-{4}'
 
 # Unattach the volume and delete it
 umount /dev/xvdf

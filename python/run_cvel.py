@@ -120,7 +120,7 @@ class Task(object):
         # Build the strings we need
         cvel_pipeline = self.build_cvel_pipeline()
 
-        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id, date, self._counter)
+        data_formatted = self._user_data.format(cvel_pipeline, self._obs_id, volume_id, self._now, self._counter)
         LOGGER.info(data_formatted)
         user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
