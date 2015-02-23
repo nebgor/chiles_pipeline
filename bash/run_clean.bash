@@ -19,7 +19,7 @@ chmod 600 /mnt/output/swapfile
 ulimit -n 8192
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip install {5}
+pip install {4}
 cd /home/ec2-user/chiles_pipeline
 git pull
 

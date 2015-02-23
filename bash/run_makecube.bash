@@ -9,7 +9,7 @@
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip install {5}
+pip install {1}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
