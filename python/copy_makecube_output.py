@@ -31,7 +31,7 @@ from os.path import join, isdir, basename
 import shutil
 import sys
 
-from common import make_safe_filename, make_tarfile, LOGGER
+from common import make_safe_filename, LOGGER
 from settings_file import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
 from s3_helper import S3Helper
 
@@ -53,17 +53,13 @@ def copy_files(cube):
         output_tar_filename = directory_to_save + '.tar.gz'
         # noinspection PyBroadException
         try:
-            make_tarfile(output_tar_filename, directory_to_save)
-
             LOGGER.info('Copying {0} to s3'.format(output_tar_filename))
             s3_helper = S3Helper()
-            s3_helper.add_file_to_bucket_multipart(
+            s3_helper.add_tar_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
                 'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
-                output_tar_filename)
+                directory_to_save)
 
-            # Clean up
-            os.remove(output_tar_filename)
         except Exception:
             LOGGER.exception('Task died')
 
