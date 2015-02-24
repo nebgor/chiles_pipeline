@@ -35,7 +35,7 @@ import sys
 
 from common import get_script, get_cloud_init, Consumer, LOGGER
 from echo import echo
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN, BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN, BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
 
@@ -114,12 +114,12 @@ class Task(object):
         user_data.attach(get_cloud_init())
 
         swap_size = self.get_swap_size()
-        data_formatted = self._user_data.format(self._frequency_id, min_freq, max_freq, swap_size)
+        data_formatted = self._user_data.format(self._frequency_id, min_freq, max_freq, swap_size, PIP_PACKAGES)
         user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
 
     def get_swap_size(self):
-        ephemeral_size = self._instance_details[2] * self._instance_details[3]
+        ephemeral_size = self._instance_details.number_disks * self._instance_details.size
         if ephemeral_size > 100:
             return 32
         elif ephemeral_size > 32:
@@ -192,12 +192,13 @@ def check_args(args):
         return None
     else:
         LOGGER.info(
-            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB'.format(
+            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB, IOPS: {5}'.format(
                 args['instance_type'],
-                instance_details[0],
-                instance_details[1],
-                instance_details[2],
-                instance_details[3]))
+                instance_details.vCPU,
+                instance_details.memory,
+                instance_details.number_disks,
+                instance_details.size,
+                instance_details.iops_support))
 
     map_args.update({
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
