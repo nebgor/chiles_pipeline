@@ -28,10 +28,9 @@ Taken from makecube.py extracting the loop over cvel
 This module should run together with the casapy: e.g. casapy --nologger -c loop_cvel.py
 """
 import os
-from makecube_defines import INPUT_VIS_SUFFIX, check_dir, get_my_obs, vis_bk_dirs, vis_dirs, obs_dir, execCmd, do_cvel, freq_max, freq_min, freq_step, freq_width, spec_window, run_id
+from makecube_defines import INPUT_VIS_SUFFIX, check_dir, get_my_obs, vis_bk_dirs, vis_dirs, obs_dir, do_cvel, freq_max, freq_min, freq_step, freq_width, spec_window
 
 
-print 'test'+INPUT_VIS_SUFFIX
 # loop through selected obs and cvel. Uses obId to only do subset of possible
 
 check_dir(vis_dirs)
@@ -45,15 +44,15 @@ for obs in obs_list:
 
     infile = None
     for ff in os.listdir(infile_dir):
-        if ff.endswith(INPUT_VIS_SUFFIX):
-            infile = '%s/%s' % (infile_dir, ff)
+        if ff.endswith('.ms'):
+            infile = '{0}/{1}'.format(infile_dir, ff)
     if not infile:
-        print 'No measurementSet file found under %s' % infile_dir
+        print 'No measurementSet file found under {0}'.format(infile_dir)
         continue
 
     obsId = os.path.basename(infile_dir).replace('_FINAL_PRODUCTS', '')
-    outdir = '%s/%s/' % (vis_dirs, obsId)
-    backup_dir = '%s/%s/' % (vis_bk_dirs, obsId)
+    outdir = '{0}/{1}/'.format(vis_dirs, obsId)
+    backup_dir = '{0}/{1}/'.format(vis_bk_dirs, obsId)
 
     # dump_all()
     do_cvel(infile, outdir, backup_dir, freq_min, freq_max, freq_step, freq_width, spec_window, obsId)
