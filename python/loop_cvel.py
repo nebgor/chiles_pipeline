@@ -28,11 +28,9 @@ Taken from makecube.py extracting the loop over cvel
 This module should run together with the casapy: e.g. casapy --nologger -c loop_cvel.py
 """
 import os
-from makecube_defines import INPUT_VIS_SUFFIX, check_dir, get_my_obs, vis_bk_dirs, vis_dirs, obs_dir, do_cvel, freq_max, freq_min, freq_step, freq_width, spec_window
-
+from makecube_defines import check_dir, get_my_obs, vis_bk_dirs, vis_dirs, obs_dir, do_cvel, freq_max, freq_min, freq_step, freq_width, spec_window, INPUT_VIS_SUFFIX
 
 # loop through selected obs and cvel. Uses obId to only do subset of possible
-
 check_dir(vis_dirs)
 check_dir(vis_bk_dirs)
 
@@ -44,7 +42,7 @@ for obs in obs_list:
 
     infile = None
     for ff in os.listdir(infile_dir):
-        if ff.endswith('.ms'):
+        if ff.endswith(INPUT_VIS_SUFFIX):
             infile = '{0}/{1}'.format(infile_dir, ff)
     if not infile:
         print 'No measurementSet file found under {0}'.format(infile_dir)
