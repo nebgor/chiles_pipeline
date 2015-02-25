@@ -295,7 +295,7 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            args['zone'],
+            args['zone'][0],
             args['frequencies'])
 
 if __name__ == "__main__":

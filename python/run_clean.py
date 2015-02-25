@@ -242,7 +242,7 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            args['zone'])
+            args['zone'][0])
 
 if __name__ == "__main__":
     # -i r3.4xlarge -n "Kevin CLEAN" -s 0.30 ap-southeast-2b vis_1400~1404
