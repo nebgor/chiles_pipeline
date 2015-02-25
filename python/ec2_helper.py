@@ -34,7 +34,7 @@ from boto.exception import EC2ResponseError
 from boto.ec2 import blockdevicemapping
 
 from common import make_safe_filename, LOGGER
-from settings_file import AWS_SUBNET_ID, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
+from settings_file import AWS_SUBNETS, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
 class EC2Helper:
@@ -70,7 +70,7 @@ class EC2Helper:
 
         return bdm
 
-    def run_instance(self, ami_id, user_data, instance_type, volume_id, created_by, name, ephemeral=False):
+    def run_instance(self, ami_id, user_data, instance_type, volume_id, created_by, name, zone, ephemeral=False):
         """
         Run up an instance
         """
@@ -80,7 +80,7 @@ class EC2Helper:
         reservations = self.ec2_connection.run_instances(ami_id,
                                                          instance_type=instance_type,
                                                          instance_initiated_shutdown_behavior='terminate',
-                                                         subnet_id=AWS_SUBNET_ID,
+                                                         subnet_id=AWS_SUBNETS[zone],
                                                          key_name=AWS_KEY_NAME,
                                                          security_group_ids=AWS_SECURITY_GROUPS,
                                                          user_data=user_data,
@@ -105,10 +105,11 @@ class EC2Helper:
 
         return instance
 
-    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details, ephemeral=False):
+    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details, zone, ephemeral=False):
         """
         Run the ami as a spot instance
         """
+        subnet_id = AWS_SUBNETS[zone]
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
         bdm = self.build_block_device_map(ephemeral, instance_details.number_disks)
         spot_request = self.ec2_connection.request_spot_instances(
@@ -117,7 +118,7 @@ class EC2Helper:
             count=1,
             valid_until=now_plus.isoformat(),
             instance_type=instance_type,
-            subnet_id=AWS_SUBNET_ID,
+            subnet_id=subnet_id,
             key_name=AWS_KEY_NAME,
             security_group_ids=AWS_SECURITY_GROUPS,
             user_data=user_data,

@@ -35,7 +35,6 @@
 # |__| |__| \__|       |__|  |__| |_______|| _| `._____||_______|(__)
 #
 ami_id = "ami-f9681ec3"
-subnet_id = "subnet-9d8a72ea"
 key_name = "aws-chiles-sydney"
 security_groups = "sg-e5369a80", "sg-f2369a97"
 region = "ap-southeast-2"
@@ -44,6 +43,11 @@ region = "ap-southeast-2"
 bash_script_cvel = "run_cvel.bash"
 bash_script_clean = "run_clean.bash"
 bash_script_makecube = "run_makecube.bash"
+
+# The subnets
+[subnets]
+ap-southeast-2a = "subnet-9d8a72ea"
+ap-southeast-2b = "subnet-bf21f2da"
 
 # The obs ids
 [obs_ids]

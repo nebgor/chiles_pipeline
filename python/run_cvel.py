@@ -99,6 +99,7 @@ class Task(object):
                 self._created_by,
                 '{1}-{2}-{0}'.format(self._name, snapshot_name, self._counter),
                 self._instance_details,
+                self._zone,
                 ephemeral=True)
         else:
             ec2_helper.run_instance(
@@ -108,6 +109,7 @@ class Task(object):
                 volume.id,
                 self._created_by,
                 '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
+                self._zone,
                 ephemeral=True)
 
     def get_mime_encoded_user_data(self, volume_id):
@@ -273,6 +275,7 @@ def main():
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     parser.add_argument('-f', '--frequencies', type=int, default=14, help='how many frequency channels per AWS instance')
 
+    parser.add_argument('zone', nargs=1, help='the AWS zone', choices=['ap-southeast-2a', 'ap-southeast-2b'])
     parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
     args = vars(parser.parse_args())
@@ -292,7 +295,7 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            'ap-southeast-2a',
+            args['zone'],
             args['frequencies'])
 
 if __name__ == "__main__":

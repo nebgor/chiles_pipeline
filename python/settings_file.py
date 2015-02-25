@@ -58,8 +58,8 @@ for bottom_freq in range(1200, 1424, FREQUENCY_WIDTH):
 AWS_AMI_ID = None
 AWS_KEY_NAME = None
 AWS_SECURITY_GROUPS = None
-AWS_SUBNET_ID = None
 AWS_REGION = None
+AWS_SUBNETS = None
 
 BASH_SCRIPT_CVEL = None
 BASH_SCRIPT_CLEAN = None
@@ -92,8 +92,8 @@ if exists(config_file_name):
     AWS_AMI_ID = config['ami_id']
     AWS_KEY_NAME = config['key_name']
     AWS_SECURITY_GROUPS = config['security_groups']
-    AWS_SUBNET_ID = config['subnet_id']
     AWS_REGION = config['region']
+    AWS_SUBNETS = config['subnets']
 
     BASH_SCRIPT_CVEL = config['bash_script_cvel']
     BASH_SCRIPT_CLEAN = config['bash_script_clean']

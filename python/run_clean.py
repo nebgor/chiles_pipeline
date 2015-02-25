@@ -87,6 +87,7 @@ class Task(object):
                 self._created_by,
                 '{0}-{1}'.format(self._frequency_id, self._name),
                 instance_details=self._instance_details,
+                zone=self._zone,
                 ephemeral=True)
         else:
             ec2_helper.run_instance(
@@ -96,6 +97,7 @@ class Task(object):
                 None,
                 self._created_by,
                 '{0}-{1}'.format(self._frequency_id, self._name),
+                self._zone,
                 ephemeral=True)
 
     def get_mime_encoded_user_data(self):
