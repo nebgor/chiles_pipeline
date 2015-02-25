@@ -173,7 +173,8 @@ def start_servers(
         name,
         instance_details,
         spot_price,
-        zone):
+        zone,
+        frequencies):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -188,7 +189,7 @@ def start_servers(
         if snapshot_id is None:
             LOGGER.warning('The obs-id: {0} does not exist in the settings file')
         else:
-            for frequency_groups in get_frequency_groups(14):
+            for frequency_groups in get_frequency_groups(frequencies):
                 tasks.put(
                     Task(
                         ami_id,
@@ -270,6 +271,7 @@ def main():
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+    parser.add_argument('-f', '--frequencies', type=int, default=14, help='how many frequency channels per AWS instance')
 
     parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
@@ -290,7 +292,8 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            'ap-southeast-2a')
+            'ap-southeast-2a',
+            args['frequencies'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin cvel test" -s 0.10 20131025_951_4 20131031_951_4
