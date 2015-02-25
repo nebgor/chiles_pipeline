@@ -114,7 +114,7 @@ Job {0}: clean(vis={1}, imagename={2})'''.format(job_id, str(in_dirs), outfile)
                   imsize=[2048],
                   cell=['1.25arcsec'],
                   weighting='natural',
-                  usescratch=False)
+                  usescratch=True)
         except Exception, clEx:
             print '*********\nClean exception: %s\n***********' % str(clEx)
 
