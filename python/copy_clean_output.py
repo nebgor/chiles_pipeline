@@ -26,12 +26,11 @@
 Copy the clean output
 """
 import argparse
-import multiprocessing
 import os
 from os.path import join, isdir, basename
 import sys
 
-from common import Consumer, LOGGER
+from common import LOGGER
 from settings_file import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
@@ -64,14 +63,7 @@ class Task(object):
             LOGGER.exception('Task died')
 
 
-def copy_files(frequency_id, processes):
-    # Create the queue
-    queue = multiprocessing.JoinableQueue()
-    # Start the consumers
-    for x in range(processes):
-        consumer = Consumer(queue)
-        consumer.start()
-
+def copy_files(frequency_id):
     # Look in the output directory
     LOGGER.info('directory_data: {0}'.format(CHILES_CLEAN_OUTPUT))
     for dir_name in os.listdir(CHILES_CLEAN_OUTPUT):
@@ -79,25 +71,27 @@ def copy_files(frequency_id, processes):
         if isdir(join(CHILES_CLEAN_OUTPUT, dir_name)) and dir_name.startswith('cube_'):
             LOGGER.info('dir_name: {0}'.format(dir_name))
             output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar.gz')
-            queue.put(Task(output_tar_filename, frequency_id, join(CHILES_CLEAN_OUTPUT, dir_name)))
 
-    # Add a poison pill to shut things down
-    for x in range(processes):
-        queue.put(None)
+            # noinspection PyBroadException
+            try:
+                LOGGER.info('Copying {0} to s3'.format(output_tar_filename))
+                s3_helper = S3Helper()
+                s3_helper.add_tar_to_bucket_multipart(
+                    CHILES_BUCKET_NAME,
+                    '/CLEAN/{0}/{1}'.format(frequency_id, basename(output_tar_filename)),
+                    join(CHILES_CLEAN_OUTPUT, dir_name))
 
-    # Wait for the queue to terminate
-    queue.join()
+            except Exception:
+                LOGGER.exception('Task died')
 
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output to the correct place in S3')
     parser.add_argument('frequency_id', help='the frequency id')
-    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     args = vars(parser.parse_args())
     frequency_id = args['frequency_id']
-    processes = args['processes']
 
-    copy_files(frequency_id, processes)
+    copy_files(frequency_id)
 
 if __name__ == "__main__":
     main()

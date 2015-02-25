@@ -225,6 +225,53 @@ class EC2Helper:
         if volume.status == 'available':
             self.ec2_connection.delete_volume(volume_id)
 
+    def get_cheapest_spot_price(self, instance_type, max_price):
+        """
+        Find the cheapest spot price in a zone we use
+
+        :param instance_type:
+        :return:
+        """
+        LOGGER.info('instance_type: {0}'.format(instance_type))
+        prices = self.ec2_connection.get_spot_price_history(
+            start_time=datetime.datetime.now().isoformat(),
+            instance_type=instance_type,
+            product_description='Linux/UNIX (Amazon VPC)')
+
+        # Get the zones we have subnets in
+        availability_zones = []
+        for key, value in AWS_SUBNETS.iteritems():
+            availability_zones.append(key)
+
+        best_price = None
+        for spot_price in prices:
+            LOGGER.info('Spot Price {0} - {1}'.format(spot_price.price, spot_price.availability_zone))
+            if spot_price.availability_zone not in availability_zones:
+                # Ignore this one
+                LOGGER.info('Ignoring spot price {0} - {1}'.format(spot_price.price, spot_price.availability_zone))
+            elif spot_price.price != 0.0 and best_price is None:
+                best_price = spot_price
+            elif spot_price.price != 0.0 and spot_price.price < best_price.price:
+                best_price = spot_price
+        if best_price is None:
+            LOGGER.info('No Spot Price')
+            return None
+        elif best_price.price > max_price:
+            LOGGER.info('Spot Price too high')
+            return None
+
+        LOGGER.info('Spot Price {0} - {1}'.format(best_price.price, best_price.availability_zone))
+
+        # Now get the subnet id
+        zone = None
+        for key, value in AWS_SUBNETS.iteritems():
+            if key == best_price.availability_zone:
+                zone = key
+                break
+
+        LOGGER.info('bid_price: {0}, zone: {1}'.format(max_price, zone))
+        return zone
+
 
 class CancelledException(Exception):
     """

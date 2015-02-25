@@ -66,7 +66,6 @@ class Task(object):
         self._created_by = created_by
         self._name = name
         self._spot_price = spot_price
-        self._zone = zone
         self._instance_details = instance_details
 
     def __call__(self):
@@ -75,10 +74,13 @@ class Task(object):
         """
         LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
-        user_data_mime = self.get_mime_encoded_user_data()
-        LOGGER.info('{0}'.format(user_data_mime))
 
-        if self._spot_price is not None:
+        bid_price, zone = ec2_helper.get_cheapest_spot_price(self._instance_type, self._spot_price)
+
+        if bid_price is not None:
+            user_data_mime = self.get_mime_encoded_user_data()
+            LOGGER.info('{0}'.format(user_data_mime))
+
             ec2_helper.run_spot_instance(
                 self._ami_id,
                 self._spot_price,
@@ -87,18 +89,10 @@ class Task(object):
                 self._created_by,
                 '{0}-{1}'.format(self._frequency_id, self._name),
                 instance_details=self._instance_details,
-                zone=self._zone,
+                zone=zone,
                 ephemeral=True)
         else:
-            ec2_helper.run_instance(
-                self._ami_id,
-                user_data_mime,
-                self._instance_type,
-                None,
-                self._created_by,
-                '{0}-{1}'.format(self._frequency_id, self._name),
-                self._zone,
-                ephemeral=True)
+            LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(self._instance_type, self._spot_price))
 
     def get_mime_encoded_user_data(self):
         """
@@ -140,8 +134,7 @@ def start_servers(
         created_by,
         name,
         instance_details,
-        spot_price,
-        zone):
+        spot_price):
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -161,7 +154,6 @@ def start_servers(
                 created_by,
                 name,
                 spot_price,
-                zone,
                 instance_details))
 
         # Add a poison pill to shut things down
@@ -241,8 +233,7 @@ def main():
             corrected_args['created_by'],
             args['name'],
             corrected_args['instance_details'],
-            corrected_args['spot_price'],
-            args['zone'][0])
+            corrected_args['spot_price'])
 
 if __name__ == "__main__":
     # -i r3.4xlarge -n "Kevin CLEAN" -s 0.30 ap-southeast-2b vis_1400~1404
