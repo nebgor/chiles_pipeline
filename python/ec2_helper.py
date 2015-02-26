@@ -233,15 +233,15 @@ class EC2Helper:
         :return:
         """
         LOGGER.info('instance_type: {0}'.format(instance_type))
-        prices = self.ec2_connection.get_spot_price_history(
-            start_time=datetime.datetime.now().isoformat(),
-            instance_type=instance_type,
-            product_description='Linux/UNIX (Amazon VPC)')
-
         # Get the zones we have subnets in
         availability_zones = []
         for key, value in AWS_SUBNETS.iteritems():
             availability_zones.append(key)
+
+        prices = self.ec2_connection.get_spot_price_history(
+            start_time=datetime.datetime.now().isoformat(),
+            instance_type=instance_type,
+            product_description='Linux/UNIX (Amazon VPC)')
 
         best_price = None
         for spot_price in prices:

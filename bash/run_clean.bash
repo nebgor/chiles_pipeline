@@ -30,7 +30,7 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}'
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py -p 3 {0}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}'
 
 # Copy files to S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
