@@ -56,7 +56,6 @@ class Task(object):
             created_by,
             name,
             spot_price,
-            zone,
             instance_details):
         self._ami_id = ami_id
         self._user_data = user_data
@@ -75,9 +74,9 @@ class Task(object):
         LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
 
-        bid_price, zone = ec2_helper.get_cheapest_spot_price(self._instance_type, self._spot_price)
+        zone = ec2_helper.get_cheapest_spot_price(self._instance_type, self._spot_price)
 
-        if bid_price is not None:
+        if zone is not None:
             user_data_mime = self.get_mime_encoded_user_data()
             LOGGER.info('{0}'.format(user_data_mime))
 
@@ -213,8 +212,7 @@ def main():
     parser.add_argument('-n', '--name', required=True, help='the instance name to use')
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
-    parser.add_argument('-p', '--processes', type=int, default=4, help='the number of processes to run')
-    parser.add_argument('zone', nargs=1, help='the AWS zone', choices=['ap-southeast-2a', 'ap-southeast-2b'])
+    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     parser.add_argument('frequencies', nargs='+', help='the frequencies to use (vis_14XX~14YY')
 
     args = vars(parser.parse_args())
@@ -236,5 +234,5 @@ def main():
             corrected_args['spot_price'])
 
 if __name__ == "__main__":
-    # -i r3.4xlarge -n "Kevin CLEAN" -s 0.30 ap-southeast-2b vis_1400~1404
+    # -i r3.4xlarge -n "Kevin CLEAN" -s 0.30 vis_1400~1404
     main()

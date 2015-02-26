@@ -260,17 +260,8 @@ class EC2Helper:
             LOGGER.info('Spot Price too high')
             return None
 
-        LOGGER.info('Spot Price {0} - {1}'.format(best_price.price, best_price.availability_zone))
-
-        # Now get the subnet id
-        zone = None
-        for key, value in AWS_SUBNETS.iteritems():
-            if key == best_price.availability_zone:
-                zone = key
-                break
-
-        LOGGER.info('bid_price: {0}, zone: {1}'.format(max_price, zone))
-        return zone
+        LOGGER.info('bid_price: {0}, spot_price: {2}, zone: {1}'.format(max_price, best_price.availability_zone, best_price.price))
+        return best_price.availability_zone
 
 
 class CancelledException(Exception):
