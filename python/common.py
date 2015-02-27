@@ -90,7 +90,7 @@ def make_safe_filename(name):
 
 
 def get_boto_data():
-    dot_boto = join(expanduser('~'), '.boto')
+    dot_boto = join(expanduser('~'), '.boto_chiles')
     with open(dot_boto, 'r') as my_file:
         data = my_file.read()
 

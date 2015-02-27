@@ -57,14 +57,15 @@ def start_servers(
         created_by,
         name,
         instance_details,
-        spot_price,
-        zone):
+        spot_price):
     LOGGER.info('obs_id: {0}'.format(obs_id))
     ec2_helper = EC2Helper()
-    user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks)
-    LOGGER.info('{0}'.format(user_data_mime))
+    zone = ec2_helper.get_cheapest_spot_price(instance_type, spot_price)
 
-    if spot_price is not None:
+    if zone is not None:
+        user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks)
+        LOGGER.info('{0}'.format(user_data_mime))
+
         ec2_helper.run_spot_instance(
             ami_id,
             spot_price,
@@ -73,16 +74,10 @@ def start_servers(
             created_by,
             name + '- {0}'.format(obs_id),
             instance_details=instance_details,
+            zone=zone,
             ephemeral=True)
     else:
-        ec2_helper.run_instance(
-            ami_id,
-            user_data_mime,
-            instance_type,
-            None,
-            created_by,
-            name + '- {0}'.format(obs_id),
-            ephemeral=True)
+        LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(instance_type, spot_price))
 
 
 def check_args(args):
@@ -150,8 +145,7 @@ def main():
             corrected_args['created_by'],
             args['name'],
             corrected_args['instance_details'],
-            corrected_args['spot_price'],
-            'ap-southeast-2a')
+            corrected_args['spot_price'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin ImgConcat test" -s 0.10 obs-1

@@ -73,7 +73,6 @@ class Task(object):
         """
         LOGGER.info('frequency_id: {0}'.format(self._frequency_id))
         ec2_helper = EC2Helper()
-
         zone = ec2_helper.get_cheapest_spot_price(self._instance_type, self._spot_price)
 
         if zone is not None:

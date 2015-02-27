@@ -52,9 +52,13 @@ def analyse_data(clean_entries):
     expected_combinations = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS ]
 
     output = '\n'
+    list_output = '\n'
     for key in sorted(expected_combinations):
-            output += '{0} = {1}\n'.format(key, 'Done' if clean_entries.__contains__(key) else 'Not done')
+        output += '{0} = {1}\n'.format(key, 'Done' if clean_entries.__contains__(key) else 'Not done')
+        if not clean_entries.__contains__(key):
+            list_output += '{0} '.format(key)
     LOG.info(output)
+    LOG.info(list_output)
 
 
 def main():

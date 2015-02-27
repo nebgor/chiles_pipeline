@@ -76,7 +76,7 @@ class S3Helper:
         Get an S3 connection
         :return:
         """
-        self.s3_connection = boto.connect_s3()
+        self.s3_connection = boto.connect_s3(profile_name='chiles')
 
     def get_bucket(self, bucket_name):
         """
