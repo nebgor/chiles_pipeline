@@ -71,7 +71,7 @@ class EC2Helper:
                 bdm['/dev/xvdc'] = xvdc
 
         if ebs_size:
-            xvdf = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True, volume_type='iop')
+            xvdf = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
             xvdf.size = int(ebs_size)  # size in Gigabytes
             if iops:
                 xvdf.iops = 500

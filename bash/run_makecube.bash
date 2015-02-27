@@ -14,6 +14,7 @@ if [ -b "/dev/xvdf" ]; then
     mkfs.ext4 /dev/xvdf
     mkdir -p /mnt/input
     mount -t ext4 -o noatime /dev/xvdf /mnt/input
+    chmod -R 0777 /mnt/input
 
     # If we need an EBS volume we need a lot of memory so make a swap on the disk
     /bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count=32
@@ -27,6 +28,9 @@ else
     chmod -R 0777 /mnt/output/input
     ln -s /mnt/output/input /mnt/input
 fi
+
+mkdir -p /mnt/output/Chiles
+chmod -R 0777 /mnt/output/Chiles
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {1}
