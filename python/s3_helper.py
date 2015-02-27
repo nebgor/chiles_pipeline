@@ -25,7 +25,7 @@
 """
 A helper for S3
 """
-from os.path import join
+from os.path import join, expanduser, exists
 import socket
 import tarfile
 import time
@@ -71,12 +71,22 @@ def upload_part(bucket_name, multipart_id, part_num, source_path, offset, bytes_
 
 
 class S3Helper:
-    def __init__(self):
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None):
         """
         Get an S3 connection
         :return:
         """
-        self.s3_connection = boto.connect_s3(profile_name='chiles')
+        if aws_access_key_id is not None and aws_secret_access_key is not None:
+            LOGGER.info("Using user provided keys")
+            self.s3_connection = boto.connect_s3(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+        elif exists(join(expanduser('~'), '.aws/credentials')):
+            # This relies on a ~/.aws/credentials file holding the '<aws access key>', '<aws secret key>'
+            LOGGER.info("Using ~/.aws/credentials")
+            self.s3_connection = boto.connect_s3(profile_name='chiles')
+        else:
+            # This relies on a ~/.boto or /etc/boto.cfg file holding the '<aws access key>', '<aws secret key>'
+            LOGGER.info("Using ~/.boto or /etc/boto.cfg")
+            self.s3_connection = boto.connect_s3()
 
     def get_bucket(self, bucket_name):
         """
