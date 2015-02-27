@@ -29,7 +29,7 @@ import argparse
 from contextlib import closing
 import multiprocessing
 import os
-from os.path import basename, exists
+from os.path import basename, exists, join
 import sys
 import tarfile
 
@@ -57,12 +57,14 @@ class Task(object):
         """
         # noinspection PyBroadException
         try:
-            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
-            if not os.path.exists(self._directory):
-                os.makedirs(self._directory)
+            image_name = basename(self._tar_file).replace('.tar.gz', '')
+            directory = join(self._directory, image_name)
+            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, directory))
+            if not os.path.exists(directory):
+                os.makedirs(directory)
             self._key.get_contents_to_filename(self._tar_file)
             with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
-                tar.extractall(path=self._directory)
+                tar.extractall(path=directory)
 
             os.remove(self._tar_file)
         except Exception:
