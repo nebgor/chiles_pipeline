@@ -120,8 +120,7 @@ def yaml_text(input_text):
 
 
 def get_cloud_init():
-    return MIMEText('''
-#cloud-config
+    return MIMEText('''#cloud-config
 repo_update: true
 repo_upgrade: all
 

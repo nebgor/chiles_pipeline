@@ -21,7 +21,7 @@ ulimit -n 8192
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {4}
 cd /home/ec2-user/chiles_pipeline
-git pull
+runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
 # Copy files from S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'

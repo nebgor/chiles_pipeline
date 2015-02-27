@@ -24,7 +24,7 @@ chmod -R oug+r /mnt/Data/data1
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {5}
 cd /home/ec2-user/chiles_pipeline
-git pull
+runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
 # Run the cvel pipeline
 ##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####

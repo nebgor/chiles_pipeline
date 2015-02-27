@@ -25,6 +25,7 @@
 """
 The helper for starting EC2 Instances
 """
+from os.path import join, expanduser, exists
 import time
 import datetime
 
@@ -44,9 +45,12 @@ class EC2Helper:
         """
         if aws_access_key_id is not None and aws_secret_access_key is not None:
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-        else:
+        elif exists(join(expanduser('~'), '.aws/credentials')):
             # This relies on a ~/.aws/credentials file holding the '<aws access key>', '<aws secret key>'
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, profile_name='chiles')
+        else:
+            # This relies on a ~/.boto or /etc/boto.cfg file holding the '<aws access key>', '<aws secret key>'
+            self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
     def build_block_device_map(ephemeral, number_ephemeral_disks=1, ebs_size=None):

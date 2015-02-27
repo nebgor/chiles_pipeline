@@ -31,7 +31,7 @@ from email.mime.text import MIMEText
 import getpass
 
 from common import LOGGER, make_safe_filename, get_script, get_cloud_init
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
 
@@ -43,7 +43,7 @@ def get_mime_encoded_user_data(data, observation_id, setup_disks):
     user_data = MIMEMultipart()
     user_data.attach(get_cloud_init())
 
-    data_formatted = data.format(observation_id)
+    data_formatted = data.format(observation_id, PIP_PACKAGES)
     user_data.attach(MIMEText(setup_disks + data_formatted))
     return user_data.as_string()
 
@@ -101,12 +101,13 @@ def check_args(args):
         return None
     else:
         LOGGER.info(
-            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB'.format(
+            'instance: {0}, vCPU: {1}, RAM: {2}GB, Disks: {3}x{4}GB, IOPS: {5}'.format(
                 args['instance_type'],
-                instance_details[0],
-                instance_details[1],
-                instance_details[2],
-                instance_details[3]))
+                instance_details.vCPU,
+                instance_details.memory,
+                instance_details.number_disks,
+                instance_details.size,
+                instance_details.iops_support))
 
     map_args.update({
         'ami_id': args['ami_id'] if args['ami_id'] is not None else AWS_AMI_ID,
