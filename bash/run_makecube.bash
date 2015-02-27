@@ -9,11 +9,18 @@
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # Do we have an EBS volume mount and format it
-if [ -b '/dev/xvdf' ]; then
+if [ -b "/dev/xvdf" ]; then
     echo 'Detected EBS'
     mkfs.ext4 /dev/xvdf
     mkdir -p /mnt/input
     mount -t ext4 -o noatime /dev/xvdf /mnt/input
+
+    # If we need an EBS volume we need a lot of memory so make a swap on the disk
+    /bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count=32
+    chown root:root /mnt/output/swapfile
+    chmod 600 /mnt/output/swapfile
+    /sbin/mkswap /mnt/output/swapfile
+    /sbin/swapon /mnt/output/swapfile
 else
     echo 'No EBS volume'
     mkdir -p /mnt/output/input
@@ -39,4 +46,4 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecu
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}'
 
 # Terminate
-#shutdown -h now
+shutdown -h now
