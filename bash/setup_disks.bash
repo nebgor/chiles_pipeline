@@ -83,7 +83,7 @@ if [ -b "/dev/xvdb" ]; then
         mount /dev/xvdb /mnt/output
     fi
 fi
-chmod oug+wrx /mnt/output
+chmod -R 0777 /mnt/output
 
 # Print into the logs the disk free
 df -h

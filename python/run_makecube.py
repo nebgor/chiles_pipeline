@@ -76,6 +76,7 @@ def start_servers(
             name + '- {0}'.format(obs_id),
             instance_details=instance_details,
             zone=zone,
+            ebs_size=ebs,
             ephemeral=True)
     else:
         LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(instance_type, spot_price))

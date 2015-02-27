@@ -17,6 +17,7 @@ if [ -b '/dev/xvdf' ]; then
 else
     echo 'No EBS volume'
     mkdir -p /mnt/output/input
+    chmod -R 0777 /mnt/output/input
     ln -s /mnt/output/input /mnt/input
 fi
 
@@ -38,4 +39,4 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecu
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}'
 
 # Terminate
-shutdown -h now
+#shutdown -h now
