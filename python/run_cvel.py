@@ -275,7 +275,6 @@ def main():
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
     parser.add_argument('-f', '--frequencies', type=int, default=14, help='how many frequency channels per AWS instance')
 
-    parser.add_argument('zone', nargs=1, help='the AWS zone', choices=['ap-southeast-2a', 'ap-southeast-2b'])
     parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
     args = vars(parser.parse_args())
@@ -295,7 +294,6 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            args['zone'][0],
             args['frequencies'])
 
 if __name__ == "__main__":

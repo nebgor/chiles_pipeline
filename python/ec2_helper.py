@@ -44,12 +44,15 @@ class EC2Helper:
         Get an EC2 connection
         """
         if aws_access_key_id is not None and aws_secret_access_key is not None:
+            LOGGER.info("Using user provided keys")
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
         elif exists(join(expanduser('~'), '.aws/credentials')):
             # This relies on a ~/.aws/credentials file holding the '<aws access key>', '<aws secret key>'
+            LOGGER.info("Using ~/.aws/credentials")
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION, profile_name='chiles')
         else:
             # This relies on a ~/.boto or /etc/boto.cfg file holding the '<aws access key>', '<aws secret key>'
+            LOGGER.info("Using ~/.boto or /etc/boto.cfg")
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod

@@ -26,4 +26,4 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecu
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}'
 
 # Terminate
-#shutdown -h now
+shutdown -h now
