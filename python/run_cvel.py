@@ -34,7 +34,8 @@ import sys
 import datetime
 
 from common import get_cloud_init, get_script, Consumer, LOGGER
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS, PIP_PACKAGES
+from s3_helper import S3Helper
+from settings_file import AWS_AMI_ID, BASH_SCRIPT_CVEL, FREQUENCY_GROUPS, OBS_IDS, AWS_INSTANCES, BASH_SCRIPT_SETUP_DISKS, PIP_PACKAGES, CHILES_BUCKET_NAME
 from ec2_helper import EC2Helper
 
 
@@ -56,7 +57,6 @@ class Task(object):
             created_by,
             name,
             spot_price,
-            zone,
             instance_details,
             frequency_groups,
             counter):
@@ -69,7 +69,6 @@ class Task(object):
         self._created_by = created_by
         self._name = name
         self._spot_price = spot_price
-        self._zone = zone
         self._instance_details = instance_details
         self._frequency_groups = frequency_groups
         self._counter = counter
@@ -85,32 +84,27 @@ class Task(object):
         iops = None
         if self._instance_details.iops_support:
             iops = 500
-        volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, self._zone, iops=iops)
-        LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
-        user_data_mime = self.get_mime_encoded_user_data(volume.id)
 
-        if self._spot_price is not None:
-            ec2_helper.run_spot_instance(
-                self._ami_id,
-                self._spot_price,
-                user_data_mime,
-                self._instance_type,
-                volume.id,
-                self._created_by,
-                '{1}-{2}-{0}'.format(self._name, snapshot_name, self._counter),
-                self._instance_details,
-                self._zone,
-                ephemeral=True)
+        zone = ec2_helper.get_cheapest_spot_price(self._instance_type, self._spot_price)
+        if zone is not None:
+            volume, snapshot_name = ec2_helper.create_volume(self._snapshot_id, zone, iops=iops)
+            LOGGER.info('obs_id: {0}, volume_name: {1}'.format(self._obs_id, snapshot_name))
+            user_data_mime = self.get_mime_encoded_user_data(volume.id)
+
+            if self._spot_price is not None:
+                ec2_helper.run_spot_instance(
+                    self._ami_id,
+                    self._spot_price,
+                    user_data_mime,
+                    self._instance_type,
+                    volume.id,
+                    self._created_by,
+                    '{1}-{2}-{0}'.format(self._name, snapshot_name, self._counter),
+                    self._instance_details,
+                    zone,
+                    ephemeral=True)
         else:
-            ec2_helper.run_instance(
-                self._ami_id,
-                user_data_mime,
-                self._instance_type,
-                volume.id,
-                self._created_by,
-                '{2}-{0}-{1}'.format(self._name, snapshot_name, self._counter),
-                self._zone,
-                ephemeral=True)
+            LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(self._instance_type, self._spot_price))
 
     def get_mime_encoded_user_data(self, volume_id):
         """
@@ -138,7 +132,16 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_o
         return return_string
 
 
-def get_frequency_groups(pairs_per_group):
+def already_done(frequency_pair, obs_id, cvel_data):
+    frequency_group = 'vis_{0}~{1}'.format(frequency_pair[0], frequency_pair[1])
+    list_data = cvel_data.get(frequency_group)
+    if list_data is not None:
+        if obs_id in list_data:
+            return True
+    return False
+
+
+def get_frequency_groups(pairs_per_group, obs_id, cvel_data, force):
     """
     >>> get_frequency_groups(1)
     [[[1400, 1404]], [[1404, 1408]], [[1408, 1412]], [[1412, 1416]], [[1416, 1420]], [[1420, 1424]]]
@@ -151,8 +154,9 @@ def get_frequency_groups(pairs_per_group):
     frequency_group = []
     counter = 0
     for frequency_pair in FREQUENCY_GROUPS:
-        frequency_group.append(frequency_pair)
-        counter += 1
+        if force or not already_done(frequency_pair, obs_id, cvel_data):
+            frequency_group.append(frequency_pair)
+            counter += 1
         if counter == pairs_per_group:
             frequency_groups.append(frequency_group)
             counter = 0
@@ -162,6 +166,22 @@ def get_frequency_groups(pairs_per_group):
         frequency_groups.append(frequency_group)
 
     return frequency_groups
+
+
+def get_cvel():
+    s3_helper = S3Helper()
+    bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
+    cvel_data = {}
+    for key in bucket.list(prefix='CVEL/'):
+        LOGGER.info('Checking {0}'.format(key.key))
+        elements = key.key.split('/')
+        data_list = cvel_data.get(str(elements[1]))
+        if data_list is None:
+            data_list = []
+            cvel_data[str(elements[1])] = data_list
+        data_list.append(str(elements[2]))
+
+    return cvel_data
 
 
 def start_servers(
@@ -175,8 +195,10 @@ def start_servers(
         name,
         instance_details,
         spot_price,
-        zone,
-        frequencies):
+        frequency_channels,
+        force):
+    cvel_data = get_cvel()
+
     # Create the queue
     tasks = multiprocessing.JoinableQueue()
 
@@ -191,7 +213,8 @@ def start_servers(
         if snapshot_id is None:
             LOGGER.warning('The obs-id: {0} does not exist in the settings file')
         else:
-            for frequency_groups in get_frequency_groups(frequencies):
+            obs_id_dashes = obs_id.replace('_', '-')
+            for frequency_groups in get_frequency_groups(frequency_channels, obs_id_dashes, cvel_data, force):
                 tasks.put(
                     Task(
                         ami_id,
@@ -203,7 +226,6 @@ def start_servers(
                         created_by,
                         name,
                         spot_price,
-                        zone,
                         instance_details,
                         frequency_groups,
                         counter
@@ -273,7 +295,8 @@ def main():
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
-    parser.add_argument('-f', '--frequencies', type=int, default=14, help='how many frequency channels per AWS instance')
+    parser.add_argument('-fc', '--frequency_channels', type=int, default=28, help='how many frequency channels per AWS instance')
+    parser.add_argument('--force', action='store_true', default=False, help='proceed with a frequency band even if we already have it')
 
     parser.add_argument('obs_ids', nargs='+', help='the ids of the observation')
 
@@ -294,7 +317,8 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            args['frequencies'])
+            args['frequency_channels'],
+            args['force'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin cvel test" -s 0.10 20131025_951_4 20131031_951_4
