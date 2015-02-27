@@ -31,16 +31,16 @@ from taskinit import *
 from cleanhelper import *
 
 MNT_OUTPUT_CHILES = '/mnt/output/Chiles/'
+MNT_INPUT_CHILES = '/mnt/input/Chiles/'
 
 cube_names = []
 out_name = MNT_OUTPUT_CHILES + os.getenv('IMAGE_NAME', 'image') + '.cube'
-for dir_name in sorted(os.listdir(MNT_OUTPUT_CHILES)):
+for dir_name in sorted(os.listdir(MNT_INPUT_CHILES)):
     if dir_name.endswith('.image'):
-        path_join = os.path.join(MNT_OUTPUT_CHILES, dir_name)
+        path_join = os.path.join(MNT_INPUT_CHILES, dir_name)
         print 'Adding: {0}'.format(path_join)
         cube_names.append(path_join)
 
-dump_all()
 print 'Start concatenating %s' % str(cube_names)
-final=ia.imageconcat(infiles=cube_names, outfile=out_name, relax=True)
+final = ia.imageconcat(infiles=cube_names, outfile=out_name, relax=True)
 final.done()

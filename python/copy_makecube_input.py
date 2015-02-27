@@ -39,7 +39,7 @@ from s3_helper import S3Helper
 
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
-DIRECTORY = '/mnt/output/Chiles/'
+DIRECTORY = '/mnt/input/Chiles/'
 
 
 class Task(object):

@@ -8,6 +8,18 @@
 #
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
+# Do we have an EBS volume mount and format it
+if [ -b '/dev/xvdf' ]; then
+    echo 'Detected EBS'
+    mkfs.ext4 /dev/xvdf
+    mkdir -p /mnt/input
+    mount -t ext4 -o noatime /dev/xvdf /mnt/input
+else
+    echo 'No EBS volume'
+    mkdir -p /mnt/output/input
+    ln -s /mnt/output/input /mnt/input
+fi
+
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {1}
 cd /home/ec2-user/chiles_pipeline

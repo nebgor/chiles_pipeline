@@ -82,13 +82,19 @@ def analyse_data(snapshots, cvel_entries):
 
     number_entries = len(FREQUENCY_GROUPS)
     ordered_dictionary = collections.OrderedDict(sorted(expected_combinations.items()))
-    output = '\n'
+    output1 = '\n'
+    output2 = '\n'
     for key, value in ordered_dictionary.iteritems():
         if len(value) == number_entries:
-            output += '{0} = "All"\n'.format(key)
+            output1 += '{0} = "All"\n'.format(key)
+            output2 += '{0} '.format(key)
         else:
-            output += '{0} = "{1}"\n'.format(key, value)
-    LOG.info(output)
+            output1 += '{0} = "{1}"\n'.format(key, value)
+            if len(value) >= 1:
+                output2 += '{0} '.format(key)
+
+    LOG.info(output1)
+    LOG.info(output2)
 
     return ordered_dictionary
 

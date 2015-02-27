@@ -71,9 +71,9 @@ class EC2Helper:
                 bdm['/dev/xvdc'] = xvdc
 
         if ebs_size:
-            xvdc = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
-            xvdc.size = int(ebs_size)  # size in Gigabytes
-            bdm['/dev/xvdc'] = xvdc
+            xvdf = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
+            xvdf.size = int(ebs_size)  # size in Gigabytes
+            bdm['/dev/xvdf'] = xvdf
 
         return bdm
 
@@ -112,13 +112,25 @@ class EC2Helper:
 
         return instance
 
-    def run_spot_instance(self, ami_id, spot_price, user_data, instance_type, volume_id, created_by, name, instance_details, zone, ephemeral=False):
+    def run_spot_instance(
+            self,
+            ami_id,
+            spot_price,
+            user_data,
+            instance_type,
+            volume_id,
+            created_by,
+            name,
+            instance_details,
+            zone,
+            ephemeral=False,
+            ebs_size=None):
         """
         Run the ami as a spot instance
         """
         subnet_id = AWS_SUBNETS[zone]
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(ephemeral, instance_details.number_disks)
+        bdm = self.build_block_device_map(ephemeral, instance_details.number_disks, ebs_size=ebs_size)
         spot_request = self.ec2_connection.request_spot_instances(
             spot_price,
             image_id=ami_id,
