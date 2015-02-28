@@ -38,10 +38,16 @@ cd /home/ec2-user/chiles_pipeline
 runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
 # Copy files from S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 4'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6'
+
+# Log the disk usage
+df -h
 
 # Run the make pipeline
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_makecube.sh {0}'
+
+# Log the disk usage
+df -h
 
 # Copy files to S3
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_output.py {0}'

@@ -155,8 +155,10 @@ def get_frequency_groups(pairs_per_group, obs_id, cvel_data, force):
     counter = 0
     for frequency_pair in FREQUENCY_GROUPS:
         if force or not already_done(frequency_pair, obs_id, cvel_data):
-            frequency_group.append(frequency_pair)
-            counter += 1
+            bottom_frequency = int(obs_id.split('-')[1])
+            if bottom_frequency < frequency_pair[0]:
+                frequency_group.append(frequency_pair)
+                counter += 1
         if counter == pairs_per_group:
             frequency_groups.append(frequency_group)
             counter = 0

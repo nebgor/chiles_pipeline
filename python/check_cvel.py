@@ -73,12 +73,18 @@ def analyse_data(snapshots, cvel_entries):
     # Build the expected list
     expected_combinations = {}
     for key in snapshots:
-        expected_combinations[key] = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS ]
+        bottom_frequency = int(key.split('_')[1])
+        list_data = []
+        for frequency in FREQUENCY_GROUPS:
+            if bottom_frequency < frequency[0]:
+                list_data.append('vis_{0}~{1}'.format(frequency[0], frequency[1]))
+        expected_combinations[key] = list_data
 
     for element in cvel_entries:
         key = swap_underscores(element[0])
         frequencies = expected_combinations[key]
-        frequencies.remove(element[1])
+        if element[1] in frequencies:
+            frequencies.remove(element[1])
 
     number_entries = len(FREQUENCY_GROUPS)
     ordered_dictionary = collections.OrderedDict(sorted(expected_combinations.items()))
