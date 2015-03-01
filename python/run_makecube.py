@@ -71,13 +71,21 @@ def start_servers(
     zone = ec2_helper.get_cheapest_spot_price(instance_type, spot_price)
 
     if zone is not None:
+        # Swap size
+        if ebs is None:
+            swap_size = 1
+        else:
+            ephemeral_size = instance_details.number_disks * instance_details.size
+            swap_size = ephemeral_size * 0.75
+
         user_data_mime = get_mime_encoded_user_data(
             user_data,
             obs_id,
             setup_disks,
             bottom_frequency,
             frequency_range,
-            )
+            swap_size
+        )
         LOGGER.info('{0}'.format(user_data_mime))
 
         ec2_helper.run_spot_instance(
