@@ -75,19 +75,19 @@ class Task(object):
 @echo
 def in_frequency_range(key, bottom_frequency, frequency_range):
     """
-    >>> in_frequency_range('vis_1200~1204', 1200, 100)
+    >>> in_frequency_range('vis_1200~1204.image.tar.gz', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1200~1204', 1100, 100)
+    >>> in_frequency_range('vis_1200~1204.image.tar.gz', 1100, 100)
     False
 
-    >>> in_frequency_range('vis_1204~1208', 1200, 100)
+    >>> in_frequency_range('vis_1204~1208.image.tar.gz', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1296~1300', 1200, 100)
+    >>> in_frequency_range('vis_1296~1300.image.tar.gz', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1296~1300', 1300, 100)
+    >>> in_frequency_range('vis_1296~1300.image.tar.gz', 1300, 100)
     False
 
     :param key:
@@ -95,7 +95,8 @@ def in_frequency_range(key, bottom_frequency, frequency_range):
     :param frequency_range:
     :return:
     """
-    elements = key.split('_')
+    elements = key.split('.')
+    elements = elements[0].split('_')
     elements = elements[1].split('~')
     return int(elements[0]) >= bottom_frequency and int(elements[1]) <= bottom_frequency + frequency_range
 
@@ -123,9 +124,10 @@ def copy_files(processes, bottom_frequency, frequency_range):
         # Ignore the key
         if key.key.endswith('.image.tar.gz'):
             # Do we need this file?
-            if in_frequency_range(key.key, bottom_frequency, frequency_range):
+            basename_key = basename(key.key)
+            if in_frequency_range(basename_key, bottom_frequency, frequency_range):
                 # Queue the copy of the file
-                temp_file = os.path.join(DIRECTORY, basename(key.key))
+                temp_file = os.path.join(DIRECTORY, basename_key)
                 queue.put(Task(key, temp_file, DIRECTORY))
 
     # Add a poison pill to shut things down
