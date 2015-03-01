@@ -56,7 +56,7 @@ class EC2Helper:
             self.ec2_connection = boto.ec2.connect_to_region(AWS_REGION)
 
     @staticmethod
-    def build_block_device_map(ephemeral, number_ephemeral_disks=1, ebs_size=None, iops=None):
+    def build_block_device_map(ephemeral, number_ephemeral_disks=1, ebs_size=None, iops=None, number_ebs_volumes=1):
         bdm = blockdevicemapping.BlockDeviceMapping()
 
         if ephemeral:
@@ -71,14 +71,16 @@ class EC2Helper:
                 bdm['/dev/xvdc'] = xvdc
 
         if ebs_size:
-            xvdf = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
-            xvdf.size = int(ebs_size)  # size in Gigabytes
-            if iops:
-                xvdf.iops = 500
-                xvdf.volume_type = 'io1'
-            else:
-                xvdf.volume_type = 'gp2'
-            bdm['/dev/xvdf'] = xvdf
+            for disks in range(0, number_ebs_volumes):
+                xvd_n = blockdevicemapping.EBSBlockDeviceType(delete_on_termination=True)
+                xvd_n.size = int(ebs_size)  # size in Gigabytes
+                if iops:
+                    xvd_n.iops = 500
+                    xvd_n.volume_type = 'io1'
+                else:
+                    xvd_n.volume_type = 'gp2'
+                last_char = chr(ord('f') + disks)
+                bdm['/dev/xvd' + last_char] = xvd_n
 
         return bdm
 
@@ -129,13 +131,19 @@ class EC2Helper:
             instance_details,
             zone,
             ephemeral=False,
-            ebs_size=None):
+            ebs_size=None,
+            number_ebs_volumes=None):
         """
         Run the ami as a spot instance
         """
         subnet_id = AWS_SUBNETS[zone]
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(ephemeral, instance_details.number_disks, ebs_size=ebs_size, iops=instance_details.iops_support)
+        bdm = self.build_block_device_map(
+            ephemeral,
+            instance_details.number_disks,
+            ebs_size=ebs_size,
+            iops=instance_details.iops_support,
+            number_ebs_volumes=number_ebs_volumes)
         spot_request = self.ec2_connection.request_spot_instances(
             spot_price,
             image_id=ami_id,

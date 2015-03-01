@@ -35,7 +35,7 @@ from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE, AWS_INSTANCES, BASH_
 from ec2_helper import EC2Helper
 
 
-def get_mime_encoded_user_data(data, observation_id, setup_disks, bottom_frequency, frequency_range):
+def get_mime_encoded_user_data(data, observation_id, setup_disks, bottom_frequency, frequency_range, swap_size):
     """
     AWS allows for a multipart m
     """
@@ -47,7 +47,8 @@ def get_mime_encoded_user_data(data, observation_id, setup_disks, bottom_frequen
         observation_id,
         PIP_PACKAGES,
         bottom_frequency if bottom_frequency is not None else '',
-        frequency_range if frequency_range is not None else '')
+        frequency_range if frequency_range is not None else '',
+        swap_size)
     user_data.attach(MIMEText(setup_disks + data_formatted))
     return user_data.as_string()
 
@@ -70,19 +71,27 @@ def start_servers(
     zone = ec2_helper.get_cheapest_spot_price(instance_type, spot_price)
 
     if zone is not None:
-        user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks, bottom_frequency, frequency_range)
+        user_data_mime = get_mime_encoded_user_data(
+            user_data,
+            obs_id,
+            setup_disks,
+            bottom_frequency,
+            frequency_range,
+            )
         LOGGER.info('{0}'.format(user_data_mime))
 
         ec2_helper.run_spot_instance(
             ami_id,
             spot_price,
             user_data_mime,
-            instance_type, None,
+            instance_type,
+            None,
             created_by,
             name + '- {0}'.format(obs_id),
             instance_details=instance_details,
             zone=zone,
             ebs_size=ebs,
+            number_ebs_volumes=4,
             ephemeral=True)
     else:
         LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(instance_type, spot_price))
