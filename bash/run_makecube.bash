@@ -12,7 +12,7 @@
 if [ -b "/dev/xvdf" ]; then
     echo 'Detected EBS'
     partprobe
-    mdadm --create --verbose /dev/md0 --level=0 -c256 --raid-devices=4 /dev/xvdf /dev/xvdg /dev/xvdh /dev/xvdi
+    mdadm --create --verbose /dev/md1 --level=0 -c256 --raid-devices=4 /dev/xvdf /dev/xvdg /dev/xvdh /dev/xvdi
     blockdev --setra 65536 /dev/md1
     mkfs.ext4 /dev/md1
     mount -t ext4 -o noatime /dev/md1 /mnt/input
@@ -39,6 +39,10 @@ else
     mkdir -p /mnt/output/Chiles
     chmod -R 0777 /mnt/output/Chiles
 fi
+
+# Log the disk usage
+df -h
+ls -lR /mnt
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {1}
