@@ -38,7 +38,7 @@ cd /home/ec2-user/chiles_pipeline
 runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
 # Copy files from S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6 {2} {3}'
 
 # Log the disk usage
 df -h

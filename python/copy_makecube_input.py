@@ -34,6 +34,7 @@ import sys
 import tarfile
 
 from common import LOGGER, Consumer
+from echo import echo
 from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
@@ -71,7 +72,35 @@ class Task(object):
             LOGGER.exception('Task died')
 
 
-def copy_files(processes):
+@echo
+def in_frequency_range(key, bottom_frequency, frequency_range):
+    """
+    >>> in_frequency_range('vis_1200~1204', 1200, 100)
+    True
+
+    >>> in_frequency_range('vis_1200~1204', 1100, 100)
+    False
+
+    >>> in_frequency_range('vis_1204~1208', 1200, 100)
+    True
+
+    >>> in_frequency_range('vis_1296~1300', 1200, 100)
+    True
+
+    >>> in_frequency_range('vis_1296~1300', 1300, 100)
+    False
+
+    :param key:
+    :param bottom_frequency:
+    :param frequency_range:
+    :return:
+    """
+    elements = key.split('_')
+    elements = elements[1].split('~')
+    return int(elements[0]) >= bottom_frequency and int(elements[1]) <= bottom_frequency + frequency_range
+
+
+def copy_files(processes, bottom_frequency, frequency_range):
     # Create the directory
     if not exists(DIRECTORY):
         os.makedirs(DIRECTORY)
@@ -93,9 +122,11 @@ def copy_files(processes):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('.image.tar.gz'):
-            # Queue the copy of the file
-            temp_file = os.path.join(DIRECTORY, basename(key.key))
-            queue.put(Task(key, temp_file, DIRECTORY))
+            # Do we need this file?
+            if in_frequency_range(key.key, bottom_frequency, frequency_range):
+                # Queue the copy of the file
+                temp_file = os.path.join(DIRECTORY, basename(key.key))
+                queue.put(Task(key, temp_file, DIRECTORY))
 
     # Add a poison pill to shut things down
     for x in range(processes):
@@ -108,11 +139,12 @@ def copy_files(processes):
 def main():
     parser = argparse.ArgumentParser('Copy the CLEAN output from S3')
     parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+    parser.add_argument('bottom_frequency', type=int, help='The bottom frequency')
+    parser.add_argument('frequency_range', type=int, help='the range of frequencies')
 
     args = vars(parser.parse_args())
-    processes = args['processes']
 
-    copy_files(processes)
+    copy_files(args['processes'], args['bottom_frequency'], args['frequency_range'])
 
 if __name__ == "__main__":
     main()

@@ -35,7 +35,7 @@ from settings_file import AWS_AMI_ID, BASH_SCRIPT_MAKECUBE, AWS_INSTANCES, BASH_
 from ec2_helper import EC2Helper
 
 
-def get_mime_encoded_user_data(data, observation_id, setup_disks, ebs):
+def get_mime_encoded_user_data(data, observation_id, setup_disks, bottom_frequency, frequency_range):
     """
     AWS allows for a multipart m
     """
@@ -43,7 +43,11 @@ def get_mime_encoded_user_data(data, observation_id, setup_disks, ebs):
     user_data = MIMEMultipart()
     user_data.attach(get_cloud_init())
 
-    data_formatted = data.format(observation_id, PIP_PACKAGES)
+    data_formatted = data.format(
+        observation_id,
+        PIP_PACKAGES,
+        bottom_frequency if bottom_frequency is not None else '',
+        frequency_range if frequency_range is not None else '')
     user_data.attach(MIMEText(setup_disks + data_formatted))
     return user_data.as_string()
 
@@ -58,13 +62,15 @@ def start_servers(
         name,
         instance_details,
         spot_price,
-        ebs):
-    LOGGER.info('obs_id: {0}'.format(obs_id))
+        ebs,
+        bottom_frequency,
+        frequency_range):
+    LOGGER.info('obs_id: {0}, bottom_frequency: {1}, frequency_range: {2}'.format(obs_id, bottom_frequency, frequency_range))
     ec2_helper = EC2Helper()
     zone = ec2_helper.get_cheapest_spot_price(instance_type, spot_price)
 
     if zone is not None:
-        user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks, ebs)
+        user_data_mime = get_mime_encoded_user_data(user_data, obs_id, setup_disks, bottom_frequency, frequency_range)
         LOGGER.info('{0}'.format(user_data_mime))
 
         ec2_helper.run_spot_instance(
@@ -132,6 +138,8 @@ def main():
     parser.add_argument('-s', '--spot_price', type=float, help='the spot price to use')
     parser.add_argument('-b', '--bash_script', help='the bash script to use')
     parser.add_argument('-e', '--ebs', type=int, help='the size in GB of any EBS volume')
+    parser.add_argument('bottom_frequency', help='The bottom frequency')
+    parser.add_argument('frequency_range', help='the range of frequencies')
     parser.add_argument('obs_id', help='the observation id')
 
     args = vars(parser.parse_args())
@@ -150,7 +158,9 @@ def main():
             args['name'],
             corrected_args['instance_details'],
             corrected_args['spot_price'],
-            args['ebs'])
+            args['ebs'],
+            args['bottom_frequency'],
+            args['frequency_range'])
 
 if __name__ == "__main__":
     # -i r3.xlarge -n "Kevin ImgConcat test" -s 0.10 obs-1
