@@ -8,18 +8,26 @@
 #
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
-# Do we have an EBS volume mount and format it
+# Do we have an EBS volume mount and format it we present 4 volumes for makecube
 if [ -b "/dev/xvdf" ]; then
     echo 'Detected EBS'
     partprobe
     mdadm --create --verbose /dev/md1 --level=0 -c256 --raid-devices=4 /dev/xvdf /dev/xvdg /dev/xvdh /dev/xvdi
     blockdev --setra 65536 /dev/md1
     mkfs.ext4 /dev/md1
-    mount -t ext4 -o noatime /dev/md1 /mnt/input
-    chmod -R 0777 /mnt/input
-    mkdir -p /mnt/input/output/Chiles
-    ln -s /mnt/input/output/Chiles /mnt/output/Chiles
+    mkdir -p /mnt/data
+    mount -t ext4 -o noatime /dev/md1 /mnt/data
+    chmod -R 0777 /mnt/data
+
+    mkdir -p /mnt/data/output/Chiles
+    mkdir -p /mnt/data/input/Chiles
+    mkdir -p /mnt/output
+    mkdir -p /mnt/input
+
+    ln -s /mnt/data/output/Chiles /mnt/output/Chiles
+    ln -s /mnt/data/input/Chiles /mnt/input/Chiles
     chmod -R 0777 /mnt/output/Chiles
+    chmod -R 0777 /mnt/input/Chiles
 
     # If we need an EBS volume we need a lot of memory so make a swap on the disk
     /bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count={4}
@@ -27,7 +35,6 @@ if [ -b "/dev/xvdf" ]; then
     chmod 600 /mnt/output/swapfile
     /sbin/mkswap /mnt/output/swapfile
     /sbin/swapon /mnt/output/swapfile
-
 else
     echo 'No EBS volume'
     # Everything on the Ephemeral drive

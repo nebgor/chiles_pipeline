@@ -76,7 +76,7 @@ def start_servers(
             swap_size = 1
         else:
             ephemeral_size = instance_details.number_disks * instance_details.size
-            swap_size = ephemeral_size * 0.75
+            swap_size = int(ephemeral_size * 0.75)
 
         user_data_mime = get_mime_encoded_user_data(
             user_data,
