@@ -28,6 +28,7 @@ Copy the CVEL output from S3 so we can run clean on it
 import argparse
 from contextlib import closing
 import multiprocessing
+from os.path import join
 import sys
 import os
 import tarfile
@@ -44,10 +45,11 @@ class Task(object):
     """
     The actual task
     """
-    def __init__(self, key, tar_file, directory):
+    def __init__(self, key, tar_file, directory, frequency_id):
         self._key = key
         self._tar_file = tar_file
         self._directory = directory
+        self._frequency_id = frequency_id
 
     def __call__(self):
         """
@@ -55,12 +57,17 @@ class Task(object):
         """
         # noinspection PyBroadException
         try:
-            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, self._directory))
-            if not os.path.exists(self._directory):
-                os.makedirs(self._directory)
+            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}, frequency_id: {3}'.format(
+                self._key.key,
+                self._tar_file,
+                self._directory,
+                self._frequency_id))
+            corrected_path = join(self._directory, self._frequency_id)
+            if not os.path.exists(corrected_path):
+                os.makedirs(corrected_path)
             self._key.get_contents_to_filename(self._tar_file)
             with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
-                tar.extractall(path=self._directory)
+                tar.extractall(path=corrected_path)
 
             os.remove(self._tar_file)
         except Exception:
@@ -89,7 +96,7 @@ def copy_files(frequency_id, processes):
 
             # Queue the copy of the file
             temp_file = os.path.join(directory, 'data.tar.gz')
-            queue.put(Task(key, temp_file, directory))
+            queue.put(Task(key, temp_file, directory, frequency_id))
 
     # Add a poison pill to shut things down
     for x in range(processes):

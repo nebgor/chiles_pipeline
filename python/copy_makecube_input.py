@@ -119,7 +119,7 @@ def copy_files(processes, bottom_frequency, frequency_range):
         consumer = Consumer(queue)
         consumer.start()
 
-    for key in bucket.list(prefix='CLEAN'):
+    for key in bucket.list(prefix='CLEAN/'):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('.image.tar.gz'):
