@@ -44,6 +44,14 @@ from common import LOGGER, Consumer
 from file_chunk_io import FileChunkIO
 
 
+class S3UploadException(Exception):
+    """
+    Something went wrong with the S3 upload
+    """
+    def __init__(self, error):
+        self.error = error
+
+
 def upload_part(bucket_name, multipart_id, part_num, source_path, offset, bytes_to_copy, amount_of_retries=10):
     """
     Uploads a part with retries.  It is outside the class to get pickling to work properly
@@ -140,32 +148,37 @@ class S3Helper:
         """
         LOGGER.info('bucket_name: {0}, key_name: {1}, filename: {2}, parallel_processes: {3}, reduced_redundancy: {4}'.format(
             bucket_name, key_name, source_path, parallel_processes, reduced_redundancy))
-        bucket = self.get_bucket(bucket_name)
-
-        headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
-        mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
 
         source_size = os.stat(source_path).st_size
-        bytes_per_chunk = max(int(math.sqrt(5242880) * math.sqrt(source_size)), 5242880)
+        bytes_per_chunk = 10 * 1024 * 1024
         chunk_amount = int(math.ceil(source_size / float(bytes_per_chunk)))
-        LOGGER.info('bytes_per_chunk: {0}, chunk_amount: {1}'.format(bytes_per_chunk, chunk_amount))
+        if chunk_amount < 10000:
+            bucket = self.get_bucket(bucket_name)
 
-        pool = Pool(processes=parallel_processes)
-        for i in range(chunk_amount):
-            offset = i * bytes_per_chunk
-            remaining_bytes = source_size - offset
-            bytes_to_copy = min([bytes_per_chunk, remaining_bytes])
-            part_num = i + 1
-            pool.apply_async(upload_part, [bucket_name, mp.id, part_num, source_path, offset, bytes_to_copy])
-        pool.close()
-        pool.join()
+            headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
+            mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
 
-        if len(mp.get_all_parts()) == chunk_amount:
-            mp.complete_upload()
+            LOGGER.info('bytes_per_chunk: {0}, chunk_amount: {1}'.format(bytes_per_chunk, chunk_amount))
+
+            # You can only upload 10,000 chunks
+            pool = Pool(processes=parallel_processes)
+            for i in range(chunk_amount):
+                offset = i * bytes_per_chunk
+                remaining_bytes = source_size - offset
+                bytes_to_copy = min([bytes_per_chunk, remaining_bytes])
+                part_num = i + 1
+                pool.apply_async(upload_part, [bucket_name, mp.id, part_num, source_path, offset, bytes_to_copy])
+            pool.close()
+            pool.join()
+
+            if len(mp.get_all_parts()) == chunk_amount:
+                mp.complete_upload()
+            else:
+                mp.cancel_upload()
         else:
-            mp.cancel_upload()
+            raise S3UploadException('Too many chunks')
 
-    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, gzip=True, parallel_processes=4, reduced_redundancy=True):
+    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, gzip=True, parallel_processes=4, reduced_redundancy=True, bufsize=10*1024*1024):
         """
         Parallel multipart upload.
         """
@@ -189,7 +202,7 @@ class S3Helper:
 
         headers = {'Content-Type': mimetypes.guess_type(key_name)[0] or 'application/octet-stream'}
         mp = bucket.initiate_multipart_upload(key_name, headers=headers, reduced_redundancy=reduced_redundancy)
-        s3_feeder = S3Feeder(task_queue, mp)
+        s3_feeder = S3Feeder(task_queue, mp, bufsize)
 
         if gzip:
             mode = "w|gz"
@@ -240,9 +253,9 @@ class MultipartTask(object):
 
 
 class S3Feeder:
-    def __init__(self, queue, multipart_upload):
+    def __init__(self, queue, multipart_upload, bufsize):
         self._buffer = ""
-        self._bufsize = 5242880
+        self._bufsize = bufsize
         self._part_num = 1
         self._queue = queue
         self._multipart_upload = multipart_upload
@@ -251,12 +264,18 @@ class S3Feeder:
     def write(self, data):
         self._buffer += data
         while len(self._buffer) > self._bufsize:
-            self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
-            self._part_num += 1
-            self._buffer = self._buffer[self._bufsize:]
+            if self._part_num <= 10000:
+                self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
+                self._part_num += 1
+                self._buffer = self._buffer[self._bufsize:]
+            else:
+                raise S3UploadException('Too many chunks')
 
     def close(self):
         if not self._closed:
-            self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
-            self._part_num += 1
-            self._closed = True
+            if self._part_num <= 10000:
+                self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
+                self._part_num += 1
+                self._closed = True
+            else:
+                raise S3UploadException('Too many chunks')

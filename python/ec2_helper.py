@@ -38,6 +38,13 @@ from common import make_safe_filename, LOGGER
 from settings_file import AWS_SUBNETS, AWS_KEY_NAME, AWS_SECURITY_GROUPS, AWS_REGION
 
 
+class CancelledException(Exception):
+    """
+    The request has been cancelled
+    """
+    pass
+
+
 class EC2Helper:
     def __init__(self, aws_access_key_id=None, aws_secret_access_key=None):
         """
@@ -295,10 +302,3 @@ class EC2Helper:
 
         LOGGER.info('bid_price: {0}, spot_price: {2}, zone: {1}'.format(max_price, best_price.availability_zone, best_price.price))
         return best_price.availability_zone
-
-
-class CancelledException(Exception):
-    """
-    The request has been cancelled
-    """
-    pass

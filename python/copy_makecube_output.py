@@ -59,7 +59,8 @@ def copy_files(cube):
                 CHILES_BUCKET_NAME,
                 'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
                 directory_to_save,
-                parallel_processes=8)
+                parallel_processes=4,
+                bufsize=50 * 1024 * 1024)
 
         except Exception:
             LOGGER.exception('Task died')
