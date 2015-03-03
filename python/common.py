@@ -75,8 +75,13 @@ class Consumer(multiprocessing.Process):
                 self._queue.task_done()
                 return
             LOGGER.info('Executing the task')
-            next_task()
-            self._queue.task_done()
+            # noinspection PyBroadException
+            try:
+                next_task()
+            except:
+                LOGGER.exception('Exception in consumer')
+            finally:
+                self._queue.task_done()
 
 
 def make_safe_filename(name):

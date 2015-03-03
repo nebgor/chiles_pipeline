@@ -44,7 +44,7 @@ def copy_files(frequency_id):
     for dir_name in os.listdir(CHILES_CLEAN_OUTPUT):
         LOGGER.info('dir_name: {0}'.format(dir_name))
         result_dir = join(CHILES_CLEAN_OUTPUT, dir_name)
-        if isdir(result_dir) and dir_name.startswith('cube_'):
+        if isdir(result_dir) and dir_name.startswith('cube_') and dir_name.endswith('.image'):
             LOGGER.info('dir_name: {0}'.format(dir_name))
             output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar.gz')
 

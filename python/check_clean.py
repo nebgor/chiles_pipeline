@@ -40,9 +40,10 @@ def get_clean():
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
     clean_data = set()
     for key in bucket.list(prefix='CLEAN/'):
-        LOG.info('Checking {0}'.format(key.key))
-        elements = key.key.split('/')
-        clean_data.add(elements[1])
+        if key.key.endswith('image.tar.gz'):
+            LOG.info('Checking {0}'.format(key.key))
+            elements = key.key.split('/')
+            clean_data.add(elements[1])
 
     return clean_data
 
