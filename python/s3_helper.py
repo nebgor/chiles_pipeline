@@ -243,13 +243,19 @@ class MultipartTask(object):
         self._multipart_upload = multipart_upload
 
     def __call__(self):
-        # noinspection PyBroadException
-        try:
-            LOGGER.info('Writing part {0} - {1} bytes'.format(self._part_num, len(self._data)))
-            fp = StringIO(self._data)
-            self._multipart_upload.upload_part_from_file(fp=fp, part_num=self._part_num)
-        except Exception:
-            LOGGER.exception('Exception executing the task')
+        retry_count = 0
+        done = False
+        while retry_count < 3 and not done:
+            # noinspection PyBroadException
+            try:
+                LOGGER.info('Writing part {0} - {1} bytes'.format(self._part_num, len(self._data)))
+                fp = StringIO(self._data)
+                self._multipart_upload.upload_part_from_file(fp=fp, part_num=self._part_num, replace=True)
+                done = True
+            except Exception:
+                LOGGER.exception('Exception executing the task')
+                retry_count += 1
+                time.sleep(10)
 
 
 class S3Feeder:
