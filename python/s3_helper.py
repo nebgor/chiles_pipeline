@@ -105,6 +105,20 @@ class S3Helper:
         """
         return self.s3_connection.get_bucket(bucket_name)
 
+    def get_file_from_bucket(self, bucket_name, key_name, file_name):
+        """
+        Get a file from S3 into a local file
+
+        :param bucket_name:
+        :param key_name:
+        :param file_name:
+        :return:
+        """
+        bucket = self.get_bucket(bucket_name)
+        key = Key(bucket)
+        key.key = key_name
+        key.get_contents_to_filename(file_name)
+
     def add_file_to_bucket(self, bucket_name, key_name, filename, reduced_redundancy=True):
         """
         Add file to a bucket
@@ -127,20 +141,6 @@ class S3Helper:
                 LOGGER.exception('Error')
                 retry_count += 1
                 time.sleep(10)
-
-    def get_file_from_bucket(self, bucket_name, key_name, file_name):
-        """
-        Get a file from S3 into a local file
-
-        :param bucket_name:
-        :param key_name:
-        :param file_name:
-        :return:
-        """
-        bucket = self.get_bucket(bucket_name)
-        key = Key(bucket)
-        key.key = key_name
-        key.get_contents_to_filename(file_name)
 
     def add_file_to_bucket_multipart(self, bucket_name, key_name, source_path, parallel_processes=4, reduced_redundancy=True):
         """

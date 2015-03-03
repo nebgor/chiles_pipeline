@@ -31,7 +31,7 @@ from os.path import join, isdir, basename
 import shutil
 import sys
 
-from common import make_safe_filename, LOGGER
+from common import make_safe_filename, LOGGER, can_be_multipart_tar, make_tarfile
 from settings_file import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
 from s3_helper import S3Helper
 
@@ -39,31 +39,32 @@ LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
 def copy_files(cube):
-    # We need to clear some space as the tar takes a lot of space
-    for dir_name in os.listdir(CHILES_IMGCONCAT_OUTPUT):
-        LOGGER.info('dir_name: {0}'.format(dir_name))
-        if isdir(join(CHILES_IMGCONCAT_OUTPUT, dir_name)) and dir_name.endswith('.image'):
-            LOGGER.info('removing: {0}'.format(dir_name))
-            shutil.rmtree(join(CHILES_IMGCONCAT_OUTPUT, dir_name), ignore_errors=True)
-
+    s3_helper = S3Helper()
     # Look in the output directory
     directory_to_save = join(CHILES_IMGCONCAT_OUTPUT, cube) + '.cube'
     if isdir(directory_to_save):
         LOGGER.info('dir_name: {0}'.format(directory_to_save))
         output_tar_filename = directory_to_save + '.tar.gz'
-        # noinspection PyBroadException
-        try:
-            LOGGER.info('Copying {0} to s3'.format(output_tar_filename))
-            s3_helper = S3Helper()
+
+        if can_be_multipart_tar(directory_to_save):
+            LOGGER.info('Using add_tar_to_bucket_multipart')
             s3_helper.add_tar_to_bucket_multipart(
                 CHILES_BUCKET_NAME,
                 'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
                 directory_to_save,
                 parallel_processes=4,
                 bufsize=50 * 1024 * 1024)
+        else:
+            LOGGER.info('Using make_tarfile, then adding file to bucket')
+            make_tarfile(output_tar_filename, directory_to_save)
 
-        except Exception:
-            LOGGER.exception('Task died')
+            s3_helper.add_file_to_bucket(
+                CHILES_BUCKET_NAME,
+                'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
+                output_tar_filename)
+
+            # Clean up
+            os.remove(output_tar_filename)
 
 
 def main():

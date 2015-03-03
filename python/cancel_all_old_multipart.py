@@ -39,6 +39,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 def main():
     parser = argparse.ArgumentParser('Check the multipart upload status')
     parser.add_argument('-c', '--cancel', action="store_true", help='cancel all the outstanding ')
+    parser.add_argument('-f', '--force', action="store_true", help='force all the outstanding ')
     args = vars(parser.parse_args())
 
     if exists(join(expanduser('~'), '.aws/credentials')):
@@ -56,7 +57,7 @@ def main():
     for item in bucket.list_multipart_uploads():
         LOG.info('key_name: {0}, initiated: {1}'.format(item.key_name, item.initiated))
         date_initiated = datetime.datetime.strptime(item.initiated, '%Y-%m-%dT%H:%M:%S.%fZ')
-        if date_initiated < one_day_ago and args['cancel']:
+        if (date_initiated < one_day_ago and args['cancel']) or args['force']:
             LOG.info('Cancelling {0}'.format(item.key_name))
             bucket.cancel_multipart_upload(item.key_name, item.id)
 

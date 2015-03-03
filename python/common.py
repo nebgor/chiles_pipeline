@@ -25,14 +25,16 @@
 """
 Common code
 """
-from contextlib import closing
-from email.mime.text import MIMEText
 import logging
 import multiprocessing
-from os.path import join, dirname, basename, expanduser
+import os
 import re
 import tarfile
 import unicodedata
+from contextlib import closing
+from email.mime.text import MIMEText
+from os.path import join, dirname, expanduser, getsize
+from echo import echo
 
 
 def get_logger(level=multiprocessing.SUBDEBUG):
@@ -157,7 +159,21 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
 '''.format(yaml_text(get_boto_data())))
 
 
+@echo
 def make_tarfile(output_filename, source_dir):
     LOGGER.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
     with closing(tarfile.open(output_filename, "w:gz")) as tar:
-        tar.add(source_dir, arcname=basename(source_dir))
+        for entry in os.listdir(source_dir):
+            full_filename = join(source_dir, entry)
+            tar.add(full_filename, arcname=entry)
+
+
+@echo
+def can_be_multipart_tar(directory_to_check):
+    total_size = 0
+    for root, dir_names, filenames in os.walk(directory_to_check):
+        for file_name in filenames:
+            full_path = join(root, file_name)
+            total_size += getsize(full_path)
+
+    return total_size > 100 * 1024 * 1024

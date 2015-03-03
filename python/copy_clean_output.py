@@ -30,59 +30,41 @@ import os
 from os.path import join, isdir, basename
 import sys
 
-from common import LOGGER
+from common import LOGGER, can_be_multipart_tar, make_tarfile
 from settings_file import CHILES_BUCKET_NAME, CHILES_CLEAN_OUTPUT
 from s3_helper import S3Helper
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, output_tar_filename, frequency_id, directory_to_save):
-        self._output_tar_filename = output_tar_filename
-        self._frequency_id = frequency_id
-        self._directory_to_save = directory_to_save
-
-    def __call__(self):
-        """
-        Actually run the job
-        """
-        # noinspection PyBroadException
-        try:
-            LOGGER.info('Copying {0} to s3'.format(self._output_tar_filename))
-            s3_helper = S3Helper()
-            s3_helper.add_tar_to_bucket_multipart(
-                CHILES_BUCKET_NAME,
-                '/CLEAN/{0}/{1}'.format(self._frequency_id, basename(self._output_tar_filename)),
-                self._directory_to_save)
-
-        except Exception:
-            LOGGER.exception('Task died')
-
-
 def copy_files(frequency_id):
+    s3_helper = S3Helper()
     # Look in the output directory
     LOGGER.info('directory_data: {0}'.format(CHILES_CLEAN_OUTPUT))
     for dir_name in os.listdir(CHILES_CLEAN_OUTPUT):
         LOGGER.info('dir_name: {0}'.format(dir_name))
-        if isdir(join(CHILES_CLEAN_OUTPUT, dir_name)) and dir_name.startswith('cube_'):
+        result_dir = join(CHILES_CLEAN_OUTPUT, dir_name)
+        if isdir(result_dir) and dir_name.startswith('cube_'):
             LOGGER.info('dir_name: {0}'.format(dir_name))
             output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar.gz')
 
-            # noinspection PyBroadException
-            try:
-                LOGGER.info('Copying {0} to s3'.format(output_tar_filename))
-                s3_helper = S3Helper()
+            if can_be_multipart_tar(result_dir):
+                LOGGER.info('Using add_tar_to_bucket_multipart')
                 s3_helper.add_tar_to_bucket_multipart(
                     CHILES_BUCKET_NAME,
                     '/CLEAN/{0}/{1}'.format(frequency_id, basename(output_tar_filename)),
-                    join(CHILES_CLEAN_OUTPUT, dir_name))
+                    result_dir)
+            else:
+                LOGGER.info('Using make_tarfile, then adding file to bucket')
+                make_tarfile(output_tar_filename, result_dir)
 
-            except Exception:
-                LOGGER.exception('Task died')
+                s3_helper.add_file_to_bucket(
+                    CHILES_BUCKET_NAME,
+                    'CVEL/{0}/{1}/data.tar.gz'.format(frequency_id, basename(output_tar_filename)),
+                    output_tar_filename)
+
+                # Clean up
+                os.remove(output_tar_filename)
 
 
 def main():

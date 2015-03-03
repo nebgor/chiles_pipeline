@@ -32,7 +32,7 @@ from os.path import join
 import shutil
 import sys
 
-from common import make_safe_filename, LOGGER
+from common import make_safe_filename, LOGGER, make_tarfile, can_be_multipart_tar
 from echo import echo
 from settings_file import CHILES_CVEL_OUTPUT, CHILES_BUCKET_NAME
 from s3_helper import S3Helper
@@ -50,10 +50,25 @@ def copy_files(date, vis_file):
         for match in fnmatch.filter(dir_names, vis_file):
             result_dir = join(root, match)
             LOGGER.info('Working on: {0}'.format(result_dir))
-            s3_helper.add_tar_to_bucket_multipart(
-                CHILES_BUCKET_NAME,
-                'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
-                result_dir)
+
+            if can_be_multipart_tar(result_dir):
+                LOGGER.info('Using add_tar_to_bucket_multipart')
+                s3_helper.add_tar_to_bucket_multipart(
+                    CHILES_BUCKET_NAME,
+                    'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
+                    result_dir)
+            else:
+                LOGGER.info('Using make_tarfile, then adding file to bucket')
+                output_tar_filename = join(root, match + '.tar.gz')
+                make_tarfile(output_tar_filename, result_dir)
+
+                s3_helper.add_file_to_bucket(
+                    CHILES_BUCKET_NAME,
+                    'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
+                    output_tar_filename)
+
+                # Clean up
+                os.remove(output_tar_filename)
 
             shutil.rmtree(result_dir, ignore_errors=True)
 
