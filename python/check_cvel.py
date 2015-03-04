@@ -61,8 +61,9 @@ def get_cvel():
     cvel_data = []
     for key in bucket.list(prefix='CVEL/'):
         LOG.info('Checking {0}'.format(key.key))
-        elements = key.key.split('/')
-        cvel_data.append([str(elements[2]), str(elements[1])])
+        if key.key.endswith('data.tar.gz'):
+            elements = key.key.split('/')
+            cvel_data.append([str(elements[2]), str(elements[1])])
 
     return cvel_data
 

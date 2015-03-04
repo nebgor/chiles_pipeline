@@ -115,9 +115,9 @@ class Task(object):
     def get_swap_size(self):
         ephemeral_size = self._instance_details.number_disks * self._instance_details.size
         if ephemeral_size > 100:
-            return 32
-        elif ephemeral_size > 32:
             return 8
+        elif ephemeral_size > 32:
+            return 2
         else:
             return 1
 

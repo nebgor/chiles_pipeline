@@ -176,12 +176,13 @@ def get_cvel():
     cvel_data = {}
     for key in bucket.list(prefix='CVEL/'):
         LOGGER.info('Checking {0}'.format(key.key))
-        elements = key.key.split('/')
-        data_list = cvel_data.get(str(elements[1]))
-        if data_list is None:
-            data_list = []
-            cvel_data[str(elements[1])] = data_list
-        data_list.append(str(elements[2]))
+        if key.key.endswith('data.tar.gz'):
+            elements = key.key.split('/')
+            data_list = cvel_data.get(str(elements[1]))
+            if data_list is None:
+                data_list = []
+                cvel_data[str(elements[1])] = data_list
+            data_list.append(str(elements[2]))
 
     return cvel_data
 
