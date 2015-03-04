@@ -29,7 +29,7 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 """
 import fnmatch
 import os
-from os.path import join
+from os.path import join, exists
 from makecube_defines import check_dir, cube_dir, vis_dirs, run_id, do_cube, freq_min, freq_max, freq_step, freq_width
 
 check_dir(cube_dir)
@@ -41,7 +41,10 @@ run_id   = {1}'''.format(vis_dirs, run_id)
 vis_dirs_cube = []
 for root, dir_names, filenames in os.walk(vis_dirs):
     for match in fnmatch.filter(dir_names, 'vis_*'):
-        vis_dirs_cube.append('{0}'.format(join(root, match)))
+        full_dir_name = join(root, match)
+        # Make sure it contains data
+        if exists(join(full_dir_name, 'table.dat')):
+            vis_dirs_cube.append('{0}'.format(full_dir_name))
 
 do_cube(vis_dirs_cube, cube_dir, freq_min, freq_max, freq_step, freq_width)
 
