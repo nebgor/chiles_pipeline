@@ -26,6 +26,7 @@
 Chiles settings
 """
 from os.path import exists, dirname, expanduser
+
 from configobj import ConfigObj
 
 

@@ -25,10 +25,11 @@
 """
 Get the snapshot ids and dates
 """
-import argparse
 import collections
 import logging
+
 from ec2_helper import EC2Helper
+
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)

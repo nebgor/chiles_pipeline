@@ -26,8 +26,10 @@
 Get the snapshot ids and dates
 """
 import logging
+
 from s3_helper import S3Helper
 from settings_file import CHILES_BUCKET_NAME
+
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)

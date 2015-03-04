@@ -28,12 +28,12 @@ Copy the clean output
 import argparse
 import os
 from os.path import join, isdir, basename
-import shutil
 import sys
 
 from common import make_safe_filename, LOGGER, can_be_multipart_tar, make_tarfile
 from settings_file import CHILES_BUCKET_NAME, CHILES_IMGCONCAT_OUTPUT
 from s3_helper import S3Helper
+
 
 LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
 

@@ -33,14 +33,13 @@ import math
 import mimetypes
 from multiprocessing import Pool
 import os
-
-import boto
-from boto.s3.key import Key
 import multiprocessing
 from cStringIO import StringIO
 
-from common import LOGGER, Consumer
+import boto
+from boto.s3.key import Key
 
+from common import LOGGER, Consumer
 from file_chunk_io import FileChunkIO
 
 

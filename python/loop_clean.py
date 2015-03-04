@@ -30,7 +30,9 @@ This module should run together with the casapy: e.g. casapy --nologger -c loop_
 import fnmatch
 import os
 from os.path import join, exists
+
 from makecube_defines import check_dir, cube_dir, vis_dirs, run_id, do_cube, freq_min, freq_max, freq_step, freq_width
+
 
 check_dir(cube_dir)
 

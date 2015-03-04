@@ -27,9 +27,11 @@ Check the CVEL output
 """
 import collections
 import logging
+
 from ec2_helper import EC2Helper
 from s3_helper import S3Helper
 from settings_file import CHILES_BUCKET_NAME, FREQUENCY_GROUPS
+
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)

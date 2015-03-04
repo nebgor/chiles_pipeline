@@ -27,10 +27,13 @@ Clean up multipart files
 """
 import argparse
 import logging
-import boto
 from os.path import exists, join, expanduser
 import datetime
+
+import boto
+
 from settings_file import CHILES_BUCKET_NAME
+
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)

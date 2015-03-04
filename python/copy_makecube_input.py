@@ -26,12 +26,13 @@
 Copy the CLEAN output from S3
 """
 import argparse
-from contextlib import closing
 import multiprocessing
 import os
-from os.path import basename, exists, join
+import shutil
 import sys
 import tarfile
+from contextlib import closing
+from os.path import basename, exists, join
 
 from common import LOGGER, Consumer
 from echo import echo
@@ -56,10 +57,10 @@ class Task(object):
         """
         Actually run the job
         """
+        image_name = basename(self._tar_file).replace('.tar.gz', '')
+        directory = join(self._directory, image_name)
         # noinspection PyBroadException
         try:
-            image_name = basename(self._tar_file).replace('.tar.gz', '')
-            directory = join(self._directory, image_name)
             LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, directory))
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -70,6 +71,7 @@ class Task(object):
             os.remove(self._tar_file)
         except Exception:
             LOGGER.exception('Task died')
+            shutil.rmtree(directory, ignore_errors=True)
 
 
 @echo

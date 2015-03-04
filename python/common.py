@@ -34,6 +34,7 @@ import unicodedata
 from contextlib import closing
 from email.mime.text import MIMEText
 from os.path import join, dirname, expanduser, getsize
+
 from echo import echo
 
 

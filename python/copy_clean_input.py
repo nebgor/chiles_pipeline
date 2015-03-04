@@ -28,9 +28,10 @@ Copy the CVEL output from S3 so we can run clean on it
 import argparse
 from contextlib import closing
 import multiprocessing
-from os.path import join
-import sys
 import os
+from os.path import join
+import shutil
+import sys
 import tarfile
 
 from common import Consumer, LOGGER
@@ -55,6 +56,7 @@ class Task(object):
         """
         Actually run the job
         """
+        corrected_path = join(self._directory, self._frequency_id)
         # noinspection PyBroadException
         try:
             LOGGER.info('key: {0}, tar_file: {1}, directory: {2}, frequency_id: {3}'.format(
@@ -62,7 +64,6 @@ class Task(object):
                 self._tar_file,
                 self._directory,
                 self._frequency_id))
-            corrected_path = join(self._directory, self._frequency_id)
             if not os.path.exists(corrected_path):
                 os.makedirs(corrected_path)
             self._key.get_contents_to_filename(self._tar_file)
@@ -72,6 +73,7 @@ class Task(object):
             os.remove(self._tar_file)
         except Exception:
             LOGGER.exception('Task died')
+            shutil.rmtree(corrected_path, ignore_errors=True)
 
 
 def copy_files(frequency_id, processes):
