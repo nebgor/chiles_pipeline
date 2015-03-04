@@ -180,6 +180,6 @@ def main():
             args['frequency_range'])
 
 if __name__ == "__main__":
-    # -i r3.xlarge -n "Kevin ImgConcat test" -s 0.10 obs-1
+    # --ebs 300 -i r3.2xlarge -n "Kevin ImgConcat" -s 0.20 1240 200 1240~1424
     main()
 
