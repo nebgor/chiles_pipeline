@@ -52,7 +52,7 @@ def copy_files(cube):
                 CHILES_BUCKET_NAME,
                 'IMGCONCAT/{0}'.format(basename(output_tar_filename)),
                 directory_to_save,
-                bufsize=50 * 1024 * 1024)
+                bufsize=20 * 1024 * 1024)
         else:
             LOGGER.info('Using make_tarfile, then adding file to bucket')
             make_tarfile(output_tar_filename, directory_to_save)
