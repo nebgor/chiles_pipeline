@@ -207,7 +207,7 @@ class S3Helper:
             mode = "w|gz"
         else:
             mode = "w|"
-        tar = tarfile.open(mode=mode, fileobj=s3_feeder)
+        tar = tarfile.open(mode=mode, fileobj=s3_feeder, bufsize=512*1024)
 
         complete = True
         # noinspection PyBroadException
@@ -258,29 +258,35 @@ class MultipartTask(object):
 
 
 class S3Feeder:
-    def __init__(self, queue, multipart_upload, bufsize):
-        self._buffer = ""
-        self._bufsize = bufsize
+    def __init__(self, queue, multipart_upload, max_buffer_size):
+        self._file_str = StringIO()
+        self._buffer_length = 0
+        self._max_buffer_size = max_buffer_size
         self._part_num = 1
         self._queue = queue
         self._multipart_upload = multipart_upload
         self._closed = False
 
     def write(self, data):
-        self._buffer += data
-        while len(self._buffer) > self._bufsize:
+        self._file_str.write(data)
+        self._buffer_length += len(data)
+        if self._buffer_length > self._max_buffer_size:
             if self._part_num <= 10000:
-                self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
+                _buffer = self._file_str.getvalue()
+                self._file_str.close()
+                self._queue.put(MultipartTask(_buffer, self._part_num, self._multipart_upload))
                 self._part_num += 1
-                self._buffer = self._buffer[self._bufsize:]
+                self._file_str = StringIO()
+                self._buffer_length = 0
             else:
                 raise S3UploadException('Too many chunks')
 
     def close(self):
         if not self._closed:
             if self._part_num <= 10000:
-                self._queue.put(MultipartTask(self._buffer[:self._bufsize], self._part_num, self._multipart_upload))
-                self._part_num += 1
+                _buffer = self._file_str.getvalue()
+                self._file_str.close()
+                self._queue.put(MultipartTask(_buffer, self._part_num, self._multipart_upload))
                 self._closed = True
             else:
                 raise S3UploadException('Too many chunks')
