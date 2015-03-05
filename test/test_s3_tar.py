@@ -31,4 +31,6 @@ s3_helper = S3Helper()
 s3_helper.add_tar_to_bucket_multipart(
     'testdpstore',
     'KEVIN/test.tar.gz',
-    '/tmp/vis_1260~1264')
+    '/tmp/vis_1260~1264',
+    parallel_processes=4,
+    bufsize=50*1024*1024)
