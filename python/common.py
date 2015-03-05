@@ -168,7 +168,7 @@ final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds.
 @echo
 def make_tarfile(output_filename, source_dir):
     LOGGER.info('output_filename: {0}, source_dir: {1}'.format(output_filename, source_dir))
-    with closing(tarfile.open(output_filename, "w:gz")) as tar:
+    with closing(tarfile.open(output_filename, 'w:')) as tar:
         for entry in os.listdir(source_dir):
             full_filename = join(source_dir, entry)
             tar.add(full_filename, arcname=entry)

@@ -44,7 +44,7 @@ def copy_files(cube):
     directory_to_save = join(CHILES_IMGCONCAT_OUTPUT, cube) + '.cube'
     if isdir(directory_to_save):
         LOGGER.info('dir_name: {0}'.format(directory_to_save))
-        output_tar_filename = directory_to_save + '.tar.gz'
+        output_tar_filename = directory_to_save + '.tar'
 
         if can_be_multipart_tar(directory_to_save):
             LOGGER.info('Using add_tar_to_bucket_multipart')

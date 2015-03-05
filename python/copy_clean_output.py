@@ -47,7 +47,7 @@ def copy_files(frequency_id):
         result_dir = join(CHILES_CLEAN_OUTPUT, dir_name)
         if isdir(result_dir) and dir_name.startswith('cube_') and dir_name.endswith('.image'):
             LOGGER.info('dir_name: {0}'.format(dir_name))
-            output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar.gz')
+            output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar')
 
             if can_be_multipart_tar(result_dir):
                 LOGGER.info('Using add_tar_to_bucket_multipart')
@@ -61,7 +61,7 @@ def copy_files(frequency_id):
 
                 s3_helper.add_file_to_bucket(
                     CHILES_BUCKET_NAME,
-                    'CVEL/{0}/{1}/data.tar.gz'.format(frequency_id, basename(output_tar_filename)),
+                    'CVEL/{0}/{1}/data.tar'.format(frequency_id, basename(output_tar_filename)),
                     output_tar_filename)
 
                 # Clean up

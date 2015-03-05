@@ -38,7 +38,7 @@ def main():
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
 
     for key in bucket.list(prefix='CLEAN/'):
-        if not key.key.endswith('image.tar.gz'):
+        if not key.key.endswith('image.tar.gz') and not key.key.endswith('image.tar'):
             LOG.info('Removing {0}'.format(key.key))
             key.delete()
 

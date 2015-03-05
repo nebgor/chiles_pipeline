@@ -57,7 +57,10 @@ class Task(object):
         """
         Actually run the job
         """
-        image_name = basename(self._tar_file).replace('.tar.gz', '')
+        if self._tar_file.endswith('.tar.gz'):
+            image_name = basename(self._tar_file).replace('.tar.gz', '')
+        else:
+            image_name = basename(self._tar_file).replace('.tar', '')
         directory = join(self._directory, image_name)
         # noinspection PyBroadException
         try:
@@ -65,7 +68,7 @@ class Task(object):
             if not os.path.exists(directory):
                 os.makedirs(directory)
             self._key.get_contents_to_filename(self._tar_file)
-            with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
+            with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('.tar.gz') else "r:")) as tar:
                 tar.extractall(path=directory)
 
             os.remove(self._tar_file)
@@ -77,19 +80,19 @@ class Task(object):
 @echo
 def in_frequency_range(key, bottom_frequency, frequency_range):
     """
-    >>> in_frequency_range('vis_1200~1204.image.tar.gz', 1200, 100)
+    >>> in_frequency_range('vis_1200~1204.image.tar', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1200~1204.image.tar.gz', 1100, 100)
+    >>> in_frequency_range('vis_1200~1204.image.tar', 1100, 100)
     False
 
-    >>> in_frequency_range('vis_1204~1208.image.tar.gz', 1200, 100)
+    >>> in_frequency_range('vis_1204~1208.image.tar', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1296~1300.image.tar.gz', 1200, 100)
+    >>> in_frequency_range('vis_1296~1300.image.tar', 1200, 100)
     True
 
-    >>> in_frequency_range('vis_1296~1300.image.tar.gz', 1300, 100)
+    >>> in_frequency_range('vis_1296~1300.image.tar', 1300, 100)
     False
 
     :param key:
@@ -124,7 +127,7 @@ def copy_files(processes, bottom_frequency, frequency_range):
     for key in bucket.list(prefix='CLEAN/'):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
-        if key.key.endswith('.image.tar.gz'):
+        if key.key.endswith('.image.tar.gz') or key.key.endswith('.image.tar'):
             # Do we need this file?
             basename_key = basename(key.key)
             if in_frequency_range(basename_key, bottom_frequency, frequency_range):

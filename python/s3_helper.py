@@ -209,7 +209,7 @@ class S3Helper:
         else:
             raise S3UploadException('Too many chunks')
 
-    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, gzip=True, parallel_processes=2, reduced_redundancy=True, bufsize=10*1024*1024):
+    def add_tar_to_bucket_multipart(self, bucket_name, key_name, source_path, gzip=False, parallel_processes=2, reduced_redundancy=True, bufsize=10*1024*1024):
         """
         Parallel multipart upload.
         """

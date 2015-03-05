@@ -55,16 +55,16 @@ def copy_files(date, vis_file):
                 LOGGER.info('Using add_tar_to_bucket_multipart')
                 s3_helper.add_tar_to_bucket_multipart(
                     CHILES_BUCKET_NAME,
-                    'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
+                    'CVEL/{0}/{1}/data.tar'.format(vis_file, date),
                     result_dir)
             else:
                 LOGGER.info('Using make_tarfile, then adding file to bucket')
-                output_tar_filename = join(root, match + '.tar.gz')
+                output_tar_filename = join(root, match + '.tar')
                 make_tarfile(output_tar_filename, result_dir)
 
                 s3_helper.add_file_to_bucket(
                     CHILES_BUCKET_NAME,
-                    'CVEL/{0}/{1}/data.tar.gz'.format(vis_file, date),
+                    'CVEL/{0}/{1}/data.tar'.format(vis_file, date),
                     output_tar_filename)
 
                 # Clean up

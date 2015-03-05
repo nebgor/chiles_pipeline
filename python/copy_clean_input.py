@@ -67,7 +67,7 @@ class Task(object):
             if not os.path.exists(corrected_path):
                 os.makedirs(corrected_path)
             self._key.get_contents_to_filename(self._tar_file)
-            with closing(tarfile.open(self._tar_file, "r:gz")) as tar:
+            with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('tar.gz') else "r:")) as tar:
                 tar.extractall(path=corrected_path)
 
             os.remove(self._tar_file)
@@ -92,12 +92,12 @@ def copy_files(frequency_id, processes):
     for key in bucket.list(prefix='CVEL/{0}'.format(frequency_id)):
         LOGGER.info('Checking {0}'.format(key.key))
         # Ignore the key
-        if key.key.endswith('/data.tar.gz'):
+        if key.key.endswith('/data.tar.gz') or key.key.endswith('/data.tar'):
             elements = key.key.split('/')
             directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
 
             # Queue the copy of the file
-            temp_file = os.path.join(directory, 'data.tar.gz')
+            temp_file = os.path.join(directory, 'data.tar')
             queue.put(Task(key, temp_file, directory, frequency_id))
 
     # Add a poison pill to shut things down
