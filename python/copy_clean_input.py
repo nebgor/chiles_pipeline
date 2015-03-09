@@ -97,7 +97,7 @@ def copy_files(frequency_id, processes):
             directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
 
             # Queue the copy of the file
-            temp_file = os.path.join(directory, 'data.tar')
+            temp_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
             queue.put(Task(key, temp_file, directory, frequency_id))
 
     # Add a poison pill to shut things down
