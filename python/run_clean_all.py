@@ -136,9 +136,6 @@ def start_server(
             bdm['/dev/xvd' + last_char] = xvd_n
             disks += 1
 
-        # Mount volumes string
-        # TODO
-
         user_data_mime = get_mime_encoded_user_data(
             instance_details,
             setup_disks,
@@ -152,10 +149,11 @@ def start_server(
             instance_type,
             None,
             created_by,
-            'BIG Clean-{0}'.format(name),
+            'BIG Clean',
             instance_details=instance_details,
             zone=zone,
-            ephemeral=True)
+            ephemeral=True,
+            bdm=bdm)
     else:
         LOGGER.error('Cannot get a spot instance of {0} for ${1}'.format(instance_type, spot_price))
 

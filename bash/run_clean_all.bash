@@ -19,7 +19,7 @@ chmod 600 /mnt/output/swapfile
 ulimit -n 8192
 
 # Build the result area
-mdadm --create --verbose /dev/md1 --level=0 -c256 --raid-devices=8 /dd/xvdd /dd/xvde /dd/xvdf /dd/xvdg /dd/xvdh /dd/xvdi /dd/xvdj /dd/xvdk
+mdadm --create --verbose /dev/md1 --level=0 -c256 --raid-devices=8 /dev/xvdd /dev/xvde /dev/xvdf /dev/xvdg /dev/xvdh /dev/xvdi /dev/xvdj /dev/xvdk
 blockdev --setra 65536 /dev/md1
 mkfs.ext4 /dev/md1
 mkdir -p /mnt/data
@@ -33,6 +33,7 @@ mkdir -p /mnt/input03
 mkdir -p /mnt/input04
 mkdir -p /mnt/input05
 mkdir -p /mnt/input06
+
 chmod -R 0777 /mnt/input01
 chmod -R 0777 /mnt/input02
 chmod -R 0777 /mnt/input03
@@ -46,6 +47,13 @@ mount /dev/xvdn /mnt/input03
 mount /dev/xvdo /mnt/input04
 mount /dev/xvdp /mnt/input05
 mount /dev/xvdq /mnt/input06
+
+chmod -R 0777 /mnt/input01
+chmod -R 0777 /mnt/input02
+chmod -R 0777 /mnt/input03
+chmod -R 0777 /mnt/input04
+chmod -R 0777 /mnt/input05
+chmod -R 0777 /mnt/input06
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {4}

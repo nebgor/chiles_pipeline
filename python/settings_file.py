@@ -99,6 +99,7 @@ if exists(config_file_name):
 
     BASH_SCRIPT_CVEL = config['bash_script_cvel']
     BASH_SCRIPT_CLEAN = config['bash_script_clean']
+    BASH_SCRIPT_CLEAN_02 = config['bash_script_clean_02']
     BASH_SCRIPT_CLEAN_ALL = config['bash_script_clean_all']
     BASH_SCRIPT_MAKECUBE = config['bash_script_makecube']
 

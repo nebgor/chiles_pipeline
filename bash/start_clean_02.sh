@@ -3,6 +3,8 @@ export CH_JOB_ID=0
 export CH_RUN_ID=0
 export CH_NUM_JOB=0
 
+export CLEAN_NUMBER=$3
+
 # target field
 export CH_TARGET_FIELD='deepfield'
 
@@ -37,8 +39,13 @@ export CH_FREQ_WIDTH=15.625 # in kHz -- float value
 export CH_MODE_DEBUG=0 # In the debug mode, CASA routines are not called but only printed
 export CH_BKP_SPLIT=0 # whether to make a backup copy of the split vis files
 
-export CH_CUBE_DIR=/mnt/data
-export CH_OUT_DIR=/mnt/data/Chiles/cubes
+# each obs will create a sub-directory under this
+export CH_VIS_DIR=/mnt/output/Chiles/split_vis
+export CH_VIS_BK_DIR=/mnt/output/Chiles/backup_split_vis
+
+# NOTE - ON pleiades, do not set this to /scratch
+export CH_CUBE_DIR=/mnt/output/Chiles/split_cubes
+export CH_OUT_DIR=/mnt/output/Chiles/cubes
 
 export CH_SPLIT_TIMEOUT=3600 # 1 hour
 export CH_CLEAN_TIMEOUT=3600
@@ -54,6 +61,6 @@ export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
 
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean_all.py
+casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean.py
 #done
 
