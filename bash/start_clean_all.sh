@@ -42,7 +42,7 @@ export CH_VIS_DIR=/mnt/output/Chiles/split_vis
 export CH_VIS_BK_DIR=/mnt/output/Chiles/backup_split_vis
 
 # NOTE - ON pleiades, do not set this to /scratch
-export CH_CUBE_DIR=/mnt/output/Chiles/split_cubes
+export CH_CUBE_DIR=/mnt/output
 export CH_OUT_DIR=/mnt/output/Chiles/cubes
 
 export CH_SPLIT_TIMEOUT=3600 # 1 hour
@@ -59,6 +59,6 @@ export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
 
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean.py
+casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean_all.py
 #done
 
