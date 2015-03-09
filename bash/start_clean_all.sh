@@ -37,11 +37,6 @@ export CH_FREQ_WIDTH=15.625 # in kHz -- float value
 export CH_MODE_DEBUG=0 # In the debug mode, CASA routines are not called but only printed
 export CH_BKP_SPLIT=0 # whether to make a backup copy of the split vis files
 
-# each obs will create a sub-directory under this
-export CH_VIS_DIR=/mnt/output/Chiles/split_vis
-export CH_VIS_BK_DIR=/mnt/output/Chiles/backup_split_vis
-
-# NOTE - ON pleiades, do not set this to /scratch
 export CH_CUBE_DIR=/mnt/output
 export CH_OUT_DIR=/mnt/output/Chiles/cubes
 

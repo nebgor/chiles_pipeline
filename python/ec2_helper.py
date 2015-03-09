@@ -139,18 +139,20 @@ class EC2Helper:
             zone,
             ephemeral=False,
             ebs_size=None,
-            number_ebs_volumes=None):
+            number_ebs_volumes=None,
+            bdm=None):
         """
         Run the ami as a spot instance
         """
         subnet_id = AWS_SUBNETS[zone]
         now_plus = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        bdm = self.build_block_device_map(
-            ephemeral,
-            instance_details.number_disks,
-            ebs_size=ebs_size,
-            iops=instance_details.iops_support,
-            number_ebs_volumes=number_ebs_volumes)
+        if bdm is None:
+            bdm = self.build_block_device_map(
+                ephemeral,
+                instance_details.number_disks,
+                ebs_size=ebs_size,
+                iops=instance_details.iops_support,
+                number_ebs_volumes=number_ebs_volumes)
         spot_request = self.ec2_connection.request_spot_instances(
             spot_price,
             image_id=ami_id,

@@ -64,6 +64,7 @@ AWS_SUBNETS = None
 
 BASH_SCRIPT_CVEL = None
 BASH_SCRIPT_CLEAN = None
+BASH_SCRIPT_CLEAN_ALL = None
 BASH_SCRIPT_MAKECUBE = None
 BASH_SCRIPT_SETUP_DISKS = 'setup_disks.bash'
 
@@ -98,6 +99,7 @@ if exists(config_file_name):
 
     BASH_SCRIPT_CVEL = config['bash_script_cvel']
     BASH_SCRIPT_CLEAN = config['bash_script_clean']
+    BASH_SCRIPT_CLEAN_ALL = config['bash_script_clean_all']
     BASH_SCRIPT_MAKECUBE = config['bash_script_makecube']
 
     OBS_IDS = config['obs_ids']
