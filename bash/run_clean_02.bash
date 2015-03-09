@@ -47,4 +47,4 @@ runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}'
 
 # Terminate
-#shutdown -h now
+shutdown -h now
