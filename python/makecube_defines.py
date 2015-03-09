@@ -130,20 +130,20 @@ Job {0}: exportfits(imagename={1})'''.format(job_id, outfile)
             # dump_all()
             exportfits(imagename=outfile,
                        fitsimage=outfile.replace('image','fits'),
-                       velocity=F,
-                       optical=F,
+                       velocity=False,
+                       optical=False,
                        bitpix=-32,
                        minpix=0,
                        maxpix=0,
-                       overwrite=T,
-                       dropstokes=T,
-                       stokeslast=T,
-                       history=F,
-                       dropdeg=T)
+                       overwrite=True,
+                       dropstokes=True,
+                       stokeslast=True,
+                       history=False,
+                       dropdeg=True)
         except Exception, clEx:
             print '*********\nExportFits exception: %s\n***********' % str(clEx)
 
-            
+
 @echo
 def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workdir, run_id, debug, timeout=100):
     if sel_freq:
