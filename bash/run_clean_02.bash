@@ -44,7 +44,7 @@ df -h
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_02_output.py {0}'
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}'
 
 # Terminate
 #shutdown -h now
