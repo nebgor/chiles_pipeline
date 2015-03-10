@@ -31,37 +31,37 @@ df -h
 
 # Run the clean pipeline
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 1'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 1'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 1'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 2'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 2'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 2'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 4'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 4'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 4'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 8'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 8'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 8'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 16'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 16'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 16'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 32'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 32'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 32'
 df -h
 #rm -rf  /mnt/output/Chiles/split_cubes/*
 
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 64'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.sh {1} {2} 64'
+runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 64'
 df -h
 
 # Copy files to S3
