@@ -31,11 +31,12 @@ df -h
 
 # Run the clean pipeline
 runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 1'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 2'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 4'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 8'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 16'
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 32'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 2'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 4'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 8'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 16'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 32'
+#runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 64'
 
 # Log the disk usage
 df -h
@@ -44,7 +45,7 @@ df -h
 runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_02_output.py {0}'
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}'
+#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}'
 
 # Terminate
-shutdown -h now
+#shutdown -h now

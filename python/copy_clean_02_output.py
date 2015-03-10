@@ -46,10 +46,12 @@ def copy_files(frequency_id):
         LOGGER.info('dir_name: {0}'.format(dir_name))
         interim_dir = join(CHILES_CLEAN_OUTPUT, dir_name)
         if isdir(interim_dir):
+            LOGGER.info('interim_dir: {0}'.format(interim_dir))
             for dir_name1 in os.listdir(interim_dir):
+                LOGGER.info('dir_name1: {0}'.format(dir_name1))
                 result_dir = join(interim_dir, dir_name1)
                 if isdir(result_dir) and dir_name.startswith('cube_') and dir_name.endswith('.image'):
-                    LOGGER.info('dir_name1: {0}'.format(dir_name1))
+                    LOGGER.info('result_dir: {0}'.format(result_dir))
                     output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar')
 
                     if can_be_multipart_tar(result_dir):
