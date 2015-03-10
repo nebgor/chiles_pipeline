@@ -38,9 +38,10 @@ import os.path
 
 from echo import echo
 from freq_map import freq_map
-from taskinit import casalog
+from taskinit import *
 from mstransform import mstransform
 from clean import clean
+from task_exportfits import exportfits
 
 
 casalog.filter('DEBUGGING')
@@ -225,7 +226,7 @@ def combineAllCubes(cube_dir, outname, min_freq, max_freq, step_freq, casa_workd
         print '\nJob %d: Concatenating all cubes...\n\tia.imageconcat(infiles=%s,outfile=%s,relax=T)' % (job_id, str(cube_names), outname)
     else:
         print 'Start concatenating %s' % str(cube_names)
-        final = ia.imageconcat(infiles=cube_names, outfile=outname, relax=T)
+        final = ia.imageconcat(infiles=cube_names, outfile=outname, relax=True)
         final.done()
 
     return

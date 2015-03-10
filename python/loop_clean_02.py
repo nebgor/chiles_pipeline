@@ -35,7 +35,7 @@ from makecube_defines import check_dir, cube_dir, vis_dirs, run_id, do_cube, fre
 
 
 clean_number = int(os.getenv('CLEAN_NUMBER', -1))
-cube_dir = join(cube_dir, str(clean_number))
+cube_dir = join(cube_dir, '{0}'.format(clean_number))
 check_dir(cube_dir)
 
 print '''

@@ -50,7 +50,7 @@ def copy_files(frequency_id):
             for dir_name1 in os.listdir(interim_dir):
                 LOGGER.info('dir_name1: {0}'.format(dir_name1))
                 result_dir = join(interim_dir, dir_name1)
-                if isdir(result_dir) and result_dir.startswith('cube_') and result_dir.endswith('.image'):
+                if isdir(result_dir) and dir_name1.startswith('cube_') and dir_name1.endswith('.image'):
                     LOGGER.info('result_dir: {0}'.format(result_dir))
                     output_tar_filename = join(CHILES_CLEAN_OUTPUT, dir_name + '.tar')
 

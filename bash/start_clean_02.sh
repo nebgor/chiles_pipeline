@@ -62,5 +62,4 @@ export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
 
 # run casapy
 casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean_02.py
-#done
 
