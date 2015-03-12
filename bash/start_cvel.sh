@@ -57,6 +57,7 @@ cd ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
 export HOME=/home/ec2-user
+export USER=root
 
 # run casapy
 python /home/ec2-user/chiles_pipeline/python/launch_trace.py casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py

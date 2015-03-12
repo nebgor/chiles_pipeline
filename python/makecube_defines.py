@@ -110,7 +110,7 @@ Job {0}: clean(vis={1}, imagename={2})'''.format(job_id, str(in_dirs), outfile)
                   start='',
                   width='',
                   interpolation='nearest',
-                  niter=10,
+                  niter=100,
                   gain=0.1,
                   threshold='0.0mJy',
                   imsize=[2048],

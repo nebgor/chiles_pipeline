@@ -145,11 +145,11 @@ packages:
  - iotop
 
 # Add a kill command so if it goes TU we will kill the instance
-power_state:
- delay: "+1440"
- mode: halt
- message: Kill command executed
- timeout: 120
+#power_state:
+# delay: "+1440"
+# mode: halt
+# message: Kill command executed
+# timeout: 120
 
 # Write the boto file
 write_files:

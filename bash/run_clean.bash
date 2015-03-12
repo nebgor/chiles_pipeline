@@ -21,10 +21,10 @@ ulimit -n 8192
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {4}
 cd /home/ec2-user/chiles_pipeline
-runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
+git pull
 
 # Copy files from S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'
+python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
 
 # Log the disk usage
 df -h
@@ -36,10 +36,10 @@ bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
 df -h
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}'
+python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
+python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}
 
 # Terminate
 shutdown -h now
