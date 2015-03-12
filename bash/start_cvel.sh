@@ -58,5 +58,5 @@ export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
 export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
 
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
+python /home/ec2-user/chiles_pipeline/python/launch_trace.py casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 #done

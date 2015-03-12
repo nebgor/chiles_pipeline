@@ -125,8 +125,8 @@ class Task(object):
         return_string = ''
         for frequnecy_pairs in self._frequency_groups:
             return_string += '''
-python /home/ec2-user/chiles_pipeline/python/launch_trace.py runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} {1}'
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_{0}~{1} {2}'
+bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh {0} {1}
+python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_{0}~{1} {2}
 '''.format(frequnecy_pairs[0], frequnecy_pairs[1], self._obs_id)
 
         return return_string
