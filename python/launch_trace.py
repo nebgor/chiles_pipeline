@@ -18,6 +18,7 @@ def trace():
 
     logs_dir = expanduser('~/trace_logs')
     if not exists(logs_dir):
+        print "Creating the logs directory ", logs_dir
         makedirs(logs_dir)
 
     # print "CPU recording start_time: ", start_time
