@@ -54,25 +54,25 @@ ls -lR /mnt
 # Install the latest versions of the Python libraries and pull the latest code
 pip install {1}
 cd /home/ec2-user/chiles_pipeline
-runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
+git pull
 
 # Copy files from S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6 {2} {3}'
+python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6 {2} {3}
 
 # Log the disk usage
 df -h
 
 # Run the make pipeline
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_makecube.sh {0}'
+bash -vx /home/ec2-user/chiles_pipeline/bash/start_makecube.sh {0}
 
 # Log the disk usage
 df -h
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_makecube_output.py {0}'
+python /home/ec2-user/chiles_pipeline/python/copy_makecube_output.py {0}
 
 # Copy log files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}'
+python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}
 
 # Terminate
 shutdown -h now

@@ -43,4 +43,4 @@ sleep 10
 python /home/ec2-user/chiles_pipeline/python/delete_volumes.py {2}
 
 # Terminate
-#shutdown -h now
+shutdown -h now
