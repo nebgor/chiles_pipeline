@@ -152,6 +152,8 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         iod1 = sp1.read_bytes + sp1.write_bytes - sp1.cancelled_write_bytes
         iod2 = sp2.read_bytes + sp2.write_bytes - sp2.cancelled_write_bytes
 
+        print 'ios2: {0}, ios1: {1}, iod2: {2}, iod1: {3}'.format(ios2, ios1, iod2, iod1)
+
         # allcpu =  float(sp2.all - sp1.all)
         walltime = 1    # 1 seconds
         tu = int(100.0 * (tcpu2 - tcpu1) / hertz / walltime)
@@ -160,7 +162,10 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         iops = (ios2 - ios1) / hertz / walltime
         iod = (iod2 - iod1) / hertz / walltime
 
-        io_wait = (sp2.blkio - sp1.blkio) / (ios2 - ios1) * 1000.0 / hertz
+        if ios2 == 0 and ios1 == 0:
+            io_wait = 0
+        else:
+            io_wait = (sp2.blkio - sp1.blkio) / (ios2 - ios1) * 1000.0 / hertz
 
         itm = (sp2.ts, tu, ku, sp2.vm, pgsz * sp2.rss, iops, iod, io_wait)
         result_list.append(itm)

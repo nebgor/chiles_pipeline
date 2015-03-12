@@ -4,7 +4,7 @@ import sys
 import calendar
 import time
 
-from os.path import exists, expanduser, join
+from os.path import exists, join
 
 
 def usage():
@@ -16,7 +16,7 @@ def trace():
     cmd_list = sys.argv[1:]
     start_time = calendar.timegm(time.gmtime())
 
-    logs_dir = expanduser('~/trace_logs')
+    logs_dir = '/tmp/trace_logs'
     print "Checking for the logs directory ", logs_dir
     if not exists(logs_dir):
         print "Creating the logs directory ", logs_dir
