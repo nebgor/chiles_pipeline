@@ -46,7 +46,7 @@ CHILES_BUCKET_NAME = 'chiles.output.icrar.org'
 CHILES_LOGS = '/home/ec2-user/Chiles/casa_work_dir'
 
 AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
-PIP_PACKAGES = 'configobj boto'
+PIP_PACKAGES = 'configobj boto prettytable'
 USERNAME = 'ec2-user'
 
 FREQUENCY_WIDTH = 4
