@@ -153,8 +153,7 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         iod1 = sp1.read_bytes + sp1.write_bytes - sp1.cancelled_write_bytes
         iod2 = sp2.read_bytes + sp2.write_bytes - sp2.cancelled_write_bytes
 
-        print 'ios2: {0}, ios1: {1}, iod2: {2}, iod1: {3}'.format(ios2, ios1, iod2, iod1)
-
+        # print 'ios2: {0}, ios1: {1}, iod2: {2}, iod1: {3}'.format(ios2, ios1, iod2, iod1)
         # allcpu =  float(sp2.all - sp1.all)
         walltime = 1    # 1 seconds
         tu = int(100.0 * (tcpu2 - tcpu1) / hertz / walltime)
@@ -186,10 +185,10 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         print 'Saving CPU statistics to file %s ...' % save_to_file
         try:
             output = open(save_to_file, 'wb')
-            stt = time.time()
+            start_save_time = time.time()
             pickle.dump(result_list, output)
             output.close()
-            print 'Time for saving CPU statistics: %.2f' % (time.time() - stt)
+            print 'Time for saving CPU statistics: %.2f' % (time.time() - start_save_time)
         except Exception, e:
             ex = str(e)
             print 'Fail to save CPU statistics to file %s: %s' % (save_to_file, ex)
@@ -312,7 +311,7 @@ def collect_sample(pid):
 
     Return:    an instance of the pstat namedtuple
     """
-    ts = time.time()
+    time_stamp = time.time()
     file_name1 = "/proc/%d/stat" % pid
     with open(file_name1) as f:
         lines1 = f.readlines()
@@ -332,7 +331,7 @@ def collect_sample(pid):
     if (not first_line or len(first_line) < 1):
         raise Exception('Cannot read file: %s' % FSTAT)
     """
-    return [lines1[0], first_line, ts, lines2]
+    return [lines1[0], first_line, time_stamp, lines2]
 
 
 def _test_get_sample(test_sample):
@@ -379,7 +378,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, exit_handler)
 
     while True:
-        sst = time.time()
+        start_time = time.time()
         try:
             sp = collect_sample(options.pid)
             ps.append(sp)
@@ -387,4 +386,4 @@ if __name__ == '__main__':
             print ("Error occured %s" % str(ioe))
             exit_handler(15, None)   # the process has terminated, so finish CPU monitoring...
 
-        time.sleep(1 - (time.time() - sst))
+        time.sleep(1 - (time.time() - start_time))
