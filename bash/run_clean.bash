@@ -24,13 +24,13 @@ cd /home/ec2-user/chiles_pipeline
 runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
 # Copy files from S3
-python /home/ec2-user/chiles_pipeline/python/launch_trace.py runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'
+runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4'
 
 # Log the disk usage
 df -h
 
 # Run the clean pipeline
-python /home/ec2-user/chiles_pipeline/python/launch_trace.py runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}'
+bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
 
 # Log the disk usage
 df -h
