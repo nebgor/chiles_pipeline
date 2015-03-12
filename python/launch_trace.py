@@ -23,7 +23,7 @@ def trace():
     cpu_logfile = join(logs_dir, '{0}_cpu.log'.format(start_time.strftime('%Y%m%d%H%M%S')))
 
     sp = subprocess.Popen(cmd_list)
-    cmd1 = 'python trace_cpu_mem.py -o %s -p %d' % (cpu_logfile, sp.pid)
+    cmd1 = 'python /home/ec2-user/chiles_pipeline/python/trace_cpu_mem.py -o %s -p %d' % (cpu_logfile, sp.pid)
     cmd_list1 = cmd1.split()
     sp1 = subprocess.Popen(cmd_list1)
 
