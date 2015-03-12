@@ -34,7 +34,7 @@ import sys
 import datetime
 
 from common import Consumer, LOGGER
-from settings_file import CHILES_BUCKET_NAME, CHILES_LOGS
+from settings_file import CHILES_BUCKET_NAME, CHILES_LOGS, BENCHMARKING_LOGS
 from s3_helper import S3Helper
 
 
@@ -70,6 +70,11 @@ def copy_files(s3_tag, processes):
     # Look in the output directory
     today = datetime.date.today()
     for root, dir_names, filenames in os.walk(CHILES_LOGS):
+        for match in fnmatch.filter(filenames, '*.log'):
+            LOGGER.info('Looking at: {0}'.format(join(root, match)))
+            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
+
+    for root, dir_names, filenames in os.walk(BENCHMARKING_LOGS):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))

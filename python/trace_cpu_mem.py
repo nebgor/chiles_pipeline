@@ -74,7 +74,8 @@ state:       state (R is running, S is sleeping, D is sleeping in an uninterrupt
 blkio:       time spent waiting for block IO
 syscr:       Attempt to count the number of read I/O operations, i.e. syscalls like read() and pread()
 syscw:       Attempt to count the number of write I/O operations, i.e. syscalls like write() and pwrite()
-read_bytes:  Attempt to count the number of bytes which this process really did cause to be fetched from the storage layer. Done at the submit_bio() level, so it is accurate for block-backed filesystems.
+read_bytes:  Attempt to count the number of bytes which this process really did cause to be fetched from the storage layer. Done at the submit_bio() level,
+             so it is accurate for block-backed filesystems.
 write_bytes: Attempt to count the number of bytes which this process caused to be sent to the storage layer. This is done at page-dirtying time.
 cancelled_write_bytes: The big inaccuracy here is truncate. If a process writes 1MB to a file and then deletes the file, it will in fact perform no writeout. But it will have
                        been accounted as having caused 1MB of write. In other words: The number of bytes which this process caused to not happen,
@@ -173,7 +174,7 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
 
     if print_list:
         from prettytable import PrettyTable
-        tbl = PrettyTable(["Time stamp", "Total CPU %", "Kernel CPU %", "VM", "RSS", "IOPS", "B/S", "IO WAIT"])
+        tbl = PrettyTable(["Time stamp", "Total CPU %", "Kernel CPU %", "VM", "RSS", "IOPS", "Bytes/S", "IO WAIT"])
         tbl.padding_width = 1
 
         for p in result_list:
