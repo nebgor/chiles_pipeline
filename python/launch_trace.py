@@ -1,10 +1,8 @@
 from os import makedirs
 import subprocess
 import sys
-import calendar
-import time
-
 from os.path import exists, join
+import datetime
 
 
 def usage():
@@ -14,7 +12,7 @@ def usage():
 
 def trace():
     cmd_list = sys.argv[1:]
-    start_time = calendar.timegm(time.gmtime())
+    start_time = datetime.now()
 
     logs_dir = '/tmp/trace_logs'
     print "Checking for the logs directory ", logs_dir
@@ -22,19 +20,16 @@ def trace():
         print "Creating the logs directory ", logs_dir
         makedirs(logs_dir)
 
-    # print "CPU recording start_time: ", start_time
-    cpu_logfile = join(logs_dir, '%s_cpu.log' % str(start_time))
-    app_logfile = join(logs_dir, '%s_app.log' % str(start_time))
-    h_app_logfile = open(app_logfile, 'w')
+    cpu_logfile = join(logs_dir, '{0}_cpu.log'.format(start_time.strftime('%Y%m%d%H%M%S')))
 
-    # sp = subprocess.Popen(cmd_list, stdout=h_app_logfile)
     sp = subprocess.Popen(cmd_list)
     cmd1 = 'python trace_cpu_mem.py -o %s -p %d' % (cpu_logfile, sp.pid)
     cmd_list1 = cmd1.split()
-    subprocess.Popen(cmd_list1)
+    sp1 = subprocess.Popen(cmd_list1)
 
     print "Waiting...."
     print "Application return code:", sp.wait()
+    print "trace_cpu_mem return code:", sp1.wait()
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
