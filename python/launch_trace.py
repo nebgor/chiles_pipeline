@@ -12,7 +12,7 @@ def usage():
 
 def trace():
     cmd_list = sys.argv[1:]
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
 
     logs_dir = '/tmp/trace_logs'
     print "Checking for the logs directory ", logs_dir
