@@ -152,8 +152,6 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         iod1 = sp1.read_bytes + sp1.write_bytes - sp1.cancelled_write_bytes
         iod2 = sp2.read_bytes + sp2.write_bytes - sp2.cancelled_write_bytes
 
-        blkio1 = sp1.blkio
-
         # allcpu =  float(sp2.all - sp1.all)
         walltime = 1    # 1 seconds
         tu = int(100.0 * (tcpu2 - tcpu1) / hertz / walltime)
@@ -288,11 +286,11 @@ def process_sample(raw_sample):
                 int(pa[I_RSS]),
                 pa[I_STATE],
                 int(pa[I_BLKIO]),
-                int(io_details[I_SYSCR]),
-                int(io_details[I_SYSCW]),
-                int(io_details[I_READ_BYTES]),
-                int(io_details[I_WRITE_BYTES]),
-                int(io_details[I_CANCELLED_WRITE_BYTES]),
+                int(io_details[I_SYSCR].split()[1]),
+                int(io_details[I_SYSCW].split()[1]),
+                int(io_details[I_READ_BYTES].split()[1]),
+                int(io_details[I_WRITE_BYTES].split()[1]),
+                int(io_details[I_CANCELLED_WRITE_BYTES].split()[1]),
                 )
 
     return ret
