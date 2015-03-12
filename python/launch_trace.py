@@ -17,6 +17,7 @@ def trace():
     start_time = calendar.timegm(time.gmtime())
 
     logs_dir = expanduser('~/trace_logs')
+    print "Checking for the logs directory ", logs_dir
     if not exists(logs_dir):
         print "Creating the logs directory ", logs_dir
         makedirs(logs_dir)
