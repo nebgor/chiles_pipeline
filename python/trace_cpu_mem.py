@@ -162,7 +162,7 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         iops = (ios2 - ios1) / hertz / walltime
         iod = (iod2 - iod1) / hertz / walltime
 
-        if ios2 == 0 and ios1 == 0:
+        if ios2 == ios1:
             io_wait = 0
         else:
             io_wait = (sp2.blkio - sp1.blkio) / (ios2 - ios1) * 1000.0 / hertz

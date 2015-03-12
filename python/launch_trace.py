@@ -27,7 +27,8 @@ def trace():
     app_logfile = join(logs_dir, '%s_app.log' % str(start_time))
     h_app_logfile = open(app_logfile, 'w')
 
-    sp = subprocess.Popen(cmd_list, stdout=h_app_logfile)
+    # sp = subprocess.Popen(cmd_list, stdout=h_app_logfile)
+    sp = subprocess.Popen(cmd_list)
     cmd1 = 'python trace_cpu_mem.py -o %s -p %d' % (cpu_logfile, sp.pid)
     cmd_list1 = cmd1.split()
     subprocess.Popen(cmd_list1)
