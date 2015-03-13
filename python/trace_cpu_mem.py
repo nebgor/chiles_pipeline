@@ -159,8 +159,8 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         tu = int(100.0 * (tcpu2 - tcpu1) / hertz / walltime)
         ku = int(100.0 * (kcpu2 - kcpu1) / hertz / walltime)
 
-        iops = (ios2 - ios1)
-        iod = (iod2 - iod1)
+        iops = ios2 - ios1
+        iod = iod2 - iod1
 
         if ios2 == ios1:
             io_wait = 0
