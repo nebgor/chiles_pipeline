@@ -26,6 +26,7 @@
 
 """
 import os
+from os.path import basename
 
 from taskinit import *
 from cleanhelper import *
@@ -41,6 +42,17 @@ for dir_name in sorted(os.listdir(MNT_INPUT_CHILES)):
         path_join = os.path.join(MNT_INPUT_CHILES, dir_name)
         print 'Adding: {0}'.format(path_join)
         cube_names.append(path_join)
+
+
+def fixed_frequency(cube_name):
+    base_name = basename(cube_name)
+    elements = base_name.split('.')
+    elements = elements[0].split('_')
+    elements = elements[1].split('~')
+    return int(elements[0])
+
+# Re-sort the cubes as the order is important
+sorted(cube_names, key=fixed_frequency)
 
 print 'Start concatenating %s' % str(cube_names)
 final = ia.imageconcat(infiles=cube_names, outfile=out_name, relax=True)

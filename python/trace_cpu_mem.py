@@ -159,13 +159,13 @@ def compute_usage(spl_list, print_list=False, save_to_file=None):
         tu = int(100.0 * (tcpu2 - tcpu1) / hertz / walltime)
         ku = int(100.0 * (kcpu2 - kcpu1) / hertz / walltime)
 
-        iops = (ios2 - ios1) / hertz / walltime
-        iod = (iod2 - iod1) / hertz / walltime
+        iops = (ios2 - ios1)
+        iod = (iod2 - iod1)
 
         if ios2 == ios1:
             io_wait = 0
         else:
-            io_wait = (sp2.blkio - sp1.blkio) / (ios2 - ios1) * 1000.0 / hertz
+            io_wait = (sp2.blkio - sp1.blkio) / (ios2 - ios1) * 100.0 / hertz
 
         itm = (sp2.ts, tu, ku, sp2.vm, pgsz * sp2.rss, iops, iod, io_wait)
         result_list.append(itm)
