@@ -41,7 +41,6 @@ import commands
 import gc
 import signal
 import cPickle as pickle
-from psutil import Process
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
@@ -304,7 +303,7 @@ def collect_sample(pid_process):
     Return:    an instance of the pstat namedtuple
     """
     time_stamp = time.time()
-    file_name1 = "/proc/%d/stat" % pid_process.pid
+    file_name1 = "/proc/{0}/stat".format(pid_process.pid)
     with open(file_name1) as f:
         lines1 = f.readlines()
 
@@ -313,14 +312,6 @@ def collect_sample(pid_process):
     with open(FSTAT, 'r') as f:
         first_line = f.readline()
 
-    """
-    # will this ever happen at all?
-    if (not lines or len(lines) < 1):
-        raise Exception('Cannot read file: %s' % fname)
-
-    if (not first_line or len(first_line) < 1):
-        raise Exception('Cannot read file: %s' % FSTAT)
-    """
     return [lines1[0], first_line, time_stamp, io_counters]
 
 
@@ -357,7 +348,7 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
 
-    fname = '/proc/%d/stat' % options.pid
+    fname = '/proc/{0}/stat'.format(options.pid)
     if not os.path.exists(fname):
         LOG.error("Process with pid {0} is not running!".format(options.pid))
         sys.exit(1)
