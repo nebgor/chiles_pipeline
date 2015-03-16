@@ -13,12 +13,12 @@ def trace():
     cpu_logfile = '%s_cpu.log' % str(start_time)
     app_logfile = '%s_app.log' % str(start_time)
     h_app_logfile = open(app_logfile, 'w')
-    
-    sp = subprocess.Popen(cmdlist, stdout = h_app_logfile)
+
+    sp = subprocess.Popen(cmdlist, stdout=h_app_logfile)
     cmd1 = 'python trace_cpu_mem.py -o %s -p %d' % (cpu_logfile, sp.pid)
     cmdlist1 = cmd1.split()
     sp1 = subprocess.Popen(cmdlist1)
-    
+
     print "Waiting...."
     print "Application return code:", sp.wait()
 

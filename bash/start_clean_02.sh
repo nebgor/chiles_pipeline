@@ -63,5 +63,5 @@ export HOME=/home/ec2-user
 export USER=root
 
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean_02.py
+python /home/ec2-user/chiles_pipeline/python/launch_trace.py casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean_02.py
 
