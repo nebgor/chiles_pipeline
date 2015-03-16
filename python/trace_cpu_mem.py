@@ -293,7 +293,7 @@ def process_sample(raw_sample):
     return ret
 
 
-def collect_sample(pid):
+def collect_sample(pid_process):
     """
     retrieve current usage sample
     This will be called every N seconds
@@ -304,12 +304,11 @@ def collect_sample(pid):
     Return:    an instance of the pstat namedtuple
     """
     time_stamp = time.time()
-    file_name1 = "/proc/%d/stat" % pid
+    file_name1 = "/proc/%d/stat" % pid_process.pid
     with open(file_name1) as f:
         lines1 = f.readlines()
 
-    process = Process(pid)
-    io_counters = process.io_counters()
+    io_counters = pid_process.io_counters()
 
     with open(FSTAT, 'r') as f:
         first_line = f.readline()
