@@ -18,9 +18,10 @@ def usage():
     print 'e.g. python launch_trace.py ls -l'
 
 
-def get_samples(list_pids):
-    for pid in list_pids:
-        LOG.info('Sampling {0}'.format(pid))
+def get_samples(list_processes):
+    for process in list_processes:
+        LOG.info('Sampling {0}'.format(process))
+        pid = process.pid
         samples = MAP_SAMPLES.get(pid)
         if samples is None:
             samples = []
@@ -39,7 +40,7 @@ def trace():
     while sp.poll() is None:
         now = time.time()
 
-        pids = [sp.pid]
+        pids = [Process(sp.pid)]
         pids.extend(main_process.children(recursive=True))
         get_samples(pids)
 
