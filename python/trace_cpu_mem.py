@@ -41,6 +41,7 @@ import commands
 import gc
 import signal
 import cPickle as pickle
+from psutil import Process
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
@@ -292,7 +293,7 @@ def process_sample(raw_sample):
     return ret
 
 
-def collect_sample(pid_process):
+def collect_sample(pid):
     """
     retrieve current usage sample
     This will be called every N seconds
@@ -303,10 +304,11 @@ def collect_sample(pid_process):
     Return:    an instance of the pstat namedtuple
     """
     time_stamp = time.time()
-    file_name1 = "/proc/{0}/stat".format(pid_process.pid)
+    file_name1 = "/proc/{0}/stat".format(pid)
     with open(file_name1) as f:
         lines1 = f.readlines()
 
+    pid_process = Process(pid)
     io_counters = pid_process.io_counters()
 
     with open(FSTAT, 'r') as f:
