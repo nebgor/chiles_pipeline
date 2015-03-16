@@ -20,7 +20,7 @@ def usage():
 
 def get_samples(list_pids):
     for pid in list_pids:
-        LOG.INFO('Sampling {0}'.format(pid))
+        LOG.info('Sampling {0}'.format(pid))
         samples = MAP_SAMPLES.get(pid)
         if samples is None:
             samples = []
