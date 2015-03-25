@@ -34,7 +34,7 @@ LOG_DETAILS = Table(
     TRACE_METADATA,
     Column('log_id', Integer, primary_key=True),
     Column('pid', Integer, index=True),
-    Column('timestamp', Integer, index=True),
+    Column('timestamp', String(40), index=True),
     Column('total_cpu', Float),
     Column('kernel_cpu', Float),
     Column('vm', Float),

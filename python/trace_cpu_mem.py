@@ -42,6 +42,7 @@ import commands
 import gc
 import signal
 import cPickle as pickle
+from datetime import datetime
 
 from psutil import Process
 from database import LOG_DETAILS
@@ -319,6 +320,8 @@ def process_sample(raw_sample):
                 io_counters.write_count
                 )
 
+    # TODO
+    LOG.info('pstat: {0}'.format(pstat))
     return ret
 
 
@@ -332,7 +335,7 @@ def collect_sample(pid):
 
     Return:    an instance of the pstat namedtuple
     """
-    time_stamp = time.time()
+    time_stamp = datetime.now().isoformat()
     file_name1 = "/proc/{0}/stat".format(pid)
     with open(file_name1) as f:
         lines1 = f.readlines()
