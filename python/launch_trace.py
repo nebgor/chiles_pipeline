@@ -100,7 +100,7 @@ def trace():
             pid=row[0],
             ppid=row[1],
             name=row[2],
-            cmd_line=row[3],
+            cmd_line=' '.join(row[3]),
             create_time=row[4],
         )
     transaction.commit()

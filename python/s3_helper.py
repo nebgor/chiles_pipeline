@@ -26,7 +26,7 @@
 A helper for S3
 """
 from os.path import join, expanduser, exists
-import socket
+import ssl
 import tarfile
 import time
 import math
@@ -50,22 +50,25 @@ class S3UploadException(Exception):
     def __init__(self, error):
         self.error = error
 
+# There is a bug in BOTO at the moment
+if hasattr(ssl, '_create_unverified_context'):
+    ssl._create_default_https_context = ssl._create_unverified_context
+
 
 def get_s3_connection(aws_access_key_id=None, aws_secret_access_key=None):
     if aws_access_key_id is not None and aws_secret_access_key is not None:
         LOGGER.info("Using user provided keys")
         return boto.connect_s3(
             aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            calling_format=OrdinaryCallingFormat)
+            aws_secret_access_key=aws_secret_access_key)
     elif exists(join(expanduser('~'), '.aws/credentials')):
         # This relies on a ~/.aws/credentials file holding the '<aws access key>', '<aws secret key>'
         LOGGER.info("Using ~/.aws/credentials")
-        return boto.connect_s3(profile_name='chiles', calling_format=OrdinaryCallingFormat)
+        return boto.connect_s3(profile_name='chiles')
     else:
         # This relies on a ~/.boto or /etc/boto.cfg file holding the '<aws access key>', '<aws secret key>'
         LOGGER.info("Using ~/.boto or /etc/boto.cfg")
-        return boto.connect_s3(calling_format=OrdinaryCallingFormat)
+        return boto.connect_s3()
 
 
 def upload_part(aws_access_key_id, aws_secret_access_key, bucket_name, multipart_id, part_num, source_path, offset, bytes_to_copy, amount_of_retries=10):
