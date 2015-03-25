@@ -25,32 +25,34 @@
 """
 The database tables
 """
-from sqlalchemy import MetaData, Table, Column, Float, Integer, BigInteger, String
+from sqlalchemy import MetaData, Table, Column, Float, Integer, String
 
 TRACE_METADATA = MetaData()
 
 LOG_DETAILS = Table(
     'log_details',
     TRACE_METADATA,
-    Column('log_id', BigInteger, primary_key=True, autoincrement=True),
-    Column('pid', Integer),
-    Column('timestamp', Integer),
+    Column('log_id', Integer, primary_key=True),
+    Column('pid', Integer, index=True),
+    Column('timestamp', Integer, index=True),
     Column('total_cpu', Float),
     Column('kernel_cpu', Float),
     Column('vm', Float),
     Column('rss', Float),
     Column('iops', Float),
     Column('bytes_sec', Float),
-    Column('io_wait', Float)
+    Column('io_wait', Float),
+    sqlite_autoincrement=True
 )
 
 PROCESS_DETAILS = Table(
     'process_details',
     TRACE_METADATA,
-    Column('process_id', BigInteger, primary_key=True, autoincrement=True),
-    Column('pid', Integer),
-    Column('ppid', Integer),
+    Column('process_id', Integer, primary_key=True),
+    Column('pid', Integer, index=True),
+    Column('ppid', Integer, index=True),
     Column('name', String(256)),
     Column('cmd_line', String(2000)),
-    Column('create_time', Float)
+    Column('create_time', Float),
+    sqlite_autoincrement=True
 )

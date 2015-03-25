@@ -85,7 +85,7 @@ def trace():
         LOG.info("Creating the logs directory {0}".format(logs_dir))
         makedirs(logs_dir)
 
-    sqlite_file = join(logs_dir, '{0}_{1}_cpu.db'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
+    sqlite_file = join(logs_dir, '{0}_{1}_log.db'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
     engine = create_engine('sqlite:///{0}'.format(sqlite_file))
     sqlite_connection = engine.connect()
     TRACE_METADATA.create_all(sqlite_connection)
