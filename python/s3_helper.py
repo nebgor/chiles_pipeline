@@ -26,6 +26,7 @@
 A helper for S3
 """
 from os.path import join, expanduser, exists
+import socket
 import ssl
 import tarfile
 import time
@@ -36,7 +37,6 @@ import os
 from cStringIO import StringIO
 
 import boto
-from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.key import Key
 
 from common import LOGGER
