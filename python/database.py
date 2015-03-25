@@ -25,7 +25,7 @@
 """
 The database tables
 """
-from sqlalchemy import MetaData, Table, Column, Float, Integer, BigInteger
+from sqlalchemy import MetaData, Table, Column, Float, Integer, BigInteger, String
 
 TRACE_METADATA = MetaData()
 
@@ -42,4 +42,15 @@ LOG_DETAILS = Table(
     Column('iops', Float),
     Column('bytes_sec', Float),
     Column('io_wait', Float)
-    )
+)
+
+PROCESS_DETAILS = Table(
+    'process_details',
+    TRACE_METADATA,
+    Column('process_id', BigInteger, primary_key=True, autoincrement=True),
+    Column('pid', Integer),
+    Column('ppid', Integer),
+    Column('name', String(256)),
+    Column('cmd_line', String(2000)),
+    Column('create_time', Float)
+)

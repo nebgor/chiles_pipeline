@@ -201,16 +201,18 @@ def compute_usage(spl_list, pid, sqlite=None, print_list=False, save_to_file=Non
         insert = LOG_DETAILS.insert()
         transaction = sqlite.begin()
         for result in result_list:
-            sqlite.execute(insert,
-                           pid=pid,
-                           timestamp=result[0],
-                           total_cpu=result[1],
-                           kernel_cpu=result[2],
-                           vm=result[3],
-                           rss=result[4],
-                           iops=result[5],
-                           bytes_sec=result[6],
-                           io_wait=result[7])
+            sqlite.execute(
+                insert,
+                pid=pid,
+                timestamp=result[0],
+                total_cpu=result[1],
+                kernel_cpu=result[2],
+                vm=result[3],
+                rss=result[4],
+                iops=result[5],
+                bytes_sec=result[6],
+                io_wait=result[7]
+            )
         transaction.commit()
 
     return result_list
@@ -352,7 +354,7 @@ def _test_get_sample(test_sample):
 
     pas = [process_sample(x) for x in ps]
     print_sample(pas)
-    compute_usage(pas, print_list=True)
+    compute_usage(pas, test_sample.pid, print_list=True)
 
 
 def exit_handler(signum, frame):
@@ -364,7 +366,7 @@ def exit_handler(signum, frame):
     LOG.info("Processing samples ...")
     pas = [process_sample(x) for x in ps]
     LOG.info("Compute CPU statistics ...")
-    compute_usage(pas, print_list=False, save_to_file=options.save_cpu_file)
+    compute_usage(pas, options.pid, print_list=False, save_to_file=options.save_cpu_file)
     exit(0)
 
 

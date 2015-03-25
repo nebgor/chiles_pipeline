@@ -31,10 +31,11 @@ import time
 import datetime
 from psutil import Process
 from sqlalchemy import create_engine
-from database import TRACE_METADATA
+from database import TRACE_METADATA, PROCESS_DETAILS
 from trace_cpu_mem import collect_sample, process_sample, compute_usage
 
 MAP_SAMPLES = {}
+MAP_PROCESS_DETAILS = {}
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 
@@ -51,6 +52,13 @@ def get_samples(list_processes):
         if samples is None:
             samples = []
             MAP_SAMPLES[pid] = samples
+            MAP_PROCESS_DETAILS[pid] = [
+                process.pid(),
+                process.ppid(),
+                process.name(),
+                process.cmdline(),
+                process.create_time()
+            ]
 
         samples.append(collect_sample(pid))
 
@@ -78,10 +86,24 @@ def trace():
         makedirs(logs_dir)
 
     sqlite_file = join(logs_dir, '{0}_{1}_cpu.db'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
-    ENGINE = create_engine('sqlite:///{0}'.format(sqlite_file))
-    sqlite_connection = ENGINE.connect()
+    engine = create_engine('sqlite:///{0}'.format(sqlite_file))
+    sqlite_connection = engine.connect()
     TRACE_METADATA.create_all(sqlite_connection)
     LOG.info("Processing samples ...")
+
+    transaction = sqlite_connection.begin()
+    insert = PROCESS_DETAILS.insert()
+    for key in MAP_PROCESS_DETAILS.keys():
+        row = MAP_PROCESS_DETAILS[key]
+        sqlite_connection.execute(
+            insert,
+            pid=row[0],
+            ppid=row[1],
+            name=row[2],
+            cmd_line=row[3],
+            create_time=row[4],
+        )
+    transaction.commit()
 
     for key in MAP_SAMPLES.keys():
         LOG.info('Writing data for {0}'.format(key))
