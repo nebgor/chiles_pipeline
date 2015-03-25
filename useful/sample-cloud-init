@@ -31,7 +31,7 @@ power_state:
 
 runcmd:
  - (cd /home/ec2-user/chiles_pipeline ; git pull)
- - pip install configobj boto
+ - pip2.7 install configobj boto
 
 write_files:
  - content: |
@@ -201,15 +201,15 @@ runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.
 
 
 # Copy files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 2 20131122_941_6'
+runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 2 20131122_941_6'
 
 # Copy log files to S3
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/20131122_941_6'
+runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/20131122_941_6'
 
 # Unattach the volume and delete it
 umount /dev/xvdf
 sleep 10
-runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/delete_volumes.py vol-7208d475'
+runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py vol-7208d475'
 
 # Terminate
 shutdown -h now

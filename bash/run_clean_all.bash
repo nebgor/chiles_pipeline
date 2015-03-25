@@ -56,7 +56,7 @@ chmod -R 0777 /mnt/input05
 chmod -R 0777 /mnt/input06
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip install {4}
+pip2.7 install {4}
 cd /home/ec2-user/chiles_pipeline
 runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
 
@@ -70,10 +70,10 @@ runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean
 df -h
 
 # Copy files to S3
-#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}'
+#runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}'
 
 # Copy files to S3
-#runuser -l ec2-user -c 'python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
+#runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
 
 # Terminate
 #shutdown -h now

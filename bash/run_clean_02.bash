@@ -19,18 +19,18 @@ chmod 600 /mnt/output/swapfile
 ulimit -n 8192
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip install {4}
+pip2.7 install {4}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Copy files from S3
-python /home/ec2-user/chiles_pipeline/python/launch_trace.py python /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
+python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace.py python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
 
 # Log the disk usage
 df -h
 
 # Run the clean pipeline
-python /home/ec2-user/chiles_pipeline/python/launch_trace.py bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 1
+python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace.py bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_02.sh {1} {2} 1
 bash -vx /home/ec2-user/chiles_pipeline/bash/start_imstat.bash {1} {2} 1
 df -h
 rm -rf  /mnt/output/Chiles/split_cubes/*
@@ -66,10 +66,10 @@ df -h
 
 # Copy files to S3
 # Currently we're not interested
-#python /home/ec2-user/chiles_pipeline/python/copy_clean_02_output.py {0}
+#python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_02_output.py {0}
 
 # Copy files to S3
-python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}
+python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN_02-log/{0}
 
 # Terminate
 shutdown -h now

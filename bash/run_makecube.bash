@@ -52,12 +52,12 @@ df -h
 ls -lR /mnt
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip install {1}
+pip2.7 install {1}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Copy files from S3
-python /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6 {2} {3}
+python2.7 /home/ec2-user/chiles_pipeline/python/copy_makecube_input.py -p 6 {2} {3}
 
 # Log the disk usage
 df -h
@@ -69,10 +69,10 @@ bash -vx /home/ec2-user/chiles_pipeline/bash/start_makecube.sh {0}
 df -h
 
 # Copy files to S3
-python /home/ec2-user/chiles_pipeline/python/copy_makecube_output.py {0}
+python2.7 /home/ec2-user/chiles_pipeline/python/copy_makecube_output.py {0}
 
 # Copy log files to S3
-python /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}
+python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 IMGCONCAT-logs/{0}
 
 # Terminate
 shutdown -h now

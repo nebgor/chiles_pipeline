@@ -5,4 +5,4 @@
 
 cd /mnt/hidata/test/src
 
-python launch_trace.py ~/Software/Casa/casapy-test-43.0.30606-002-1-64b/casapy --nologger -c clean_44.py
+python2.7 launch_trace.py ~/Software/Casa/casapy-test-43.0.30606-002-1-64b/casapy --nologger -c clean_44.py
