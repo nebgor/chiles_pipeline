@@ -8,7 +8,7 @@ import os
 from test_speed import test
 
 # Needs to be about a GB
-TEST_FILE = '/Users/kevinvinsen/Downloads/casa-stable-4.4.115.tar.gz'
+TEST_FILE = '/home/ec2-user/test_file'
 
 
 def test_io1():
