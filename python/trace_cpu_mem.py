@@ -132,7 +132,9 @@ def compute_usage(spl_list, pid, sqlite=None, print_list=False, save_to_file=Non
     result_list = []
     leng = len(spl_list)
     if leng < 2:
-        raise Exception("sample size is too small")
+        LOG.warning("sample size is too small")
+        return
+
     # refer to http://stackoverflow.com/questions/4189123/python-how-to-get-number-of-mili-seconds-per-jiffy
     # refer to http://stackoverflow.com/questions/16726779/total-cpu-usage-of-an-application-from-proc-pid-stat
     hertz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
@@ -216,7 +218,7 @@ def compute_usage(spl_list, pid, sqlite=None, print_list=False, save_to_file=Non
             )
         transaction.commit()
 
-    return result_list
+    return
 
 
 def process_sample(raw_sample):
@@ -323,7 +325,7 @@ def process_sample(raw_sample):
     # TODO
     print 'pa: {0}'.format(pa)
     print 'io_counters: {0}'.format(io_counters)
-    print 'pstat: {0}'.format(pstat)
+    print 'pstat: {0} {1}'.format(pstat.ts, pstat.blkio)
     return ret
 
 
@@ -350,7 +352,7 @@ def collect_sample(pid):
 
     list_of_stuff = [lines1[0], first_line, time_stamp, io_counters]
     # TODO
-    print 'list_of_stuff: {0}'.format(list_of_stuff)
+    print 'list_of_stuff: {0}, {1}'.format(pid, list_of_stuff)
     return list_of_stuff
 
 

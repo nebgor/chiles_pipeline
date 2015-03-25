@@ -48,8 +48,8 @@ def test_io3():
     print 'test3: ', i
 
 if __name__ == '__main__':
-    multiprocessing.freeze_support()
-    test()
+    #multiprocessing.freeze_support()
+    #test()
     test_io1()
     test_io2()
     test_io3()
