@@ -44,6 +44,7 @@ import signal
 import cPickle as pickle
 
 from psutil import Process
+from database import LOG_DETAILS
 
 
 LOG = logging.getLogger(__name__)
@@ -119,7 +120,7 @@ def print_sample(spl_list):
     print tbl
 
 
-def compute_usage(spl_list, print_list=False, save_to_file=None, csv_output=False):
+def compute_usage(spl_list, pid, sqlite=None, print_list=False, save_to_file=None, csv_output=False):
     """
     Convert from sample to CPU/memory usage
 
@@ -195,6 +196,22 @@ def compute_usage(spl_list, print_list=False, save_to_file=None, csv_output=Fals
             LOG.info('Time for saving CPU statistics: {0:.2f}'.format((time.time() - start_save_time)))
         except Exception:
             LOG.exception('Fail to save CPU statistics to file {0}'.format(save_to_file))
+
+    elif sqlite is not None:
+        insert = LOG_DETAILS.insert()
+        transaction = sqlite.begin()
+        for result in result_list:
+            sqlite.execute(insert,
+                           pid=pid,
+                           timestamp=result[0],
+                           total_cpu=result[1],
+                           kernel_cpu=result[2],
+                           vm=result[3],
+                           rss=result[4],
+                           iops=result[5],
+                           bytes_sec=result[6],
+                           io_wait=result[7])
+        transaction.commit()
 
     return result_list
 

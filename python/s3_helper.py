@@ -36,6 +36,7 @@ import os
 from cStringIO import StringIO
 
 import boto
+from boto.s3.connection import OrdinaryCallingFormat
 from boto.s3.key import Key
 
 from common import LOGGER
@@ -53,14 +54,14 @@ class S3UploadException(Exception):
 def get_s3_connection(aws_access_key_id=None, aws_secret_access_key=None):
     if aws_access_key_id is not None and aws_secret_access_key is not None:
         LOGGER.info("Using user provided keys")
-        return boto.connect_s3(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+        return boto.connect_s3(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, calling_format=OrdinaryCallingFormat())
     elif exists(join(expanduser('~'), '.aws/credentials')):
         # This relies on a ~/.aws/credentials file holding the '<aws access key>', '<aws secret key>'
         LOGGER.info("Using ~/.aws/credentials")
-        return boto.connect_s3(profile_name='chiles')
+        return boto.connect_s3(profile_name='chiles', calling_format=OrdinaryCallingFormat())
     else:
         # This relies on a ~/.boto or /etc/boto.cfg file holding the '<aws access key>', '<aws secret key>'
-        LOGGER.info("Using ~/.boto or /etc/boto.cfg")
+        LOGGER.info("Using ~/.boto or /etc/boto.cfg", calling_format=OrdinaryCallingFormat())
         return boto.connect_s3()
 
 

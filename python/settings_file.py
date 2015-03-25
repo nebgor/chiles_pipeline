@@ -47,7 +47,7 @@ CHILES_LOGS = '/home/ec2-user/Chiles/casa_work_dir'
 BENCHMARKING_LOGS = '/tmp/trace_logs'
 
 AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
-PIP_PACKAGES = 'configobj boto prettytable psutil'
+PIP_PACKAGES = 'configobj boto prettytable psutil sqlalchemy'
 USERNAME = 'ec2-user'
 
 FREQUENCY_WIDTH = 4

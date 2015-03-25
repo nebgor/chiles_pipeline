@@ -30,6 +30,8 @@ from os.path import exists, join
 import time
 import datetime
 from psutil import Process
+from sqlalchemy import create_engine
+from database import TRACE_METADATA
 from trace_cpu_mem import collect_sample, process_sample, compute_usage
 
 MAP_SAMPLES = {}
@@ -75,18 +77,19 @@ def trace():
         LOG.info("Creating the logs directory {0}".format(logs_dir))
         makedirs(logs_dir)
 
+    sqlite_file = join(logs_dir, '{0}_{1}_cpu.db'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
+    ENGINE = create_engine('sqlite:///{0}'.format(sqlite_file))
+    sqlite_connection = ENGINE.connect()
+    TRACE_METADATA.create_all(sqlite_connection)
+    LOG.info("Processing samples ...")
+
     for key in MAP_SAMPLES.keys():
         LOG.info('Writing data for {0}'.format(key))
-        if sp.pid == key:
-            cpu_logfile = join(logs_dir, '{0}_{1}_cpu.log'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
-        else:
-            cpu_logfile = join(logs_dir, '{0}_{1}_{2}_cpu.log'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid, key))
-
-        LOG.info("Processing samples ...")
         pas = [process_sample(x) for x in MAP_SAMPLES.get(key)]
         LOG.info("Compute CPU statistics ...")
-        compute_usage(pas, print_list=False, save_to_file=cpu_logfile, csv_output=True)
+        compute_usage(pas, key, print_list=False, sqlite=sqlite_connection)
 
+    sqlite_connection.close()
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
