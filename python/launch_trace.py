@@ -1,3 +1,27 @@
+#
+#    (c) UWA, The University of Western Australia
+#    M468/35 Stirling Hwy
+#    Perth WA 6009
+#    Australia
+#
+#    Copyright by UWA, 2012-2015
+#    All rights reserved
+#
+#    This library is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU Lesser General Public
+#    License as published by the Free Software Foundation; either
+#    version 2.1 of the License, or (at your option) any later version.
+#
+#    This library is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#    Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public
+#    License along with this library; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+#    MA 02111-1307  USA
+#
 import logging
 from os import makedirs
 import subprocess
@@ -14,13 +38,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 
 
 def usage():
-    print 'python launch_trace.py app'
-    print 'e.g. python launch_trace.py ls -l'
+    LOG.info('python launch_trace.py app')
+    LOG.info('e.g. python launch_trace.py ls -l')
 
 
 def get_samples(list_processes):
     for process in list_processes:
-        LOG.info('Sampling {0}'.format(process))
         pid = process.pid
         samples = MAP_SAMPLES.get(pid)
         if samples is None:
@@ -47,9 +70,9 @@ def trace():
         time.sleep(max(1 - (time.time() - now), 0.001))
 
     logs_dir = '/tmp/trace_logs'
-    print "Checking for the logs directory ", logs_dir
+    LOG.info("Checking for the logs directory {0}".format(logs_dir))
     if not exists(logs_dir):
-        print "Creating the logs directory ", logs_dir
+        LOG.info("Creating the logs directory {0}".format(logs_dir))
         makedirs(logs_dir)
 
     for key in MAP_SAMPLES.keys():
@@ -62,7 +85,7 @@ def trace():
         LOG.info("Processing samples ...")
         pas = [process_sample(x) for x in MAP_SAMPLES.get(key)]
         LOG.info("Compute CPU statistics ...")
-        compute_usage(pas, print_list=False, save_to_file=cpu_logfile)
+        compute_usage(pas, print_list=False, save_to_file=cpu_logfile, csv_output=True)
 
 
 if __name__ == '__main__':
