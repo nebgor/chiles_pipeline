@@ -34,7 +34,7 @@
 # |  | |  |\   |       |  |  |  | |  |____ |  |\  \----.|  |____ |__|
 # |__| |__| \__|       |__|  |__| |_______|| _| `._____||_______|(__)
 #
-ami_id = "ami-f9681ec3"
+ami_id = "ami-3f0e7d05"
 key_name = "aws-chiles-sydney"
 security_groups = "sg-e5369a80", "sg-f2369a97"
 region = "ap-southeast-2"
