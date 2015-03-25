@@ -53,7 +53,7 @@ def get_samples(list_processes):
             samples = []
             MAP_SAMPLES[pid] = samples
             MAP_PROCESS_DETAILS[pid] = [
-                process.pid(),
+                pid,
                 process.ppid(),
                 process.name(),
                 process.cmdline(),
