@@ -105,6 +105,7 @@ from os.path import exists, join
 import time
 from datetime import datetime
 from psutil import Process
+import resource
 from sqlalchemy import create_engine, MetaData, Table, Column, Float, Integer, String
 
 I_STATE = 2
@@ -161,7 +162,8 @@ TRACE_DETAILS = Table(
     Column('start_time', Float, nullable=False),
     Column('cmd_line', String(2000), nullable=False),
     Column('sample_rate', Float, nullable=False),
-    Column('tick', Integer, nullable=False)
+    Column('tick', Integer, nullable=False),
+    Column('page_size', Integer, nullable=False)
 )
 
 FSTAT = '/proc/stat'
@@ -211,7 +213,7 @@ class Trace():
         file_name1 = "/proc/{0}/stat".format(pid)
         with open(file_name1) as f:
             lines1 = f.readlines()
-        stat_details = lines1[0]
+        stat_details = lines1[0].split()
 
         pid_process = Process(pid)
         io_counters = pid_process.io_counters()
@@ -263,7 +265,8 @@ class Trace():
             start_time=(start_time - EPOCH).total_seconds(),
             cmd_line=' '.join(self._command_list),
             sample_rate=self._sample_rate,
-            tick=os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+            tick=os.sysconf(os.sysconf_names['SC_CLK_TCK']),
+            page_size=resource.getpagesize()
         )
 
         try:

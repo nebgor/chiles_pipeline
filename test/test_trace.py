@@ -53,6 +53,7 @@ def test_create_file():
     i = 0
     while i < 2000000:
         f.write('0123456789')
+        i += 1
 
 if __name__ == '__main__':
     #multiprocessing.freeze_support()
