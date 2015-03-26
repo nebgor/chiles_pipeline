@@ -162,7 +162,7 @@ TRACE_DETAILS = Table(
     Column('start_time', Float, nullable=False),
     Column('cmd_line', String(2000), nullable=False),
     Column('sample_rate', Float, nullable=False),
-    Column('tick', Float, nullable=False )
+    Column('tick', Integer, nullable=False)
 )
 
 FSTAT = '/proc/stat'

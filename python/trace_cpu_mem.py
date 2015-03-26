@@ -322,10 +322,6 @@ def process_sample(raw_sample):
                 io_counters.write_count
                 )
 
-    # TODO
-    print 'pa: {0}'.format(pa)
-    print 'io_counters: {0}'.format(io_counters)
-    print 'pstat: {0} {1} {2}'.format(ret.ts, ret.blkio, ret)
     return ret
 
 
@@ -350,10 +346,7 @@ def collect_sample(pid):
     with open(FSTAT, 'r') as f:
         first_line = f.readline()
 
-    list_of_stuff = [lines1[0], first_line, time_stamp, io_counters]
-    # TODO
-    print 'list_of_stuff: {0}'.format(list_of_stuff)
-    return list_of_stuff
+    return [lines1[0], first_line, time_stamp, io_counters]
 
 
 def _test_get_sample(test_sample):
