@@ -24,13 +24,13 @@ cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Copy files from S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
+python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
 
 # Log the disk usage
 df -h
 
 # Run the clean pipeline
-bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
+python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
 
 # Log the disk usage
 df -h
