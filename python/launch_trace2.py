@@ -96,6 +96,7 @@
 
 """
 
+import pdb
 import logging
 import os
 from os import makedirs
@@ -261,6 +262,7 @@ class Trace():
 
         # Store the trace details
         hertz = int(os.sysconf(os.sysconf_names['SC_CLK_TCK']))
+        pdb.set_trace()
         self._connection.execute(
             TRACE_DETAILS.insert,
             start_time=(start_time - EPOCH).total_seconds(),
