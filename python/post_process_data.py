@@ -93,7 +93,7 @@ def calculate_values(connection, pid, details):
             kernel_cpu = int(100.0 * (kernel_cpu2 - kernel_cpu1) / tick / sample_rate)
             iops = ios2 - ios1
             io_bytes = io_bytes2 - io_bytes1
-            blkio_wait =  (blkio_ticks2 - blkio_ticks1) * tick * sample_rate
+            blkio_wait = float(blkio_ticks2 - blkio_ticks1) / tick / sample_rate
 
             connection.execute(
                 insert,

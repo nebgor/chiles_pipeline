@@ -142,10 +142,13 @@ LOG_DETAILS = Table(
     Column('vsize', Integer, nullable=False),
     Column('rss', Integer, nullable=False),
     Column('blkio_ticks', Integer, nullable=False),
-    Column('read_count', Integer, nullable=False),
-    Column('write_count', Integer, nullable=False),
+    Column('rchar', Integer, nullable=False),
+    Column('wchar', Integer, nullable=False),
+    Column('syscr', Integer, nullable=False),
+    Column('syscw', Integer, nullable=False),
     Column('read_bytes', Integer, nullable=False),
     Column('write_bytes', Integer, nullable=False),
+    Column('cancelled_write_bytes', Integer, nullable=False),
     sqlite_autoincrement=True
 )
 STAT_DETAILS = Table(
@@ -200,7 +203,6 @@ class Trace():
         self._connection = None
         self._set_pids = set()
         self._insert_log_details = LOG_DETAILS.insert()
-        self._file_stat = None
 
         # Create the logs directory
         LOG.info("Checking for the logs directory {0}".format(LOGS_DIR))
@@ -212,25 +214,23 @@ class Trace():
         transaction = self._connection.begin()
 
         # Read the data from /proc/stat for the system
-        if self._file_stat is None:
-            self._file_stat = open(FSTAT, 'r')
-        self._file_stat.seek(0)
-        first_line = self._file_stat.readline()
-        first_line = first_line.split()
+        with open(FSTAT, 'r') as file_stat:
+            first_line = file_stat.readline()
+        elements = first_line.split()
         time_stamp = (datetime.now() - EPOCH).total_seconds()
         self._connection.execute(
             STAT_DETAILS.insert(),
             timestamp=time_stamp,
-            user=first_line[1],
-            nice=first_line[2],
-            system=first_line[3],
-            idle=first_line[4],
-            iowait=first_line[5],
-            irq=first_line[6],
-            softirq=first_line[7],
-            steal=first_line[8],
-            guest=first_line[9],
-            guest_nice=first_line[10]
+            user=elements[1],
+            nice=elements[2],
+            system=elements[3],
+            idle=elements[4],
+            iowait=elements[5],
+            irq=elements[6],
+            softirq=elements[7],
+            steal=elements[8],
+            guest=elements[9],
+            guest_nice=elements[10]
         )
 
         # Now do the individual processes
@@ -255,22 +255,26 @@ class Trace():
         transaction.commit()
 
     def _collect_sample(self, pid, time_stamp):
-        file_name1 = "/proc/{0}/stat".format(pid)
         # Catch the process stopping whilst we are sampling
         # noinspection PyBroadException
         try:
+            file_name1 = "/proc/{0}/stat".format(pid)
             with open(file_name1) as f:
                 line1 = f.readline()
-            stat_details = line1.split()
+
+            file_name2 = "/proc/{0}/io".format(pid)
+            with open(file_name2) as f:
+                line2 = f.readline()
+
         except Exception:
             LOG.warning('Pid {0} no longer running'.format(pid))
             return
 
-        if len(stat_details) < I_BLKIO_TICKS:
-            return
+        stat_details = line1.split()
+        io_details = line2.split()
 
-        pid_process = Process(pid)
-        io_counters = pid_process.io_counters()
+        if len(stat_details) < I_BLKIO_TICKS or len(io_details) < 6:
+            return
 
         self._connection.execute(
             self._insert_log_details,
@@ -287,10 +291,13 @@ class Trace():
             vsize=stat_details[I_VSIZE],
             rss=stat_details[I_RSS],
             blkio_ticks=stat_details[I_BLKIO_TICKS],
-            read_count=io_counters.read_count,
-            write_count=io_counters.write_count,
-            read_bytes=io_counters.read_bytes,
-            write_bytes=io_counters.write_bytes
+            rchar=io_details[0],
+            wchar=io_details[1],
+            syscr=io_details[2],
+            syscw=io_details[3],
+            read_bytes=io_details[4],
+            write_bytes=io_details[5],
+            cancelled_write_bytes=io_details[6]
         )
 
     def run(self):
