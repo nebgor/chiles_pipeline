@@ -96,7 +96,6 @@
 
 """
 
-import pdb
 import logging
 import os
 from os import makedirs
@@ -119,7 +118,6 @@ I_NUM_THREADS = 19
 I_VSIZE = 22
 I_RSS = 23
 I_BLKIO_TICKS = 41
-
 
 TRACE_METADATA = MetaData()
 LOG_DETAILS = Table(
@@ -260,7 +258,6 @@ class Trace():
         TRACE_METADATA.create_all(self._connection)
 
         # Store the trace details
-        pdb.set_trace()
         self._connection.execute(
             TRACE_DETAILS.insert(),
             start_time=(start_time - EPOCH).total_seconds(),
