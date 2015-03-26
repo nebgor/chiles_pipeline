@@ -149,7 +149,7 @@ LOG_DETAILS = Table(
     sqlite_autoincrement=True
 )
 STAT_DETAILS = Table(
-    'log_details',
+    'stat_details',
     TRACE_METADATA,
     Column('stat_details_id', Integer, primary_key=True),
     Column('timestamp', Float, index=True, nullable=False),
