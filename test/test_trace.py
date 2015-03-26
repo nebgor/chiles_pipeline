@@ -49,6 +49,7 @@ def test_io3():
 
 
 def test_create_file():
+    print 'Creating test file'
     f = open(TEST_FILE, 'w')
     i = 0
     while i < 200000000:
@@ -56,8 +57,8 @@ def test_create_file():
         i += 1
 
 if __name__ == '__main__':
-    #multiprocessing.freeze_support()
-    #test()
+    multiprocessing.freeze_support()
+    test()
     test_create_file()
     test_io1()
     test_io2()
