@@ -251,9 +251,17 @@ class Trace():
 
     def _collect_sample(self, pid, time_stamp):
         file_name1 = "/proc/{0}/stat".format(pid)
-        with open(file_name1) as f:
-            line1 = f.readline()
-        stat_details = line1.split()
+        # Catch the process stopping whilst we are sampling
+        try:
+            with open(file_name1) as f:
+                line1 = f.readline()
+            stat_details = line1.split()
+        except Exception:
+            LOG.warning('Pid {0} no longer running'.format(pid))
+            return
+
+        if len(stat_details) < I_BLKIO_TICKS:
+            return
 
         pid_process = Process(pid)
         io_counters = pid_process.io_counters()
