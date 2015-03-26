@@ -26,7 +26,11 @@
     https://www.kernel.org/doc/Documentation/filesystems/proc.txt
 
     /proc/stat fields specification
-    Time units are in USER_HZ (typically hundredths of a second)
+    The very first  "cpu" line aggregates the  numbers in all  of the other "cpuN"
+    lines.  These numbers identify the amount of time the CPU has spent performing
+    different kinds of work.  Time units are in USER_HZ (typically hundredths of a
+    second).  The meanings of the columns are as follows, from left to right:
+
     - user: normal processes executing in user mode
     - nice: niced processes executing in user mode
     - system: processes executing in kernel mode
@@ -128,7 +132,6 @@ LOG_DETAILS = Table(
     Column('pid', Integer, index=True, nullable=False),
     Column('timestamp', Float, index=True, nullable=False),
     Column('state', String(2), nullable=False),
-    Column('all_cpu', Integer, nullable=False),
     Column('utime', Integer, nullable=False),
     Column('stime', Integer, nullable=False),
     Column('cutime', Integer, nullable=False),
@@ -143,6 +146,23 @@ LOG_DETAILS = Table(
     Column('write_count', Integer, nullable=False),
     Column('read_bytes', Integer, nullable=False),
     Column('write_bytes', Integer, nullable=False),
+    sqlite_autoincrement=True
+)
+STAT_DETAILS = Table(
+    'log_details',
+    TRACE_METADATA,
+    Column('stat_details_id', Integer, primary_key=True),
+    Column('timestamp', Float, index=True, nullable=False),
+    Column('user', Integer, nullable=False),
+    Column('nice', Integer, nullable=False),
+    Column('system', Integer, nullable=False),
+    Column('idle', Integer, nullable=False),
+    Column('iowait', Integer, nullable=False),
+    Column('irq', Integer, nullable=False),
+    Column('softirq', Integer, nullable=False),
+    Column('steal', Integer, nullable=False),
+    Column('guest', Integer, nullable=False),
+    Column('guest_nice', Integer, nullable=False),
     sqlite_autoincrement=True
 )
 PROCESS_DETAILS = Table(
@@ -190,6 +210,27 @@ class Trace():
     def _get_samples(self, list_processes):
         transaction = self._connection.begin()
 
+        # Read the data from /proc/stat for the system
+        with open(FSTAT, 'r') as f:
+            first_line = f.readline()
+        first_line.split()
+        time_stamp = (datetime.now() - EPOCH).total_seconds()
+        self._connection.execute(
+            STAT_DETAILS.insert(),
+            timestamp=time_stamp,
+            user=first_line[1],
+            nice=first_line[2],
+            system=first_line[3],
+            idle=first_line[4],
+            iowait=first_line[5],
+            irq=first_line[6],
+            softirq=first_line[7],
+            steal=first_line[8],
+            guest=first_line[9],
+            guest_nice=first_line[10]
+        )
+
+        # Now do the individual processes
         for process in list_processes:
             pid = process.pid
             if pid not in self._set_pids:
@@ -204,32 +245,24 @@ class Trace():
                     create_time=process.create_time(),
                 )
 
-            self._collect_sample(pid)
+            self._collect_sample(pid, time_stamp)
 
         transaction.commit()
 
-    def _collect_sample(self, pid):
-        time_stamp = (datetime.now() - EPOCH).total_seconds()
+    def _collect_sample(self, pid, time_stamp):
         file_name1 = "/proc/{0}/stat".format(pid)
         with open(file_name1) as f:
-            lines1 = f.readlines()
-        stat_details = lines1[0].split()
+            line1 = f.readline()
+        stat_details = line1.split()
 
         pid_process = Process(pid)
         io_counters = pid_process.io_counters()
-
-        with open(FSTAT, 'r') as f:
-            first_line = f.readline()
-        cpu_line = first_line.replace('cpu', '')
-        cpus = [int(x) for x in cpu_line.split()]
-        all_cpus = sum(cpus)
 
         self._connection.execute(
             self._insert_log_details,
             pid=pid,
             timestamp=time_stamp,
             state=stat_details[I_STATE],
-            all_cpu=all_cpus,
             utime=stat_details[I_UTIME],
             stime=stat_details[I_STIME],
             cutime=stat_details[I_CUTIME],
