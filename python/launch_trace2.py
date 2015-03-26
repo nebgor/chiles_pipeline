@@ -235,26 +235,29 @@ class Trace():
 
         # Now do the individual processes
         for process in list_processes:
-            pid = process.pid
-            if pid not in self._set_pids:
-                self._set_pids.add(pid)
-
-                self._connection.execute(
-                    PROCESS_DETAILS.insert(),
-                    pid=pid,
-                    ppid=process.ppid(),
-                    name=process.name(),
-                    cmd_line=' '.join(process.cmdline()),
-                    create_time=process.create_time(),
-                )
-
-            self._collect_sample(pid, time_stamp)
+            # noinspection PyBroadException
+            try:
+                pid = process.pid
+                if pid not in self._set_pids:
+                    self._connection.execute(
+                        PROCESS_DETAILS.insert(),
+                        pid=pid,
+                        ppid=process.ppid(),
+                        name=process.name(),
+                        cmd_line=' '.join(process.cmdline()),
+                        create_time=process.create_time(),
+                    )
+                    self._set_pids.add(pid)
+                self._collect_sample(pid, time_stamp)
+            except Exception:
+                LOG.warning('Pid {0} no longer running'.format(process.pid))
 
         transaction.commit()
 
     def _collect_sample(self, pid, time_stamp):
         file_name1 = "/proc/{0}/stat".format(pid)
         # Catch the process stopping whilst we are sampling
+        # noinspection PyBroadException
         try:
             with open(file_name1) as f:
                 line1 = f.readline()
