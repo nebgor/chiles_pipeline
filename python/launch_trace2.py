@@ -260,12 +260,13 @@ class Trace():
         TRACE_METADATA.create_all(self._connection)
 
         # Store the trace details
+        hertz = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
         self._connection.execute(
             TRACE_DETAILS.insert,
             start_time=(start_time - EPOCH).total_seconds(),
             cmd_line=' '.join(self._command_list),
             sample_rate=self._sample_rate,
-            tick=os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+            tick=hertz
         )
 
         try:
