@@ -325,7 +325,7 @@ def process_sample(raw_sample):
     # TODO
     print 'pa: {0}'.format(pa)
     print 'io_counters: {0}'.format(io_counters)
-    print 'pstat: {0} {1}'.format(pstat.ts, pstat.blkio)
+    print 'pstat: {0} {1} {2}'.format(ret.ts, ret.blkio, ret)
     return ret
 
 
@@ -352,7 +352,7 @@ def collect_sample(pid):
 
     list_of_stuff = [lines1[0], first_line, time_stamp, io_counters]
     # TODO
-    print 'list_of_stuff: {0}, {1}'.format(pid, list_of_stuff)
+    print 'list_of_stuff: {0}'.format(list_of_stuff)
     return list_of_stuff
 
 

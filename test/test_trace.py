@@ -51,7 +51,7 @@ def test_io3():
 def test_create_file():
     f = open(TEST_FILE, 'w')
     i = 0
-    while i < 10000000:
+    while i < 2000000:
         f.write('0123456789')
 
 if __name__ == '__main__':
