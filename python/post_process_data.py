@@ -46,7 +46,7 @@ POST_DETAILS = Table(
     Column('write_bytes', Integer, nullable=False),
     Column('read_count', Integer, nullable=False),
     Column('write_count', Integer, nullable=False),
-    Column('io_wait', Float, nullable=False),
+    Column('blkio_wait', Float, nullable=False),
     sqlite_autoincrement=True
 )
 
@@ -93,7 +93,7 @@ def calculate_values(connection, pid, details):
             kernel_cpu = int(100.0 * (kernel_cpu2 - kernel_cpu1) / tick / sample_rate)
             iops = ios2 - ios1
             io_bytes = io_bytes2 - io_bytes1
-            io_wait = float(blkio_ticks2 - blkio_ticks1) * tick / sample_rate
+            blkio_wait =  (blkio_ticks2 - blkio_ticks1) * tick * sample_rate
 
             connection.execute(
                 insert,
@@ -107,7 +107,7 @@ def calculate_values(connection, pid, details):
                 bytes_sec=io_bytes,
                 read_bytes=read_bytes2 - read_bytes1,
                 write_bytes=write_bytes2 - write_bytes1,
-                io_wait=io_wait,
+                blkio_wait=blkio_wait,
                 read_count=read_count2 - read_count1,
                 write_count=write_count2 - write_count1
             )
