@@ -200,6 +200,7 @@ class Trace():
         self._connection = None
         self._set_pids = set()
         self._insert_log_details = LOG_DETAILS.insert()
+        self._file_stat = None
 
         # Create the logs directory
         LOG.info("Checking for the logs directory {0}".format(LOGS_DIR))
@@ -211,9 +212,11 @@ class Trace():
         transaction = self._connection.begin()
 
         # Read the data from /proc/stat for the system
-        with open(FSTAT, 'r') as f:
-            first_line = f.readline()
-        first_line.split()
+        if self._file_stat is None:
+            self._file_stat = open(FSTAT, 'r')
+        self._file_stat.seek(0)
+        first_line = self._file_stat.readline()
+        first_line = first_line.split()
         time_stamp = (datetime.now() - EPOCH).total_seconds()
         self._connection.execute(
             STAT_DETAILS.insert(),
