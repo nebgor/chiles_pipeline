@@ -246,7 +246,6 @@ class Trace():
             write_bytes=io_counters.write_bytes
         )
 
-
     def run(self):
         # Get the start time
         start_time = datetime.now()
@@ -261,14 +260,13 @@ class Trace():
         TRACE_METADATA.create_all(self._connection)
 
         # Store the trace details
-        hertz = int(os.sysconf(os.sysconf_names['SC_CLK_TCK']))
         pdb.set_trace()
         self._connection.execute(
-            TRACE_DETAILS.insert,
+            TRACE_DETAILS.insert(),
             start_time=(start_time - EPOCH).total_seconds(),
             cmd_line=' '.join(self._command_list),
             sample_rate=self._sample_rate,
-            tick=hertz
+            tick=os.sysconf(os.sysconf_names['SC_CLK_TCK'])
         )
 
         try:
