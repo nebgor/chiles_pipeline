@@ -276,7 +276,7 @@ cancelled_write_bytes: 0'''
                              os.sysconf(os.sysconf_names['SC_CLK_TCK']),
                              resource.getpagesize()])
 
-        raw_file = csv.writer(self._get_file_name(sp.pid, STAT_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', 1)
         self._csv_stat_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_stat_writer.writerow(
             ['timestamp',
@@ -291,7 +291,7 @@ cancelled_write_bytes: 0'''
              'guest',
              'guest']
         )
-        raw_file = csv.writer(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', 1)
         self._csv_process_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_process_writer.writerow(
             ['pid',
@@ -300,7 +300,7 @@ cancelled_write_bytes: 0'''
              'cmd_line',
              'create_time']
         )
-        raw_file = csv.writer(self._get_file_name(sp.pid, LOG_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, LOG_DETAILS), 'w', 1)
         self._csv_log_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_log_writer.writerow(
             ['pid',
@@ -356,6 +356,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     user = getpass.getuser()
-    LOG.info('Running as: {0}', user)
+    LOG.info('Running as: {0}'.format(user))
     trace = Trace(sys.argv[1:], user)
     trace.run()
