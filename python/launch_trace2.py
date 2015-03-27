@@ -340,7 +340,6 @@ cancelled_write_bytes: 0'''
 
                 pids = [Process(sp.pid)]
                 pids.extend(main_process.children(recursive=True))
-                LOG.info('pids: {0}'.format(pids))
                 self._get_samples(pids)
 
                 time.sleep(max(1 - (time.time() - now), 0.001))

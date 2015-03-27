@@ -52,7 +52,7 @@ def test_create_file():
     print 'Creating test file'
     f = open(TEST_FILE, 'w')
     i = 0
-    while i < 200000000:
+    while i < 100000000:
         f.write('0123456789')
         i += 1
 

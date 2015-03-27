@@ -13,7 +13,7 @@ if sys.platform == 'win32':
 else:
     _timer = time.time
 
-delta = 1
+delta = 10
 
 
 # ### TEST_QUEUESPEED
