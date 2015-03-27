@@ -185,12 +185,12 @@ def calculate_values(connection, pid, details):
         ios1 = ios2
         io_bytes1 = io_bytes2
 
+
 def get_details(connection):
     trace_details = connection.execute(TRACE_DETAILS.select()).first()
     return [trace_details[TRACE_DETAILS.c.sample_rate],
             trace_details[TRACE_DETAILS.c.tick],
-            trace_details[TRACE_DETAILS.c.page_size]
-            ]
+            trace_details[TRACE_DETAILS.c.page_size]]
 
 
 def post_process_database(database):

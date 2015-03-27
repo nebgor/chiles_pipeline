@@ -201,21 +201,31 @@ class Trace():
         try:
             file_name1 = "/proc/{0}/stat".format(pid)
             with open(file_name1) as f:
-                line1 = f.readline()
+                line_stat = f.readline()
 
             if self._user == 'root':
                 file_name2 = "/proc/{0}/io".format(pid)
                 with open(file_name2) as f:
-                    line2 = f.readline()
+                    lines_io = f.readline()
             else:
-                line2 = '-1 -1 -1 -1 -1 -1 -1'
+                lines_io = '''rchar: 0
+wchar: 0
+syscr: 0
+syscw: 0
+read_bytes: 0
+write_bytes: 0
+cancelled_write_bytes: 0'''
 
         except Exception:
             LOG.warning('Pid {0} no longer running'.format(pid))
             return
 
-        stat_details = line1.split()
-        io_details = line2.split()
+        stat_details = line_stat.split()
+        io_details = []
+        i = 0
+        for line in lines_io:
+            io_details[i] = line.split()[1]
+            i += 1
 
         if len(stat_details) < I_BLKIO_TICKS or len(io_details) < 6:
             return
@@ -281,7 +291,6 @@ class Trace():
              'guest',
              'guest']
         )
-
         raw_file = csv.writer(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', 1)
         self._csv_process_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_process_writer.writerow(
