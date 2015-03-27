@@ -109,6 +109,7 @@ import sys
 from os.path import exists, join
 import time
 from datetime import datetime
+import gc
 from psutil import Process
 import resource
 
@@ -333,6 +334,7 @@ cancelled_write_bytes: 0'''
 
         # noinspection PyBroadException
         try:
+            gc.set_debug(gc.DEBUG_STATS)
             main_process = Process(sp.pid)
             while sp.poll() is None:
                 now = time.time()
