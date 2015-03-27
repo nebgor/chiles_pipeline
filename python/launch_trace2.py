@@ -189,6 +189,7 @@ class Trace():
             # noinspection PyBroadException
             try:
                 pid = process.pid
+                #
                 if pid not in self._set_pids:
                     row = [pid,
                            process.ppid(),
@@ -199,7 +200,7 @@ class Trace():
                     self._set_pids.add(pid)
                 self._collect_sample(pid)
             except Exception:
-                LOG.warning('_get_samples: Pid {0} no longer running'.format(process.pid))
+                LOG.exception('_get_samples: Pid {0} no longer running'.format(process.pid))
 
     def _collect_sample(self, pid):
         # Catch the process stopping whilst we are sampling
@@ -223,7 +224,7 @@ write_bytes: 0
 cancelled_write_bytes: 0'''
 
         except Exception:
-            LOG.warning('_collect_sample: Pid {0} no longer running'.format(pid))
+            LOG.exception('_collect_sample: Pid {0} no longer running'.format(pid))
             return
 
         stat_details = line_stat.split()
