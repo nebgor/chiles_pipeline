@@ -75,7 +75,7 @@ def copy_files(s3_tag, processes):
             queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
 
     for root, dir_names, filenames in os.walk(BENCHMARKING_LOGS):
-        for match in fnmatch.filter(filenames, '*.db'):
+        for match in fnmatch.filter(filenames, '*.csv'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
         for match in fnmatch.filter(filenames, '*.log'):

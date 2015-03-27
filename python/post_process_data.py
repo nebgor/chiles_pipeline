@@ -104,12 +104,16 @@ POST_DETAILS = Table(
     TRACE_METADATA,
     Column('post_details_id', Integer, primary_key=True),
     Column('pid', Integer, index=True, nullable=False),
-    Column('timestamp', Float, index=True, nullable=False),
+    Column('timestamp', String(40), index=True, nullable=False),
     Column('total_cpu', Float, nullable=False),
+    Column('user_cpu', Float, nullable=False),
     Column('kernel_cpu', Float, nullable=False),
     Column('vm', Float, nullable=False),
     Column('rss', Float, nullable=False),
     Column('iops', Float, nullable=False),
+    Column('bytes_char_sec', Float, nullable=False),
+    Column('rchar', Integer, nullable=False),
+    Column('wchar', Integer, nullable=False),
     Column('bytes_sec', Float, nullable=False),
     Column('read_bytes', Integer, nullable=False),
     Column('write_bytes', Integer, nullable=False),
@@ -132,34 +136,42 @@ def calculate_values(connection, pid, details):
     sample_rate = details[0]
     tick = details[1]
     page_size = details[2]
-    read_count1 = None
-    write_count1 = None
-    read_bytes1 = None
-    write_bytes1 = None
-    blkio_ticks1 = None
-    total_cpu1 = None
-    kernel_cpu1 = None
-    ios1 = None
-    io_bytes1 = None
+    read_count1 = 0
+    write_count1 = 0
+    read_bytes1 = 0
+    write_bytes1 = 0
+    blkio_ticks1 = 0
+    total_cpu1 = 0
+    utime1 = 0
+    stime1 = 0
+    ios1 = 0
+    io_bytes1 = 0
+    io_char_bytes1 = 0
+    read_char_bytes1 = 0
+    write_char_bytes1 = 0
 
     for log_details in connection.execute(LOG_DETAILS.select().where(LOG_DETAILS.c.pid == pid).order_by(LOG_DETAILS.c.timestamp)):
         utime2 = log_details[LOG_DETAILS.c.utime]
         stime2 = log_details[LOG_DETAILS.c.stime]
-        read_count2 = log_details[LOG_DETAILS.c.read_count]
-        write_count2 = log_details[LOG_DETAILS.c.write_count]
+        read_count2 = log_details[LOG_DETAILS.c.syscr]
+        write_count2 = log_details[LOG_DETAILS.c.syscw]
         read_bytes2 = log_details[LOG_DETAILS.c.read_bytes]
         write_bytes2 = log_details[LOG_DETAILS.c.write_bytes]
+        read_char_bytes2 = log_details[LOG_DETAILS.c.rchar]
+        write_char_bytes2 = log_details[LOG_DETAILS.c.wchar]
         blkio_ticks2 = log_details[LOG_DETAILS.c.blkio_ticks]
 
         total_cpu2 = utime2 + stime2
-        kernel_cpu2 = stime2
         ios2 = read_count2 + write_count2
         io_bytes2 = read_bytes2 + write_bytes2
+        io_char_bytes2 = read_char_bytes2 + write_char_bytes2
         if total_cpu1 is not None:
-            total_cpu = int(100.0 * (total_cpu2 - total_cpu1) / tick / sample_rate)
-            kernel_cpu = int(100.0 * (kernel_cpu2 - kernel_cpu1) / tick / sample_rate)
+            total_cpu = 100.0 * (total_cpu2 - total_cpu1) / tick / sample_rate
+            user_cpu = 100.0 * (utime2 - utime1) / tick / sample_rate
+            kernel_cpu = 100.0 * (stime2 - stime1) / tick / sample_rate
             iops = ios2 - ios1
-            io_bytes = io_bytes2 - io_bytes1
+            io_bytes = float(io_bytes2 - io_bytes1) / sample_rate
+            io_char_bytes = float(io_char_bytes2 - io_char_bytes1) / sample_rate
             blkio_wait = float(blkio_ticks2 - blkio_ticks1) / tick / sample_rate
 
             connection.execute(
@@ -167,10 +179,14 @@ def calculate_values(connection, pid, details):
                 pid=pid,
                 timestamp=log_details[LOG_DETAILS.c.timestamp],
                 total_cpu=total_cpu,
+                user_cpu=user_cpu,
                 kernel_cpu=kernel_cpu,
                 vm=log_details[LOG_DETAILS.c.vsize],
                 rss=log_details[LOG_DETAILS.c.rss] * page_size,
                 iops=iops,
+                bytes_char_sec=io_char_bytes,
+                rchar=read_char_bytes2 - read_char_bytes1,
+                wchar=write_char_bytes2 - write_char_bytes1,
                 bytes_sec=io_bytes,
                 read_bytes=read_bytes2 - read_bytes1,
                 write_bytes=write_bytes2 - write_bytes1,
@@ -185,9 +201,13 @@ def calculate_values(connection, pid, details):
         write_bytes1 = write_bytes2
         blkio_ticks1 = blkio_ticks2
         total_cpu1 = total_cpu2
-        kernel_cpu1 = kernel_cpu2
+        utime1 = utime2
+        stime1 = stime2
         ios1 = ios2
         io_bytes1 = io_bytes2
+        io_char_bytes1 = io_char_bytes2
+        read_char_bytes1 = read_char_bytes2
+        write_char_bytes1 = write_char_bytes2
 
 
 def get_details(connection):
@@ -227,14 +247,11 @@ def post_process_database(database, csv_files):
     engine = create_engine('sqlite:///{0}'.format(database))
     connection = engine.connect()
     TRACE_METADATA.create_all(connection)
-    #connection.close()
 
     # Load the CSV file
     load_csv(database, csv_files)
 
     # Get the details we need
-    #engine = create_engine('sqlite:///{0}'.format(database))
-    #connection = engine.connect()
     pids = get_pids(connection)
     details = get_details(connection)
 
