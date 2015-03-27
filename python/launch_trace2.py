@@ -179,9 +179,10 @@ import sys
 from os.path import exists, join
 import time
 from datetime import datetime
-import gc
-from psutil import Process
 import resource
+
+from psutil import Process
+
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
@@ -366,7 +367,7 @@ cancelled_write_bytes: 0'''
              'softirq',
              'steal',
              'guest',
-             'guest']
+             'guest_nice']
         )
         process_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', BUFFER_SIZE_10K)
         self._csv_process_writer = csv.writer(process_file, lineterminator='\n')
@@ -386,7 +387,7 @@ cancelled_write_bytes: 0'''
              'utime',
              'stime',
              'cutime',
-             'cstime'
+             'cstime',
              'priority',
              'nice',
              'num_threads',
@@ -404,7 +405,6 @@ cancelled_write_bytes: 0'''
 
         # noinspection PyBroadException
         try:
-            gc.set_debug(gc.DEBUG_STATS)
             main_process = Process(sp.pid)
             while sp.poll() is None:
                 now = time.time()
