@@ -126,7 +126,8 @@ I_VSIZE = 22
 I_RSS = 23
 I_BLKIO_TICKS = 41
 
-
+BUFFER_SIZE_10K = 10 * 1024
+BUFFER_SIZE_100K = 100 * 1024
 TRACE_DETAILS = 'trace_details'
 STAT_DETAILS = 'stat_details'
 PROCESS_DETAILS = 'process_details'
@@ -193,7 +194,7 @@ class Trace():
                     self._set_pids.add(pid)
                 self._collect_sample(pid)
             except Exception:
-                LOG.warning('Pid {0} no longer running'.format(process.pid))
+                LOG.warning('_get_samples: Pid {0} no longer running'.format(process.pid))
 
     def _collect_sample(self, pid):
         # Catch the process stopping whilst we are sampling
@@ -217,7 +218,7 @@ write_bytes: 0
 cancelled_write_bytes: 0'''
 
         except Exception:
-            LOG.warning('Pid {0} no longer running'.format(pid))
+            LOG.warning('_collect_sample: Pid {0} no longer running'.format(pid))
             return
 
         stat_details = line_stat.split()
@@ -276,7 +277,7 @@ cancelled_write_bytes: 0'''
                              os.sysconf(os.sysconf_names['SC_CLK_TCK']),
                              resource.getpagesize()])
 
-        raw_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', BUFFER_SIZE_10K)
         self._csv_stat_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_stat_writer.writerow(
             ['timestamp',
@@ -291,7 +292,7 @@ cancelled_write_bytes: 0'''
              'guest',
              'guest']
         )
-        raw_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', BUFFER_SIZE_10K)
         self._csv_process_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_process_writer.writerow(
             ['pid',
@@ -300,7 +301,7 @@ cancelled_write_bytes: 0'''
              'cmd_line',
              'create_time']
         )
-        raw_file = open(self._get_file_name(sp.pid, LOG_DETAILS), 'w', 1)
+        raw_file = open(self._get_file_name(sp.pid, LOG_DETAILS), 'w', BUFFER_SIZE_100K)
         self._csv_log_writer = csv.writer(raw_file, lineterminator='\n')
         self._csv_log_writer.writerow(
             ['pid',
@@ -333,6 +334,7 @@ cancelled_write_bytes: 0'''
 
                 pids = [Process(sp.pid)]
                 pids.extend(main_process.children(recursive=True))
+                LOG.info('pids: {0}'.format(pids))
                 self._get_samples(pids)
 
                 time.sleep(max(1 - (time.time() - now), 0.001))
