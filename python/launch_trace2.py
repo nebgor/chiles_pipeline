@@ -213,7 +213,7 @@ class Trace():
             if self._user == 'root':
                 file_name2 = "/proc/{0}/io".format(pid)
                 with open(file_name2) as f:
-                    lines_io = f.readline()
+                    lines_io = f.readlines()
             else:
                 lines_io = '''rchar: 0
 wchar: 0
