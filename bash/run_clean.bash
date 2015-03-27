@@ -36,7 +36,7 @@ python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py bash -vx /home/
 df -h
 
 # Copy files to S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}
+python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}
 
 # Copy files to S3
 python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}
