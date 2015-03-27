@@ -277,8 +277,8 @@ cancelled_write_bytes: 0'''
                              os.sysconf(os.sysconf_names['SC_CLK_TCK']),
                              resource.getpagesize()])
 
-        raw_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', BUFFER_SIZE_10K)
-        self._csv_stat_writer = csv.writer(raw_file, lineterminator='\n')
+        stat_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', BUFFER_SIZE_10K)
+        self._csv_stat_writer = csv.writer(stat_file, lineterminator='\n')
         self._csv_stat_writer.writerow(
             ['timestamp',
              'user',
@@ -292,8 +292,8 @@ cancelled_write_bytes: 0'''
              'guest',
              'guest']
         )
-        raw_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', BUFFER_SIZE_10K)
-        self._csv_process_writer = csv.writer(raw_file, lineterminator='\n')
+        process_file = open(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', BUFFER_SIZE_10K)
+        self._csv_process_writer = csv.writer(process_file, lineterminator='\n')
         self._csv_process_writer.writerow(
             ['pid',
              'ppid',
@@ -301,8 +301,8 @@ cancelled_write_bytes: 0'''
              'cmd_line',
              'create_time']
         )
-        raw_file = open(self._get_file_name(sp.pid, LOG_DETAILS), 'w', BUFFER_SIZE_100K)
-        self._csv_log_writer = csv.writer(raw_file, lineterminator='\n')
+        log_file = open(self._get_file_name(sp.pid, LOG_DETAILS), 'w', BUFFER_SIZE_100K)
+        self._csv_log_writer = csv.writer(log_file, lineterminator='\n')
         self._csv_log_writer.writerow(
             ['pid',
              'timestamp',
@@ -340,11 +340,11 @@ cancelled_write_bytes: 0'''
                 time.sleep(max(1 - (time.time() - now), 0.001))
         except Exception:
             LOG.exception('An exception slipped through')
-
-        # Close the writers
-        self._csv_process_writer.close()
-        self._csv_stat_writer.close()
-        self._csv_log_writer.close()
+        finally:
+            # Close the writers
+            stat_file.close()
+            process_file.close()
+            log_file.close()
 
 
 def usage():
