@@ -208,6 +208,7 @@ def post_process_database(database):
 
     connection.close()
 
+
 def post_process(databases):
     for database in databases:
         if exists(database):

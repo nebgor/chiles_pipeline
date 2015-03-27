@@ -140,9 +140,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 
 
 class Trace():
-    def __init__(self, command_list, user_name, sample_rate=1):
+    def __init__(self, command_list, sample_rate=1):
+
         self._command_list = command_list
-        self._user = user_name
+        self._user = getpass.getuser()
         self._sample_rate = sample_rate
         self._set_pids = set()
         self._date_string = None
@@ -151,6 +152,10 @@ class Trace():
         self._csv_stat_writer = None
         self._csv_process_writer = None
         self._csv_log_writer = None
+        if self._user == 'root':
+            LOG.info('Running as: {0}'.format(self._user))
+        else:
+            LOG.info('Running as: {0}. IO stats will not be available unless you run as root'.format(self._user))
 
         # Create the logs directory
         LOG.info("Checking for the logs directory {0}".format(LOGS_DIR))
@@ -357,7 +362,5 @@ if __name__ == '__main__':
         usage()
         sys.exit(1)
 
-    user = getpass.getuser()
-    LOG.info('Running as: {0}'.format(user))
-    trace = Trace(sys.argv[1:], user)
+    trace = Trace(sys.argv[1:])
     trace.run()
