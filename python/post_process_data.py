@@ -27,9 +27,72 @@ Post process the sqlite database
 """
 import argparse
 from os.path import exists
-from sqlalchemy import create_engine, Table, Column, Float, Integer
-from launch_trace2 import TRACE_METADATA, PROCESS_DETAILS, TRACE_DETAILS, LOG_DETAILS
+from sqlalchemy import create_engine, Table, Column, Float, Integer, MetaData, String
 
+TRACE_METADATA = MetaData()
+LOG_DETAILS = Table(
+    'log_details',
+    TRACE_METADATA,
+    Column('log_details_id', Integer, primary_key=True),
+    Column('pid', Integer, index=True, nullable=False),
+    Column('timestamp', Float, index=True, nullable=False),
+    Column('state', String(2), nullable=False),
+    Column('utime', Integer, nullable=False),
+    Column('stime', Integer, nullable=False),
+    Column('cutime', Integer, nullable=False),
+    Column('cstime', Integer, nullable=False),
+    Column('priority', Integer, nullable=False),
+    Column('nice', Integer, nullable=False),
+    Column('num_threads', Integer, nullable=False),
+    Column('vsize', Integer, nullable=False),
+    Column('rss', Integer, nullable=False),
+    Column('blkio_ticks', Integer, nullable=False),
+    Column('rchar', Integer, nullable=False),
+    Column('wchar', Integer, nullable=False),
+    Column('syscr', Integer, nullable=False),
+    Column('syscw', Integer, nullable=False),
+    Column('read_bytes', Integer, nullable=False),
+    Column('write_bytes', Integer, nullable=False),
+    Column('cancelled_write_bytes', Integer, nullable=False),
+    sqlite_autoincrement=True
+)
+STAT_DETAILS = Table(
+    'stat_details',
+    TRACE_METADATA,
+    Column('stat_details_id', Integer, primary_key=True),
+    Column('timestamp', Float, index=True, nullable=False),
+    Column('user', Integer, nullable=False),
+    Column('nice', Integer, nullable=False),
+    Column('system', Integer, nullable=False),
+    Column('idle', Integer, nullable=False),
+    Column('iowait', Integer, nullable=False),
+    Column('irq', Integer, nullable=False),
+    Column('softirq', Integer, nullable=False),
+    Column('steal', Integer, nullable=False),
+    Column('guest', Integer, nullable=False),
+    Column('guest_nice', Integer, nullable=False),
+    sqlite_autoincrement=True
+)
+PROCESS_DETAILS = Table(
+    'process_details',
+    TRACE_METADATA,
+    Column('process_details_id', Integer, primary_key=True),
+    Column('pid', Integer, index=True, nullable=False),
+    Column('ppid', Integer, index=True, nullable=False),
+    Column('name', String(256), nullable=False),
+    Column('cmd_line', String(2000), nullable=False),
+    Column('create_time', Float, nullable=False),
+    sqlite_autoincrement=True
+)
+TRACE_DETAILS = Table(
+    'trace_details',
+    TRACE_METADATA,
+    Column('start_time', Float, nullable=False),
+    Column('cmd_line', String(2000), nullable=False),
+    Column('sample_rate', Float, nullable=False),
+    Column('tick', Integer, nullable=False),
+    Column('page_size', Integer, nullable=False)
+)
 POST_DETAILS = Table(
     'post_details',
     TRACE_METADATA,
@@ -132,10 +195,9 @@ def get_details(connection):
 
 def post_process_database(database):
     engine = create_engine('sqlite:///{0}'.format(database))
-    POST_DETAILS.drop(engine, checkfirst=True)
-    POST_DETAILS.create(engine, checkfirst=False)
-
     connection = engine.connect()
+    TRACE_METADATA.create_all(connection, checkfirst=True)
+
     pids = get_pids(connection)
     details = get_details(connection)
 

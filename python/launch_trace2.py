@@ -99,7 +99,8 @@
       exit_code     the thread's exit_code in the form reported by the waitpid system call
 
 """
-
+import csv
+import getpass
 import logging
 import os
 from os import makedirs
@@ -110,7 +111,8 @@ import time
 from datetime import datetime
 from psutil import Process
 import resource
-from sqlalchemy import create_engine, MetaData, Table, Column, Float, Integer, String
+
+TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 I_STATE = 2
 I_UTIME = 13
@@ -124,71 +126,11 @@ I_VSIZE = 22
 I_RSS = 23
 I_BLKIO_TICKS = 41
 
-TRACE_METADATA = MetaData()
-LOG_DETAILS = Table(
-    'log_details',
-    TRACE_METADATA,
-    Column('log_details_id', Integer, primary_key=True),
-    Column('pid', Integer, index=True, nullable=False),
-    Column('timestamp', Float, index=True, nullable=False),
-    Column('state', String(2), nullable=False),
-    Column('utime', Integer, nullable=False),
-    Column('stime', Integer, nullable=False),
-    Column('cutime', Integer, nullable=False),
-    Column('cstime', Integer, nullable=False),
-    Column('priority', Integer, nullable=False),
-    Column('nice', Integer, nullable=False),
-    Column('num_threads', Integer, nullable=False),
-    Column('vsize', Integer, nullable=False),
-    Column('rss', Integer, nullable=False),
-    Column('blkio_ticks', Integer, nullable=False),
-    Column('rchar', Integer, nullable=False),
-    Column('wchar', Integer, nullable=False),
-    Column('syscr', Integer, nullable=False),
-    Column('syscw', Integer, nullable=False),
-    Column('read_bytes', Integer, nullable=False),
-    Column('write_bytes', Integer, nullable=False),
-    Column('cancelled_write_bytes', Integer, nullable=False),
-    sqlite_autoincrement=True
-)
-STAT_DETAILS = Table(
-    'stat_details',
-    TRACE_METADATA,
-    Column('stat_details_id', Integer, primary_key=True),
-    Column('timestamp', Float, index=True, nullable=False),
-    Column('user', Integer, nullable=False),
-    Column('nice', Integer, nullable=False),
-    Column('system', Integer, nullable=False),
-    Column('idle', Integer, nullable=False),
-    Column('iowait', Integer, nullable=False),
-    Column('irq', Integer, nullable=False),
-    Column('softirq', Integer, nullable=False),
-    Column('steal', Integer, nullable=False),
-    Column('guest', Integer, nullable=False),
-    Column('guest_nice', Integer, nullable=False),
-    sqlite_autoincrement=True
-)
-PROCESS_DETAILS = Table(
-    'process_details',
-    TRACE_METADATA,
-    Column('process_details_id', Integer, primary_key=True),
-    Column('pid', Integer, index=True, nullable=False),
-    Column('ppid', Integer, index=True, nullable=False),
-    Column('name', String(256), nullable=False),
-    Column('cmd_line', String(2000), nullable=False),
-    Column('create_time', Float, nullable=False),
-    sqlite_autoincrement=True
-)
-TRACE_DETAILS = Table(
-    'trace_details',
-    TRACE_METADATA,
-    Column('start_time', Float, nullable=False),
-    Column('cmd_line', String(2000), nullable=False),
-    Column('sample_rate', Float, nullable=False),
-    Column('tick', Integer, nullable=False),
-    Column('page_size', Integer, nullable=False)
-)
 
+TRACE_DETAILS = 'trace_details'
+STAT_DETAILS = 'stat_details'
+PROCESS_DETAILS = 'process_details'
+LOG_DETAILS = 'log_details'
 FSTAT = '/proc/stat'
 EPOCH = datetime(1970, 1, 1)
 LOGS_DIR = '/tmp/trace_logs'
@@ -197,12 +139,17 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 
 
 class Trace():
-    def __init__(self, command_list, sample_rate=1):
+    def __init__(self, command_list, user_name, sample_rate=1):
         self._command_list = command_list
+        self._user = user_name
         self._sample_rate = sample_rate
-        self._connection = None
         self._set_pids = set()
-        self._insert_log_details = LOG_DETAILS.insert()
+        self._date_string = None
+        self._start_time = None
+        self._timestamp = None
+        self._csv_stat_writer = None
+        self._csv_process_writer = None
+        self._csv_log_writer = None
 
         # Create the logs directory
         LOG.info("Checking for the logs directory {0}".format(LOGS_DIR))
@@ -211,50 +158,44 @@ class Trace():
             makedirs(LOGS_DIR)
 
     def _get_samples(self, list_processes):
-        transaction = self._connection.begin()
+        self._time_stamp = datetime.now().strftime(TIMESTAMP_FORMAT)
 
         # Read the data from /proc/stat for the system
         with open(FSTAT, 'r') as file_stat:
             first_line = file_stat.readline()
         elements = first_line.split()
-        time_stamp = (datetime.now() - EPOCH).total_seconds()
-        self._connection.execute(
-            STAT_DETAILS.insert(),
-            timestamp=time_stamp,
-            user=elements[1],
-            nice=elements[2],
-            system=elements[3],
-            idle=elements[4],
-            iowait=elements[5],
-            irq=elements[6],
-            softirq=elements[7],
-            steal=elements[8],
-            guest=elements[9],
-            guest_nice=elements[10]
-        )
 
         # Now do the individual processes
+        self._csv_stat_writer.writerow(
+            [self._timestamp,
+             elements[1],
+             elements[2],
+             elements[3],
+             elements[4],
+             elements[5],
+             elements[6],
+             elements[7],
+             elements[8],
+             elements[9],
+             elements[10]]
+        )
         for process in list_processes:
             # noinspection PyBroadException
             try:
                 pid = process.pid
                 if pid not in self._set_pids:
-                    self._connection.execute(
-                        PROCESS_DETAILS.insert(),
-                        pid=pid,
-                        ppid=process.ppid(),
-                        name=process.name(),
-                        cmd_line=' '.join(process.cmdline()),
-                        create_time=process.create_time(),
-                    )
+                    row = [pid,
+                           process.ppid(),
+                           process.name(),
+                           ' '.join(process.cmdline()),
+                           datetime.fromtimestamp(process.create_time()).strftime(TIMESTAMP_FORMAT)]
+                    self._csv_process_writer.writerow(row)
                     self._set_pids.add(pid)
-                self._collect_sample(pid, time_stamp)
+                self._collect_sample(pid)
             except Exception:
                 LOG.warning('Pid {0} no longer running'.format(process.pid))
 
-        transaction.commit()
-
-    def _collect_sample(self, pid, time_stamp):
+    def _collect_sample(self, pid):
         # Catch the process stopping whilst we are sampling
         # noinspection PyBroadException
         try:
@@ -262,9 +203,12 @@ class Trace():
             with open(file_name1) as f:
                 line1 = f.readline()
 
-            file_name2 = "/proc/{0}/io".format(pid)
-            with open(file_name2) as f:
-                line2 = f.readline()
+            if self._user == 'root':
+                file_name2 = "/proc/{0}/io".format(pid)
+                with open(file_name2) as f:
+                    line2 = f.readline()
+            else:
+                line2 = '-1 -1 -1 -1 -1 -1 -1'
 
         except Exception:
             LOG.warning('Pid {0} no longer running'.format(pid))
@@ -276,53 +220,103 @@ class Trace():
         if len(stat_details) < I_BLKIO_TICKS or len(io_details) < 6:
             return
 
-        self._connection.execute(
-            self._insert_log_details,
-            pid=pid,
-            timestamp=time_stamp,
-            state=stat_details[I_STATE],
-            utime=stat_details[I_UTIME],
-            stime=stat_details[I_STIME],
-            cutime=stat_details[I_CUTIME],
-            cstime=stat_details[I_CSTIME],
-            priority=stat_details[I_PRIORITY],
-            nice=stat_details[I_NICE],
-            num_threads=stat_details[I_NUM_THREADS],
-            vsize=stat_details[I_VSIZE],
-            rss=stat_details[I_RSS],
-            blkio_ticks=stat_details[I_BLKIO_TICKS],
-            rchar=io_details[0],
-            wchar=io_details[1],
-            syscr=io_details[2],
-            syscw=io_details[3],
-            read_bytes=io_details[4],
-            write_bytes=io_details[5],
-            cancelled_write_bytes=io_details[6]
+        self._csv_log_writer.writerow(
+            [pid,
+             self._timestamp,
+             stat_details[I_STATE],
+             stat_details[I_UTIME],
+             stat_details[I_STIME],
+             stat_details[I_CUTIME],
+             stat_details[I_CSTIME],
+             stat_details[I_PRIORITY],
+             stat_details[I_NICE],
+             stat_details[I_NUM_THREADS],
+             stat_details[I_VSIZE],
+             stat_details[I_RSS],
+             stat_details[I_BLKIO_TICKS],
+             io_details[0],
+             io_details[1],
+             io_details[2],
+             io_details[3],
+             io_details[4],
+             io_details[5],
+             io_details[6]]
         )
+
+    def _get_file_name(self, pid, log_type):
+        return join(LOGS_DIR, '{0}_{1}_{2}.csv'.format(self._date_string, pid, log_type))
 
     def run(self):
         # Get the start time
         start_time = datetime.now()
+        self._date_string = start_time.strftime('%Y%m%d%H%M%S')
+        timestamp = start_time.strftime(TIMESTAMP_FORMAT)
 
         # Spin up the main process
         sp = subprocess.Popen(self._command_list)
 
-        # Open the sqlite database
-        sqlite_file = join(LOGS_DIR, '{0}_{1}_log.db'.format(start_time.strftime('%Y%m%d%H%M%S'), sp.pid))
-        engine = create_engine('sqlite:///{0}'.format(sqlite_file))
-        self._connection = engine.connect()
-        TRACE_METADATA.create_all(self._connection)
+        # Open trace file
+        trace_details_file_name = self._get_file_name(sp.pid, TRACE_DETAILS)
+        with open(trace_details_file_name, 'w', 1) as trace_file:
+            writer = csv.writer(trace_file, lineterminator='\n')
+            writer.writerow(['start_time', 'cmd_line', 'sample_rate', 'tick', 'page_size'])
+            writer.writerow([timestamp,
+                             ' '.join(self._command_list),
+                             self._sample_rate,
+                             os.sysconf(os.sysconf_names['SC_CLK_TCK']),
+                             resource.getpagesize()])
 
-        # Store the trace details
-        self._connection.execute(
-            TRACE_DETAILS.insert(),
-            start_time=(start_time - EPOCH).total_seconds(),
-            cmd_line=' '.join(self._command_list),
-            sample_rate=self._sample_rate,
-            tick=os.sysconf(os.sysconf_names['SC_CLK_TCK']),
-            page_size=resource.getpagesize()
+        raw_file = csv.writer(self._get_file_name(sp.pid, STAT_DETAILS), 'w', 1)
+        self._csv_stat_writer = csv.writer(raw_file, lineterminator='\n')
+        self._csv_stat_writer.writerow(
+            ['timestamp',
+             'user',
+             'nice',
+             'system',
+             'idle',
+             'iowait',
+             'irq',
+             'softirq',
+             'steal',
+             'guest',
+             'guest']
         )
 
+        raw_file = csv.writer(self._get_file_name(sp.pid, PROCESS_DETAILS), 'w', 1)
+        self._csv_process_writer = csv.writer(raw_file, lineterminator='\n')
+        self._csv_process_writer.writerow(
+            ['pid',
+             'ppid',
+             'name',
+             'cmd_line',
+             'create_time']
+        )
+        raw_file = csv.writer(self._get_file_name(sp.pid, LOG_DETAILS), 'w', 1)
+        self._csv_log_writer = csv.writer(raw_file, lineterminator='\n')
+        self._csv_log_writer.writerow(
+            ['pid',
+             'timestamp',
+             'state',
+             'utime',
+             'stime',
+             'cutime',
+             'cstime'
+             'priority',
+             'nice',
+             'num_threads',
+             'vsize',
+             'rss',
+             'blkio_ticks',
+             'rchar',
+             'wchar',
+             'syscr',
+             'syscw',
+             'read_bytes',
+             'write_bytes',
+             'cancelled_write_bytes']
+        )
+
+        # noinspection PyBroadException
         try:
             main_process = Process(sp.pid)
             while sp.poll() is None:
@@ -333,8 +327,13 @@ class Trace():
                 self._get_samples(pids)
 
                 time.sleep(max(1 - (time.time() - now), 0.001))
-        finally:
-            self._connection.close()
+        except Exception:
+            LOG.exception('An exception slipped through')
+
+        # Close the writers
+        self._csv_process_writer.close()
+        self._csv_stat_writer.close()
+        self._csv_log_writer.close()
 
 
 def usage():
@@ -347,5 +346,7 @@ if __name__ == '__main__':
         usage()
         sys.exit(1)
 
-    trace = Trace(sys.argv[1:])
+    user = getpass.getuser()
+    LOG.info('Running as: {0}', user)
+    trace = Trace(sys.argv[1:], user)
     trace.run()
