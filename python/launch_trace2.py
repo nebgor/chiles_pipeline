@@ -98,6 +98,76 @@
       env_end       address below which program environment is placed
       exit_code     the thread's exit_code in the form reported by the waitpid system call
 
+/proc/{PID}/io - accessable only by root
+Description
+-----------
+
+rchar
+-----
+
+I/O counter: chars read
+The number of bytes which this task has caused to be read from storage. This
+is simply the sum of bytes which this process passed to read() and pread().
+It includes things like tty IO and it is unaffected by whether or not actual
+physical disk IO was required (the read might have been satisfied from
+pagecache)
+
+
+wchar
+-----
+
+I/O counter: chars written
+The number of bytes which this task has caused, or shall cause to be written
+to disk. Similar caveats apply here as with rchar.
+
+
+syscr
+-----
+
+I/O counter: read syscalls
+Attempt to count the number of read I/O operations, i.e. syscalls like read()
+and pread().
+
+
+syscw
+-----
+
+I/O counter: write syscalls
+Attempt to count the number of write I/O operations, i.e. syscalls like
+write() and pwrite().
+
+
+read_bytes
+----------
+
+I/O counter: bytes read
+Attempt to count the number of bytes which this process really did cause to
+be fetched from the storage layer. Done at the submit_bio() level, so it is
+accurate for block-backed filesystems. <please add status regarding NFS and
+CIFS at a later time>
+
+
+write_bytes
+-----------
+
+I/O counter: bytes written
+Attempt to count the number of bytes which this process caused to be sent to
+the storage layer. This is done at page-dirtying time.
+
+
+cancelled_write_bytes
+---------------------
+
+The big inaccuracy here is truncate. If a process writes 1MB to a file and
+then deletes the file, it will in fact perform no writeout. But it will have
+been accounted as having caused 1MB of write.
+In other words: The number of bytes which this process caused to not happen,
+by truncating pagecache. A task can cause "negative" IO too. If this task
+truncates some dirty pagecache, some IO which another task has been accounted
+for (in its write_bytes) will not be happening. We _could_ just subtract that
+from the truncating task's write_bytes, but there is information loss in doing
+that.
+
 """
 import csv
 import getpass

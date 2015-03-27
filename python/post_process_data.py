@@ -139,16 +139,14 @@ def calculate_values(connection, pid, details):
     for log_details in connection.execute(LOG_DETAILS.select().where(LOG_DETAILS.c.pid == pid).order_by(LOG_DETAILS.c.timestamp)):
         utime2 = log_details[LOG_DETAILS.c.utime]
         stime2 = log_details[LOG_DETAILS.c.stime]
-        cutime2 = log_details[LOG_DETAILS.c.cutime]
-        cstime2 = log_details[LOG_DETAILS.c.cstime]
         read_count2 = log_details[LOG_DETAILS.c.read_count]
         write_count2 = log_details[LOG_DETAILS.c.write_count]
         read_bytes2 = log_details[LOG_DETAILS.c.read_bytes]
         write_bytes2 = log_details[LOG_DETAILS.c.write_bytes]
         blkio_ticks2 = log_details[LOG_DETAILS.c.blkio_ticks]
 
-        total_cpu2 = utime2 + stime2 + cutime2 + cstime2
-        kernel_cpu2 = stime2 + cstime2
+        total_cpu2 = utime2 + stime2
+        kernel_cpu2 = stime2
         ios2 = read_count2 + write_count2
         io_bytes2 = read_bytes2 + write_bytes2
         if total_cpu1 is not None:
