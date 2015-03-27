@@ -229,10 +229,9 @@ cancelled_write_bytes: 0'''
 
         stat_details = line_stat.split()
         io_details = []
-        i = 0
         for line in lines_io:
-            io_details[i] = line.split()[1]
-            i += 1
+            if len(line) > 0:
+                io_details.append(line.split()[1])
 
         if len(stat_details) < I_BLKIO_TICKS or len(io_details) < 6:
             return
