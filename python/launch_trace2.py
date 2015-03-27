@@ -164,7 +164,7 @@ class Trace():
             makedirs(LOGS_DIR)
 
     def _get_samples(self, list_processes):
-        self._time_stamp = datetime.now().strftime(TIMESTAMP_FORMAT)
+        self._timestamp = datetime.now().strftime(TIMESTAMP_FORMAT)
 
         # Read the data from /proc/stat for the system
         with open(FSTAT, 'r') as file_stat:
