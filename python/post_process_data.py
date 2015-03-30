@@ -97,12 +97,13 @@ TRACE_DETAILS = Table(
     Column('cmd_line', String(2000), nullable=False),
     Column('sample_rate', Float, nullable=False),
     Column('tick', Integer, nullable=False),
-    Column('page_size', Integer, nullable=False)
+    Column('page_size', Integer, nullable=False),
+    Column('cpu_count', Integer, nullable=False)
 )
-POST_DETAILS = Table(
-    'post_details',
+LOG_DETAILS_PP = Table(
+    'log_details_pp',
     TRACE_METADATA,
-    Column('post_details_id', Integer, primary_key=True),
+    Column('log_details_pp_id', Integer, primary_key=True),
     Column('pid', Integer, index=True, nullable=False),
     Column('timestamp', String(40), index=True, nullable=False),
     Column('total_cpu', Float, nullable=False),
@@ -122,6 +123,23 @@ POST_DETAILS = Table(
     Column('blkio_wait', Float, nullable=False),
     sqlite_autoincrement=True
 )
+STAT_DETAILS_PP = Table(
+    'stat_details_pp',
+    TRACE_METADATA,
+    Column('stat_details_pp_id', Integer, primary_key=True),
+    Column('timestamp', String(40), index=True, nullable=False),
+    Column('user', Integer, nullable=False),
+    Column('nice', Integer, nullable=False),
+    Column('system', Integer, nullable=False),
+    Column('idle', Integer, nullable=False),
+    Column('iowait', Integer, nullable=False),
+    Column('irq', Integer, nullable=False),
+    Column('softirq', Integer, nullable=False),
+    Column('steal', Integer, nullable=False),
+    Column('guest', Integer, nullable=False),
+    Column('guest_nice', Integer, nullable=False),
+    sqlite_autoincrement=True
+)
 
 
 def get_pids(connection):
@@ -131,8 +149,8 @@ def get_pids(connection):
     return pids
 
 
-def calculate_values(connection, pid, details):
-    insert = POST_DETAILS.insert()
+def calculate_values_log(connection, pid, details):
+    insert = LOG_DETAILS_PP.insert()
     sample_rate = details[0]
     tick = details[1]
     page_size = details[2]
@@ -221,8 +239,8 @@ def load_csv(database, csv_files):
     for csv_file in csv_files:
         sql = None
         if csv_file.endswith('_trace_details.csv'):
-            sql = '''INSERT INTO trace_details (start_time, cmd_line, sample_rate, tick, page_size)
-VALUES (:start_time, :cmd_line, :sample_rate, :tick, :page_size)'''
+            sql = '''INSERT INTO trace_details (start_time, cmd_line, sample_rate, tick, page_size, cpu_count)
+VALUES (:start_time, :cmd_line, :sample_rate, :tick, :page_size, :cpu_count)'''
         elif csv_file.endswith('_log_details.csv'):
             sql = '''INSERT INTO log_details (pid, timestamp, state, utime, stime, cutime, cstime, priority, nice, num_threads, vsize, rss, blkio_ticks, rchar, wchar, syscr, syscw, read_bytes, write_bytes, cancelled_write_bytes)
 VALUES (:pid, :timestamp, :state, :utime, :stime, :cutime, :cstime, :priority, :nice, :num_threads, :vsize, :rss, :blkio_ticks, :rchar, :wchar, :syscr, :syscw, :read_bytes, :write_bytes, :cancelled_write_bytes)'''
@@ -242,6 +260,73 @@ VALUES (:pid, :ppid, :name, :cmd_line, :create_time)'''
                     cursor.executemany(sql, csv_reader)
 
 
+def calculate_values_stat(connection, details):
+    insert = STAT_DETAILS_PP.insert()
+    sample_rate = details[0]
+    tick = details[1]
+
+    user1 = None
+    nice1 = None
+    system1 = None
+    idle1 = None
+    iowait1 = None
+    irq1 = None
+    softirq1 = None
+    steal1 = None
+    guest1 = None
+    guest_nice1 = None
+
+    for stat_details in connection.execute(STAT_DETAILS.select().order_by(STAT_DETAILS.c.timestamp)):
+        user2 = stat_details[STAT_DETAILS.c.user]
+        nice2 = stat_details[STAT_DETAILS.c.nice]
+        system2 = stat_details[STAT_DETAILS.c.system]
+        idle2 = stat_details[STAT_DETAILS.c.idle]
+        iowait2 = stat_details[STAT_DETAILS.c.iowait]
+        irq2 = stat_details[STAT_DETAILS.c.irq]
+        softirq2 = stat_details[STAT_DETAILS.c.softirq]
+        steal2 = stat_details[STAT_DETAILS.c.steal]
+        guest2 = stat_details[STAT_DETAILS.c.guest]
+        guest_nice2 = stat_details[STAT_DETAILS.c.guest_nice]
+        timestamp = stat_details[STAT_DETAILS.c.timestamp]
+
+        if nice1 is not None:
+            user = 100.0 * (user2 - user1) / tick / sample_rate
+            nice = 100.0 * (nice2 - nice1) / tick / sample_rate
+            system = 100.0 * (system2 - system1) / tick / sample_rate
+            idle = 100.0 * (idle2 - idle1) / tick / sample_rate
+            iowait = 100.0 * (iowait2 - iowait1) / tick / sample_rate
+            irq = 100.0 * (irq2 - irq1) / tick / sample_rate
+            softirq = 100.0 * (softirq2 - softirq1) / tick / sample_rate
+            steal = 100.0 * (steal2 - steal1) / tick / sample_rate
+            guest = 100.0 * (guest2 - guest1) / tick / sample_rate
+            guest_nice = 100.0 * (guest_nice2 - guest_nice1) / tick / sample_rate
+
+            connection.execute(
+                insert,
+                timestamp=timestamp,
+                user=user,
+                nice=nice,
+                system=system,
+                idle=idle,
+                iowait=iowait,
+                irq=irq,
+                softirq=softirq,
+                steal=steal,
+                guest=guest,
+                guest_nice=guest_nice)
+
+        user1 = user2
+        nice1 = nice2
+        system1 = system2
+        idle1 = idle2
+        iowait1 = iowait2
+        irq1 = irq2
+        softirq1 = softirq2
+        steal1 = steal2
+        guest1 = guest2
+        guest_nice1 = guest_nice2
+
+
 def post_process_database(database, csv_files):
     # Create the database
     engine = create_engine('sqlite:///{0}'.format(database))
@@ -257,7 +342,10 @@ def post_process_database(database, csv_files):
 
     for pid in pids:
         with connection.begin():
-            calculate_values(connection, pid, details)
+            calculate_values_log(connection, pid, details)
+
+    with connection.begin():
+        calculate_values_stat(connection, details)
 
     connection.close()
 

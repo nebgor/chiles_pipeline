@@ -181,7 +181,7 @@ import time
 from datetime import datetime
 import resource
 
-from psutil import Process
+from psutil import Process, cpu_count
 
 
 TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
@@ -347,12 +347,13 @@ cancelled_write_bytes: 0'''
         trace_details_file_name = self._get_file_name(sp.pid, TRACE_DETAILS)
         with open(trace_details_file_name, 'w', 1) as trace_file:
             writer = csv.writer(trace_file, lineterminator='\n')
-            writer.writerow(['start_time', 'cmd_line', 'sample_rate', 'tick', 'page_size'])
+            writer.writerow(['start_time', 'cmd_line', 'sample_rate', 'tick', 'page_size', 'cpu_count'])
             writer.writerow([timestamp,
                              ' '.join(self._command_list),
                              self._sample_rate,
                              os.sysconf(os.sysconf_names['SC_CLK_TCK']),
-                             resource.getpagesize()])
+                             resource.getpagesize(),
+                             cpu_count()])
 
         stat_file = open(self._get_file_name(sp.pid, STAT_DETAILS), 'w', BUFFER_SIZE_10K)
         self._csv_stat_writer = csv.writer(stat_file, lineterminator='\n')
