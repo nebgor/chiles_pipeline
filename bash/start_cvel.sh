@@ -63,6 +63,6 @@ export USER=root
 #casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 
 mkdir -p /tmp/trace_logs
-/home/ec2-user/chiles_pipeline/bash/ioprofiler-trace.sh -o /tmp/trace_logs/io3.log casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
+bash -xv /home/ec2-user/chiles_pipeline/bash/ioprofiler-trace.sh -o /tmp/trace_logs/io3.log casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_cvel.py
 
 #done

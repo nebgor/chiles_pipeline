@@ -1,4 +1,4 @@
-#!/bin/bash -vx
+#!/bin/bash
 DEFAULT_OUTFILE=ioproftrace.log
 
 function help() {
