@@ -7,9 +7,8 @@
 #PBS -j oe
 cd ~
 
-#module load python
-#module load openssl
+module load python
+module load openssl
 
-#source /home/kevin/virt_env/chiles_pipeline/bin/activate
-#/home/kevin/virt_env/chiles_pipeline/bin/python /home/kevin/chiles_pipeline/python/copy_makecube_input_pleiades.py pbs ${PBS_ARRAYID}
-python /home/kevin/chiles_pipeline/python/copy_makecube_input_pleiades.py pbs ${PBS_ARRAYID}
+source /home/kevin/virt_env/chiles_pipeline/bin/activate
+/home/kevin/virt_env/chiles_pipeline/bin/python /home/kevin/chiles_pipeline/python/copy_makecube_input_pleiades.py pbs ${PBS_ARRAYID}

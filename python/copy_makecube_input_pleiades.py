@@ -34,7 +34,6 @@ from contextlib import closing
 from os.path import basename, exists, join
 import sys
 
-from echo import echo
 from pleiades_common import get_expect_combinations
 from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
@@ -44,42 +43,7 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
-DIRECTORY = '/mnt/hidata/kevin/split_vis'
-
-
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, key, tar_file, directory):
-        self._key = key
-        self._tar_file = tar_file
-        self._directory = directory
-
-    def __call__(self):
-        """
-        Actually run the job
-        """
-        if self._tar_file.endswith('.tar.gz'):
-            image_name = basename(self._tar_file).replace('.tar.gz', '')
-        else:
-            image_name = basename(self._tar_file).replace('.tar', '')
-        directory = join(self._directory, image_name)
-        # noinspection PyBroadException
-        try:
-            LOG.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, directory))
-            if os.path.exists(directory):
-                LOG.info('directory already exists: {0}'.format(directory))
-            else:
-                os.makedirs(directory)
-                self._key.get_contents_to_filename(self._tar_file)
-                with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('.tar.gz') else "r:")) as tar:
-                    tar.extractall(path=directory)
-
-                os.remove(self._tar_file)
-        except Exception:
-            LOG.exception('Task died')
-            shutil.rmtree(directory, ignore_errors=True)
+DIRECTORY = '/mnt/hidata/kevin/images'
 
 
 def copy_files(directory_name):
@@ -130,6 +94,7 @@ def command_pbs(args):
 
 
 def command_list(args):
+    LOG.info('{0}'.format(args))
     expected_combinations = get_expect_combinations()
     count = 0
     for combination in expected_combinations:

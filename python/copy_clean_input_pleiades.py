@@ -44,6 +44,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
 DIRECTORY = '/mnt/hidata/kevin/split_vis'
 
+
 def copy_files(frequency_id):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
@@ -89,6 +90,7 @@ def command_pbs(args):
 
 
 def command_list(args):
+    LOG.info('{0}'.format(args))
     expected_combinations = get_expect_combinations()
     count = 0
     for combination in expected_combinations:
