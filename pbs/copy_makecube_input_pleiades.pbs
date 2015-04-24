@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -N pbs-copy_clean_input_pleiades
+#PBS -N pbs-copy_makecube_input_pleiades
 #PBS -l nodes=1:ppn=1:compute,walltime=2:00:00
 #PBS -t 0-120
 #PBS -q usmall2
@@ -8,4 +8,4 @@
 cd ~
 
 source /home/kevin/virt_env/chiles_pipeline/bin/activate
-/home/kevin/virt_env/chiles_pipeline/bin/python /home/kevin/chiles_pipeline/python/copy_clean_input_pleiades.py pbs ${PBS_ARRAYID}
+/home/kevin/virt_env/chiles_pipeline/bin/python /home/kevin/chiles_pipeline/python/copy_makecube_input_pleiades.py pbs ${PBS_ARRAYID}

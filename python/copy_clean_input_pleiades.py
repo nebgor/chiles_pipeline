@@ -28,21 +28,21 @@ Copy the CVEL output from S3 so we can run clean on it
 import argparse
 from contextlib import closing
 import logging
-import multiprocessing
 import os
 from os.path import join
 import shutil
 import sys
 import tarfile
+from pleiades_common import get_expect_combinations
 
-from settings_file import CHILES_BUCKET_NAME, FREQUENCY_GROUPS
+from settings_file import CHILES_BUCKET_NAME
 from s3_helper import S3Helper
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 
 LOG.info('PYTHONPATH = {0}'.format(sys.path))
-
+DIRECTORY = '/mnt/hidata/kevin/split_vis'
 
 def copy_files(frequency_id):
     s3_helper = S3Helper()
@@ -54,7 +54,7 @@ def copy_files(frequency_id):
         # Ignore the key
         if key.key.endswith('/data.tar.gz') or key.key.endswith('/data.tar'):
             elements = key.key.split('/')
-            directory = '/mnt/hidata/kevin/split_vis/{0}/'.format(elements[2])
+            directory = '{1}/{0}/'.format(elements[2], DIRECTORY)
 
             # Queue the copy of the file
             tar_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
@@ -81,7 +81,7 @@ def copy_files(frequency_id):
 
 
 def command_pbs(args):
-    # The galaxy id is the array id
+    # The id is the array id
     array_id = args.array_id
 
     expected_combinations = get_expect_combinations()
@@ -94,11 +94,6 @@ def command_list(args):
     for combination in expected_combinations:
         LOG.info('{0} - {1}'.format(count, combination))
         count += 1
-
-
-def get_expect_combinations():
-    expected_combinations = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS]
-    return expected_combinations
 
 
 def main():
