@@ -27,6 +27,7 @@ Copy the CVEL output from S3 so we can run clean on it
 """
 import argparse
 from contextlib import closing
+import logging
 import multiprocessing
 import os
 from os.path import join
@@ -34,92 +35,85 @@ import shutil
 import sys
 import tarfile
 
-from common import Consumer, LOGGER
 from settings_file import CHILES_BUCKET_NAME, FREQUENCY_GROUPS
 from s3_helper import S3Helper
 
+LOG = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)-15s:' + logging.BASIC_FORMAT)
 
-LOGGER.info('PYTHONPATH = {0}'.format(sys.path))
-
-
-class Task(object):
-    """
-    The actual task
-    """
-    def __init__(self, key, tar_file, directory, frequency_id):
-        self._key = key
-        self._tar_file = tar_file
-        self._directory = directory
-        self._frequency_id = frequency_id
-
-    def __call__(self):
-        """
-        Actually run the job
-        """
-        corrected_path = join(self._directory, self._frequency_id)
-        # noinspection PyBroadException
-        try:
-            LOGGER.info('key: {0}, tar_file: {1}, directory: {2}, frequency_id: {3}'.format(
-                self._key.key,
-                self._tar_file,
-                self._directory,
-                self._frequency_id))
-            if os.path.exists(corrected_path):
-                LOGGER.info('Corrected_path already exists: {0}'.format(corrected_path))
-            else:
-                os.makedirs(corrected_path)
-                self._key.get_contents_to_filename(self._tar_file)
-                with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('tar.gz') else "r:")) as tar:
-                    tar.extractall(path=corrected_path)
-
-                os.remove(self._tar_file)
-        except Exception:
-            LOGGER.exception('Task died')
-            shutil.rmtree(corrected_path, ignore_errors=True)
+LOG.info('PYTHONPATH = {0}'.format(sys.path))
 
 
-def copy_files(frequency_id, processes):
+def copy_files(frequency_id):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
-    LOGGER.info('Scanning bucket: {0}, frequency_id: {1}'.format(bucket, frequency_id))
-
-    # Create the queue
-    queue = multiprocessing.JoinableQueue()
-
-    # Start the consumers
-    for x in range(processes):
-        consumer = Consumer(queue)
-        consumer.start()
+    LOG.info('Scanning bucket: {0}, frequency_id: {1}'.format(bucket, frequency_id))
 
     for key in bucket.list(prefix='CVEL/{0}'.format(frequency_id)):
-        LOGGER.info('Checking {0}'.format(key.key))
+        LOG.info('Checking {0}'.format(key.key))
         # Ignore the key
         if key.key.endswith('/data.tar.gz') or key.key.endswith('/data.tar'):
             elements = key.key.split('/')
             directory = '/mnt/hidata/kevin/split_vis/{0}/'.format(elements[2])
 
             # Queue the copy of the file
-            temp_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
-            queue.put(Task(key, temp_file, directory, frequency_id))
+            tar_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
+            corrected_path = join(directory, frequency_id)
+            # noinspection PyBroadException
+            try:
+                LOG.info('key: {0}, tar_file: {1}, directory: {2}, frequency_id: {3}'.format(
+                    key.key,
+                    tar_file,
+                    directory,
+                    frequency_id))
+                if os.path.exists(corrected_path):
+                    LOG.info('Corrected_path already exists: {0}'.format(corrected_path))
+                else:
+                    os.makedirs(corrected_path)
+                    key.get_contents_to_filename(tar_file)
+                    with closing(tarfile.open(tar_file, "r:gz" if tar_file.endswith('tar.gz') else "r:")) as tar:
+                        tar.extractall(path=corrected_path)
 
-    # Add a poison pill to shut things down
-    for x in range(processes):
-        queue.put(None)
+                    os.remove(tar_file)
+            except Exception:
+                LOG.exception('Task died')
+                shutil.rmtree(corrected_path, ignore_errors=True)
 
-    # Wait for the queue to terminate
-    queue.join()
+
+def command_pbs(args):
+    # The galaxy id is the array id
+    array_id = args.array_id
+
+    expected_combinations = get_expect_combinations()
+    copy_files(expected_combinations[array_id])
+
+
+def command_list(args):
+    expected_combinations = get_expect_combinations()
+    count = 0
+    for combination in expected_combinations:
+        LOG.info('{0} - {1}'.format(count, combination))
+        count += 1
+
+
+def get_expect_combinations():
+    expected_combinations = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS]
+    return expected_combinations
 
 
 def main():
     parser = argparse.ArgumentParser('Copy the CVEL output from S3')
-    parser.add_argument('-p', '--processes', type=int, default=1, help='the number of processes to run')
+    subparsers = parser.add_subparsers()
 
-    args = vars(parser.parse_args())
-    processes = args['processes']
-    expected_combinations = ['vis_{0}~{1}'.format(frequency[0], frequency[1]) for frequency in FREQUENCY_GROUPS ]
+    parser_pbs = subparsers.add_parser('pbs', help='pbs help')
+    parser_pbs.add_argument('array_id', type=int, help='the array id from the PDS job')
+    parser_pbs.set_defaults(func=command_pbs)
 
-    for frequency_id in expected_combinations:
-        copy_files(frequency_id, processes)
+    parser_galaxy = subparsers.add_parser('list', help='list help')
+    parser_galaxy.set_defaults(func=command_list)
+
+    args = parser.parse_args()
+    args.func(args)
 
 if __name__ == "__main__":
     main()
