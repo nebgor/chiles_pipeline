@@ -65,13 +65,15 @@ class Task(object):
         # noinspection PyBroadException
         try:
             LOGGER.info('key: {0}, tar_file: {1}, directory: {2}'.format(self._key.key, self._tar_file, directory))
-            if not os.path.exists(directory):
+            if os.path.exists(directory):
+                LOGGER.info('directory already exists: {0}'.format(directory))
+            else:
                 os.makedirs(directory)
-            self._key.get_contents_to_filename(self._tar_file)
-            with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('.tar.gz') else "r:")) as tar:
-                tar.extractall(path=directory)
+                self._key.get_contents_to_filename(self._tar_file)
+                with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('.tar.gz') else "r:")) as tar:
+                    tar.extractall(path=directory)
 
-            os.remove(self._tar_file)
+                os.remove(self._tar_file)
         except Exception:
             LOGGER.exception('Task died')
             shutil.rmtree(directory, ignore_errors=True)

@@ -64,13 +64,15 @@ class Task(object):
                 self._tar_file,
                 self._directory,
                 self._frequency_id))
-            if not os.path.exists(corrected_path):
+            if os.path.exists(corrected_path):
+                LOGGER.info('Corrected_path already exists: {0}'.format(corrected_path))
+            else:
                 os.makedirs(corrected_path)
-            self._key.get_contents_to_filename(self._tar_file)
-            with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('tar.gz') else "r:")) as tar:
-                tar.extractall(path=corrected_path)
+                self._key.get_contents_to_filename(self._tar_file)
+                with closing(tarfile.open(self._tar_file, "r:gz" if self._tar_file.endswith('tar.gz') else "r:")) as tar:
+                    tar.extractall(path=corrected_path)
 
-            os.remove(self._tar_file)
+                os.remove(self._tar_file)
         except Exception:
             LOGGER.exception('Task died')
             shutil.rmtree(corrected_path, ignore_errors=True)
