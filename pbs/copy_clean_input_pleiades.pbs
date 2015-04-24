@@ -1,7 +1,7 @@
 #!/bin/sh
 #PBS -N pbs-copy_clean_input_pleiades
 #PBS -l nodes=1:ppn=1:compute,walltime=2:00:00
-#PBS -t 1-6
+#PBS -t 0-120
 #PBS -q usmall2
 # usmall is 32 items on the queue usmall2 is 8
 #PBS -j oe
