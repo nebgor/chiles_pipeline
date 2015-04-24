@@ -7,7 +7,5 @@
 #PBS -j oe
 cd ~
 
-module load python
-
 source /home/kevin/virt_env/chiles_pipeline/bin/activate
-/home/kevin/virt_env/chiles_pipeline/bin/python /home/kevin/chiles_pipeline/python/copy_clean_input_pleiades.py ${PBS_ARRAYID}
+/home/kevin/virt_env/chiles_pipeline/bin/python -vvv /home/kevin/chiles_pipeline/python/copy_clean_input_pleiades.py ${PBS_ARRAYID}
