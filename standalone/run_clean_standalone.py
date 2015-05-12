@@ -108,7 +108,7 @@ class Task(object):
         user_data.attach(get_cloud_init())
 
         swap_size = self.get_swap_size()
-        data_formatted = self._user_data.format(self._frequency_id, min_freq, max_freq, swap_size, PIP_PACKAGES)
+        data_formatted = self._user_data.format(self._frequency_id, swap_size, PIP_PACKAGES)
         user_data.attach(MIMEText(self._setup_disks + data_formatted))
         return user_data.as_string()
 
@@ -169,12 +169,11 @@ def main():
         get_script('run_clean_standalone.bash'),
         get_script(BASH_SCRIPT_SETUP_DISKS),
         'r3.4xlarge',
-        args['frequencies'],
+        'vis_1136~1140',
         'Kevin',
         'Standalone Clean',
         AWS_INSTANCES.get('r3.4xlarge'),
         '0.30')
 
 if __name__ == "__main__":
-    # -i r3.4xlarge -n "Kevin CLEAN" -s 0.30 vis_1400~1404
     main()

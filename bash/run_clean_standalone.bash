@@ -9,7 +9,7 @@
 # When this is run as a user data start up script it is run as root - BE CAREFUL!!!
 
 # Clean uses a lot of memory so make a swap on the disk
-/bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count={3}
+/bin/dd if=/dev/zero of=/mnt/output/swapfile bs=1G count={1}
 chown root:root /mnt/output/swapfile
 chmod 600 /mnt/output/swapfile
 /sbin/mkswap /mnt/output/swapfile
@@ -19,29 +19,37 @@ chmod 600 /mnt/output/swapfile
 ulimit -n 8192
 
 # Install the latest versions of the Python libraries and pull the latest code
-pip2.7 install {4}
+pip2.7 install {2}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Copy files from S3
-#python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
 python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
 
 # Log the disk usage
 df -h
 
 # Run the clean pipeline
-#python2.7 /home/ec2-user/chiles_pipeline/python/launch_trace2.py bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
-bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean.sh {1} {2}
+# create a separate casa_work directory for each casa process
+export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
+
+mkdir -p ${{CH_CASA_WORK_DIR}}/1020-1024
+cd ${{CH_CASA_WORK_DIR}}/1020-1024
+
+# point to casapy installation
+export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
+export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python
+export HOME=/home/ec2-user
+export USER=root
+
+# run casapy
+casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/standalone/standalone_clean.py
 
 # Log the disk usage
 df -h
 
 # Copy files to S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}
-
-# Copy files to S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}
+python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/standalone/{0}
 
 # Terminate
-shutdown -h now
+#shutdown -h now
