@@ -52,4 +52,4 @@ df -h
 python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/standalone/{0}
 
 # Terminate
-#shutdown -h now
+shutdown -h now

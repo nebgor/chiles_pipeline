@@ -22,4 +22,4 @@ clean(vis=['{0}/20131116-946-6/{1}'.format(sp, vf),'{0}/20131117-941-6/{1}'.form
       minpb=0.2,usescratch=True,noise="1.0Jy",npixels=0,npercycle=100,cyclefactor=1.5,cyclespeedup=-1,nterms=1,reffreq="",chaniter=False,flatnoise=True,allowchunk=False)
 
 end_time = datetime.datetime.now()
-print end_time, start_time, end_time - start_time
+print 'Time taken:', end_time, start_time, end_time - start_time

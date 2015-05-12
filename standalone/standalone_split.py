@@ -31,4 +31,4 @@ for i in range(1):
                 datacolumn="data")
 
 end_time = datetime.datetime.now()
-print end_time, start_time, end_time - start_time
+print 'Time taken:', end_time, start_time, end_time - start_time
