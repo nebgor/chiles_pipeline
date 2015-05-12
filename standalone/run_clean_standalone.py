@@ -25,17 +25,14 @@
 """
 Start a number of CLEAN servers
 """
-import argparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import getpass
 import multiprocessing
 from string import find
 import sys
 
 from common import get_script, get_cloud_init, Consumer, LOGGER
-from echo import echo
-from settings_file import AWS_AMI_ID, BASH_SCRIPT_CLEAN, BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES, PIP_PACKAGES
+from settings_file import BASH_SCRIPT_SETUP_DISKS, AWS_INSTANCES, PIP_PACKAGES
 from ec2_helper import EC2Helper
 
 
@@ -173,7 +170,7 @@ def main():
         'Kevin',
         'Standalone Clean',
         AWS_INSTANCES.get('r3.4xlarge'),
-        '0.50')
+        '0.80')
 
 if __name__ == "__main__":
     main()

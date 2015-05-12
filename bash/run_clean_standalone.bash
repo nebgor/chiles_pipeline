@@ -23,6 +23,18 @@ pip2.7 install {2}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
+# create a separate casa_work directory for each casa process
+export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
+
+mkdir -p ${{CH_CASA_WORK_DIR}}/1020-1024
+cd ${{CH_CASA_WORK_DIR}}/1020-1024
+
+export HOME=/home/ec2-user
+export USER=root
+# point to casapy installation
+export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
+export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python:/home/ec2-user/chiles_pipeline/standalone
+
 # Copy files from S3
 python2.7 /home/ec2-user/chiles_pipeline/standalone/copy_clean_input_standalone.py {0} -p 4
 
@@ -30,18 +42,6 @@ python2.7 /home/ec2-user/chiles_pipeline/standalone/copy_clean_input_standalone.
 df -h
 
 # Run the clean pipeline
-# create a separate casa_work directory for each casa process
-export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
-
-mkdir -p ${{CH_CASA_WORK_DIR}}/1020-1024
-cd ${{CH_CASA_WORK_DIR}}/1020-1024
-
-# point to casapy installation
-export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
-export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python
-export HOME=/home/ec2-user
-export USER=root
-
 # run casapy
 casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/standalone/standalone_clean.py
 

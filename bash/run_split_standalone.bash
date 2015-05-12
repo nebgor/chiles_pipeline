@@ -35,7 +35,7 @@ cd ${{CH_CASA_WORK_DIR}}/1020-1024
 
 # point to casapy installation
 export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
-export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python
+export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python:/home/ec2-user/chiles_pipeline/standalone
 export HOME=/home/ec2-user
 export USER=root
 
