@@ -9,10 +9,10 @@ sp = "/mnt/output/Chiles/split_vis"
 vf = "vis_1136~1140"
 
 start_time = datetime.datetime.now()
-clean(vis=['{0}/20131116_946_6/{1}'.format(sp, vf),'{0}/20131117_941_6/{1}'.format(sp, vf),
-           '{0}/20131118_946_6/{1}'.format(sp, vf),'{0}/20131119_941_6/{1}'.format(sp, vf),
-           '{0}/20131121_946_6/{1}'.format(sp, vf),'{0}/20131123_951_6/{1}'.format(sp, vf),
-           '{0}/20131126_946_6/{1}'.format(sp, vf),'{0}/20131203_941_6/{1}'.format(sp, vf)],
+clean(vis=['{0}/20131116-946-6/{1}'.format(sp, vf),'{0}/20131117-941-6/{1}'.format(sp, vf),
+           '{0}/20131118-946-6/{1}'.format(sp, vf),'{0}/20131119-941-6/{1}'.format(sp, vf),
+           '{0}/20131121-946-6/{1}'.format(sp, vf),'{0}/20131123-951-6/{1}'.format(sp, vf),
+           '{0}/20131126-946-6/{1}'.format(sp, vf),'{0}/20131203-941-6/{1}'.format(sp, vf)],
       imagename="/scratch/partner1024/chiles/split_cubes/283781/cube_1136~1140",
       outlierfile="",field="deepfield",spw="",selectdata=True,timerange="",uvrange="",antenna="",scan="",observation="",intent="",mode="frequency",resmooth=False,gridmode="",
       wprojplanes=1,facets=1,cfcache="cfcache.dir",rotpainc=5.0,painc=360.0,aterm=True,psterm=False,mterm=True,wbawp=False,conjbeams=True,epjtable="",interpolation="nearest",

@@ -94,7 +94,7 @@ def copy_files(frequency_id, processes, days):
         # Ignore the key
         if key.key.endswith('/data.tar.gz') or key.key.endswith('/data.tar'):
             elements = key.key.split('/')
-            if elements[3] in days:
+            if elements[2] in days:
                 directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
 
                 # Queue the copy of the file
