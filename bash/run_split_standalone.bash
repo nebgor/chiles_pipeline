@@ -22,13 +22,14 @@ mount /dev/xvdf /mnt/Data/data1
 chmod -R oug+r /mnt/Data/data1
 
 # Install the latest versions of the Python libraries and pull the latest code
+pip2.7 install --upgrade pip
 pip2.7 install {2}
 cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Run the cvel pipeline
 # create a separate casa_work directory for each casa process
-export CH_CASA_WORK_DIR=$HOME/Chiles/casa_work_dir
+export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
 
 mkdir -p ${{CH_CASA_WORK_DIR}}/1020-1024
 cd ${{CH_CASA_WORK_DIR}}/1020-1024
@@ -47,11 +48,3 @@ df -h
 
 # Copy log files to S3
 python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/standalone/{1}
-
-# Unattach the volume and delete it
-umount /dev/xvdf
-sleep 10
-python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py {0}
-
-# Terminate
-#shutdown -h now
