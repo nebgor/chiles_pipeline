@@ -4,7 +4,7 @@ from mstransform import mstransform
 dt = datetime.datetime.now()
 timestr = dt.strftime('%Y-%m-%dT%H-%M-%S')
 
-ms_dir = '/mnt/Data/data1/chiles/final_products/20131122_941_6_FINAL_PRODUCTS/13B-266.sb27261805.eb28549602.56618.334173599535_calibrated_deepfield.ms'
+ms_dir = '/mnt/Data/data1/20131122_941_6_FINAL_PRODUCTS/13B-266.sb27261805.eb28549602.56618.334173599535_calibrated_deepfield.ms'
 
 output_vis = '/mnt/output/Chiles/split_vis/{0}'.format(timestr)
 

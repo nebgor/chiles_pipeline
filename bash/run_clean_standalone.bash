@@ -24,7 +24,7 @@ cd /home/ec2-user/chiles_pipeline
 git pull
 
 # Copy files from S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_input.py {0} -p 4
+python2.7 /home/ec2-user/chiles_pipeline/standalone/copy_clean_input_standalone.py {0} -p 4
 
 # Log the disk usage
 df -h

@@ -1,6 +1,7 @@
 """
 Run the clean task stand alone for debugging
 """
+import datetime
 from clean import clean
 
 #casalog.filter('DEBUGGING')

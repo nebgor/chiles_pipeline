@@ -76,7 +76,7 @@ class Task(object):
             shutil.rmtree(corrected_path, ignore_errors=True)
 
 
-def copy_files(frequency_id, processes):
+def copy_files(frequency_id, processes, days):
     s3_helper = S3Helper()
     bucket = s3_helper.get_bucket(CHILES_BUCKET_NAME)
     LOGGER.info('Scanning bucket: {0}, frequency_id: {1}'.format(bucket, frequency_id))
@@ -94,11 +94,12 @@ def copy_files(frequency_id, processes):
         # Ignore the key
         if key.key.endswith('/data.tar.gz') or key.key.endswith('/data.tar'):
             elements = key.key.split('/')
-            directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
+            if elements[3] in days:
+                directory = '/mnt/output/Chiles/split_vis/{0}/'.format(elements[2])
 
-            # Queue the copy of the file
-            temp_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
-            queue.put(Task(key, temp_file, directory, frequency_id))
+                # Queue the copy of the file
+                temp_file = os.path.join(directory, 'data.tar.gz' if key.key.endswith('/data.tar.gz') else 'data.tar')
+                queue.put(Task(key, temp_file, directory, frequency_id))
 
     # Add a poison pill to shut things down
     for x in range(processes):
@@ -119,7 +120,11 @@ def main():
 
     copy_files(
         frequency_id,
-        processes)
+        processes,
+        ['20131116_946_6','20131117_941_6',
+         '20131118_946_6','20131119_941_6',
+         '20131121_946_6','20131123_951_6',
+         '20131126_946_6','20131203_941_6'])
 
 if __name__ == "__main__":
     main()
