@@ -169,11 +169,11 @@ def main():
         get_script('run_clean_standalone.bash'),
         get_script(BASH_SCRIPT_SETUP_DISKS),
         'r3.4xlarge',
-        'vis_1136~1140',
+        ['vis_1136~1140'],
         'Kevin',
         'Standalone Clean',
         AWS_INSTANCES.get('r3.4xlarge'),
-        '0.30')
+        '0.50')
 
 if __name__ == "__main__":
     main()
