@@ -26,9 +26,11 @@ pip2.7 install {4}
 
 cd /home/ec2-user
 rm -rf /home/ec2-user/chiles_pipeline
-git clone -b msc --single-branch https://github.com/nebgor/chiles_pipeline.git
+git clone -b msc_ec2-user --single-branch https://github.com/nebgor/chiles_pipeline.git
+# fyi: git grep -l 'ec2-user' | xargs sed -i 's/ec2-user/centos/g'
 cd /home/ec2-user/chiles_pipeline
 git pull
+
 
 # Run the cvel pipeline
 ##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
