@@ -60,7 +60,7 @@ export HOME=/home/centos
 export USER=root
 
 # run casapy
-#casapy --nologger  --log2term --logfile casapy.log  -c /home/centos/chiles_pipeline/python/loop_cvel.py
+casapy --nologger  --log2term --logfile casapy.log  -c /home/centos/chiles_pipeline/python/loop_cvel.py
 
 #yum --assumeyes install strace
 #mkdir -p /tmp/trace_logs
