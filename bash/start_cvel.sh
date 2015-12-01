@@ -55,6 +55,8 @@ cd ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 
 # point to casapy installation
 export PATH=$PATH:/home/centos/casapy-42.2.30986-1-64b/bin
+# either or, whatever works .. for now..
+export PATH=$PATH:/usr/local/bin/CASA/casapy-42.2.30986-1-64b
 export PYTHONPATH=${PYTHONPATH}:/home/centos/chiles_pipeline/python
 export HOME=/home/centos
 export USER=root
