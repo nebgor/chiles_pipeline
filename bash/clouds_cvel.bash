@@ -21,6 +21,8 @@ mkdir -p /mnt/Data/data1
 mount /dev/xvdf /mnt/Data/data1
 chmod -R oug+r /mnt/Data/data1
 
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
 # Install the latest versions of the Python libraries and pull the latest code
 pip2.7 install {4}
 
