@@ -55,17 +55,17 @@ mkdir -p ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 cd ${CH_CASA_WORK_DIR}/${CH_FREQ_MIN}-${CH_FREQ_MAX}
 
 # point to casapy installation
-export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
-export PYTHONPATH=${PYTHONPATH}:/home/ec2-user/chiles_pipeline/python
-export HOME=/home/ec2-user
+export PATH=$PATH:/home/centos/casapy-42.2.30986-1-64b/bin
+export PYTHONPATH=${PYTHONPATH}:/home/centos/chiles_pipeline/python
+export HOME=/home/centos
 export USER=root
 
 # run casapy
-#casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean.py
+#casapy --nologger  --log2term --logfile casapy.log  -c /home/centos/chiles_pipeline/python/loop_clean.py
 
 #yum --assumeyes install strace
 #mkdir -p /tmp/trace_logs
-#bash -xv /home/ec2-user/chiles_pipeline/bash/ioprofiler-trace.sh -o /tmp/trace_logs/io3.log casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/python/loop_clean.py
+#bash -xv /home/centos/chiles_pipeline/bash/ioprofiler-trace.sh -o /tmp/trace_logs/io3.log casapy --nologger  --log2term --logfile casapy.log  -c /home/centos/chiles_pipeline/python/loop_clean.py
 
 
 #done

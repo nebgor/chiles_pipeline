@@ -57,23 +57,23 @@ chmod -R 0777 /mnt/input06
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip2.7 install {4}
-cd /home/ec2-user/chiles_pipeline
-runuser -l ec2-user -c '(cd /home/ec2-user/chiles_pipeline ; git pull)'
+cd /home/centos/chiles_pipeline
+runuser -l centos -c '(cd /home/centos/chiles_pipeline ; git pull)'
 
 # Log the disk usage
 df -h
 
 # Run the clean pipeline
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_clean_all.sh {1} {2}'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_clean_all.sh {1} {2}'
 
 # Log the disk usage
 df -h
 
 # Copy files to S3
-#runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_clean_output.py {0}'
+#runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/copy_clean_output.py {0}'
 
 # Copy files to S3
-#runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
+#runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CLEAN-log/{0}'
 
 # Terminate
 #shutdown -h now

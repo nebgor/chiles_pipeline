@@ -30,7 +30,7 @@ power_state:
  timeout: 120
 
 runcmd:
- - (cd /home/ec2-user/chiles_pipeline ; git pull)
+ - (cd /home/centos/chiles_pipeline ; git pull)
  - pip2.7 install configobj boto
 
 write_files:
@@ -165,51 +165,51 @@ mount /dev/xvdf /mnt/Data/data1
 chmod -R oug+r /mnt/Data/data1
 
 # Run the cvel pipeline
-##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
+##### runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1200 1204'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1200 1204'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1204 1208'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1204 1208'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1208 1212'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1208 1212'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1212 1216'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1212 1216'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1216 1220'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1216 1220'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1220 1224'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1220 1224'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1224 1228'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1224 1228'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1228 1232'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1228 1232'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1232 1236'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1232 1236'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1236 1240'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1236 1240'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1240 1244'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1240 1244'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1244 1248'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1244 1248'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1248 1252'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1248 1252'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1252 1256'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1252 1256'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1256 1260'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1256 1260'
 
-runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh 1260 1264'
+runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh 1260 1264'
 
 
 # Copy files to S3
-runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py -p 2 20131122_941_6'
+runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/copy_cvel_output.py -p 2 20131122_941_6'
 
 # Copy log files to S3
-runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/20131122_941_6'
+runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/20131122_941_6'
 
 # Unattach the volume and delete it
 umount /dev/xvdf
 sleep 10
-runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py vol-7208d475'
+runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/delete_volumes.py vol-7208d475'
 
 # Terminate
 shutdown -h now

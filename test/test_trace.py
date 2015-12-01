@@ -8,7 +8,7 @@ import os
 from test_speed import test
 
 # Needs to be a decent sized file
-TEST_FILE = '/home/ec2-user/test_file'
+TEST_FILE = '/home/centos/test_file'
 
 
 def test_io1():

@@ -43,12 +43,12 @@ CHILES_CVEL_OUTPUT = '/mnt/output/Chiles/split_vis'
 CHILES_CLEAN_OUTPUT = '/mnt/output/Chiles/split_cubes'
 CHILES_IMGCONCAT_OUTPUT = '/mnt/output/Chiles'
 CHILES_BUCKET_NAME = 'chiles.output.icrar.org'
-CHILES_LOGS = '/home/ec2-user/Chiles/casa_work_dir'
+CHILES_LOGS = '/home/centos/Chiles/casa_work_dir'
 BENCHMARKING_LOGS = '/tmp/trace_logs'
 
 AWS_KEY = expanduser('~/.ssh/aws-chiles-sydney.pem')
 PIP_PACKAGES = 'configobj boto psutil'
-USERNAME = 'ec2-user'
+USERNAME = 'centos'
 
 FREQUENCY_WIDTH = 4
 FREQUENCY_GROUPS = []

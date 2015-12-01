@@ -23,24 +23,24 @@ chmod -R oug+r /mnt/Data/data1
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip2.7 install {5}
-cd /home/ec2-user/chiles_pipeline
+cd /home/centos/chiles_pipeline
 git pull
 
 # Run the cvel pipeline
-##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
-##### runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_ obs-id' #####
+##### runuser -l centos -c 'bash -vx /home/centos/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
+##### runuser -l centos -c 'python2.7 /home/centos/chiles_pipeline/python/copy_cvel_output.py vis_ obs-id' #####
 {0}
 
 # Log the disk usage
 df -h
 
 # Copy log files to S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{3}-{4}
+python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{3}-{4}
 
 # Unattach the volume and delete it
 umount /dev/xvdf
 sleep 10
-python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py {2}
+python2.7 /home/centos/chiles_pipeline/python/delete_volumes.py {2}
 
 # Terminate
 shutdown -h now

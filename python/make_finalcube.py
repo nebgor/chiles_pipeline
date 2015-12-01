@@ -28,7 +28,7 @@ Taken from makecube.py extracting the final combination of cubes
 This module should run together with the casapy: e.g. casapy --logfile casapy.log -c make_finalcube.py
 """
 
-execfile('/home/ec2-user/chiles_pipeline/python/makecube_defines.py')
+execfile('/home/centos/chiles_pipeline/python/makecube_defines.py')
 
 check_dir(out_dir)
 

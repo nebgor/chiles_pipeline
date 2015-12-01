@@ -23,35 +23,35 @@ chmod -R oug+r /mnt/Data/data1
 
 # Install the latest versions of the Python libraries and pull the latest code
 pip2.7 install {2}
-cd /home/ec2-user/chiles_pipeline
+cd /home/centos/chiles_pipeline
 git pull
 
 # Run the split pipeline
 # create a separate casa_work directory for each casa process
-export CH_CASA_WORK_DIR=/home/ec2-user/Chiles/casa_work_dir
+export CH_CASA_WORK_DIR=/home/centos/Chiles/casa_work_dir
 
 mkdir -p ${{CH_CASA_WORK_DIR}}/1020-1024
 cd ${{CH_CASA_WORK_DIR}}/1020-1024
 
 # point to casapy installation
-export PATH=$PATH:/home/ec2-user/casapy-42.2.30986-1-64b/bin
-export PYTHONPATH=${{PYTHONPATH}}:/home/ec2-user/chiles_pipeline/python:/home/ec2-user/chiles_pipeline/standalone
-export HOME=/home/ec2-user
+export PATH=$PATH:/home/centos/casapy-42.2.30986-1-64b/bin
+export PYTHONPATH=${{PYTHONPATH}}:/home/centos/chiles_pipeline/python:/home/centos/chiles_pipeline/standalone
+export HOME=/home/centos
 export USER=root
 
 # run casapy
-casapy --nologger  --log2term --logfile casapy.log  -c /home/ec2-user/chiles_pipeline/standalone/standalone_split.py
+casapy --nologger  --log2term --logfile casapy.log  -c /home/centos/chiles_pipeline/standalone/standalone_split.py
 
 # Log the disk usage
 df -h
 
 # Copy log files to S3
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/standalone/{1}
+python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/standalone/{1}
 
 # Unattach the volume and delete it
 umount /dev/xvdf
 sleep 10
-python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py {0}
+python2.7 /home/centos/chiles_pipeline/python/delete_volumes.py {0}
 
 # Terminate
 shutdown -h now
