@@ -38,6 +38,7 @@ from cStringIO import StringIO
 
 import boto
 from boto.s3.key import Key
+from boto.s3.connection import OrdinaryCallingFormat
 
 from common import LOGGER
 from file_chunk_io import FileChunkIO
@@ -55,7 +56,15 @@ if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def get_s3_connection(aws_access_key_id=None, aws_secret_access_key=None):
+def get_s3_connection(aws_access_key_id=None, aws_secret_access_key=None, is_secure=None, port=None, path=None, host=None):
+
+    if host is not None:
+        LOGGER.info("Using user provided keys on given endpoint host")
+        return boto.connect_s3(
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            is_secure=is_secure, port=port, path=path, host=host, calling_format=OrdinaryCallingFormat())
+
     if aws_access_key_id is not None and aws_secret_access_key is not None:
         LOGGER.info("Using user provided keys")
         return boto.connect_s3(
@@ -132,7 +141,14 @@ class S3Helper:
         """
         self._aws_access_key_id = aws_access_key_id
         self._aws_secret_access_key = aws_secret_access_key
-        self.s3_connection = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+        # self.s3_connection = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+        endpointhost = '180.149.251.153'
+        endpointport = '8773'
+        LOGGER.debug('EUCA s3 connection: ' + endpointhost + ':' + endpointport)
+
+        self.s3_connection = get_s3_connection(aws_access_key_id, aws_secret_access_key,
+                                               is_secure=False, port=int(endpointport), path="/services/Walrus",
+                                               host=endpointhost)
 
     def get_bucket(self, bucket_name):
         """
@@ -141,7 +157,7 @@ class S3Helper:
         :param bucket_name:
         :return:
         """
-        return self.s3_connection.get_bucket(bucket_name)
+        return self.s3_connection.get_bucket(bucket_name, validate=True)
 
     def get_file_from_bucket(self, bucket_name, key_name, file_name):
         """
