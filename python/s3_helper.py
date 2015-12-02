@@ -87,7 +87,17 @@ def upload_part(aws_access_key_id, aws_secret_access_key, bucket_name, multipart
     def _upload(retries_left=amount_of_retries):
         try:
             LOGGER.info('Start uploading part #{0} ...'.format(part_num))
-            conn = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+
+            endpointhost = '180.149.251.153'
+            endpointport = '8773'
+            LOGGER.debug('EUCA s3 connection: ' + endpointhost + ':' + endpointport)
+
+            conn = get_s3_connection(aws_access_key_id, aws_secret_access_key,
+                                     is_secure=False, port=int(endpointport), path="/services/Walrus",
+                                     host=endpointhost)
+
+            # conn = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+
             bucket = conn.get_bucket(bucket_name)
             for mp in bucket.get_all_multipart_uploads():
                 if mp.id == multipart_id:
@@ -113,7 +123,17 @@ def upload_part_stream(aws_access_key_id, aws_secret_access_key, bucket_name, mu
     def _upload(retries_left=amount_of_retries):
         try:
             LOGGER.info('Start uploading part #{0} ...'.format(part_num))
-            conn = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+
+            endpointhost = '180.149.251.153'
+            endpointport = '8773'
+            LOGGER.debug('EUCA s3 connection: ' + endpointhost + ':' + endpointport)
+
+            conn = get_s3_connection(aws_access_key_id, aws_secret_access_key,
+                is_secure=False, port=int(endpointport), path="/services/Walrus",
+                host=endpointhost)
+
+            # conn = get_s3_connection(aws_access_key_id, aws_secret_access_key)
+
             bucket = conn.get_bucket(bucket_name)
             for mp in bucket.get_all_multipart_uploads():
                 if mp.id == multipart_id:
