@@ -72,7 +72,8 @@ def copy_files(s3_tag, processes):
     for root, dir_names, filenames in os.walk(CHILES_LOGS):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
-            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
+            # Buckets chiles.output.icrar.org  CVEL-logs / 20140112_951_1_EUCA / 2015-12-02-1 / 20151202
+            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}-{5}/{4}'.format(s3_tag, today.year, today.month, today.day, match, today.hour + '-' + today.minute )))
 
     for root, dir_names, filenames in os.walk(BENCHMARKING_LOGS):
         for match in fnmatch.filter(filenames, '*.csv'):
