@@ -48,9 +48,9 @@ df -h
 python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{2}-{3}
 
 ## Unattach the volume and delete it
-#umount /dev/xvdf
-#sleep 10
+umount /dev/xvdf
+sleep 10
 # python2.7 /home/ec2-user/chiles_pipeline/python/delete_volumes.py {2} # this was decoupled from here.
 
 # Terminate (the volume will be deleted too..)
-#shutdown -h now
+shutdown -h now
