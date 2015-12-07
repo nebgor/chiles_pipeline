@@ -83,7 +83,7 @@ def copy_files(s3_tag, processes):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
 
-    queue.put(CopyTask('/var/log/chiles-output.log', '{0}/{1}{2:02d}{3:02d}/chiles-output.log'.format(s3_tag, today.year, today.month, today.day)))
+    queue.put(CopyTask('/var/log/chiles-output.log', '{0}/{1}{2:02d}{3:02d}/chiles-output.{4}.log'.format(s3_tag, today.year, today.month, today.day, today.hour + '-' + today.minute)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
