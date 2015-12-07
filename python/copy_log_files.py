@@ -74,7 +74,7 @@ def copy_files(s3_tag, processes):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             # Buckets chiles.output.icrar.org  CVEL-logs / 20140112_951_1_EUCA / 2015-12-02-1 / 20151202
-            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}-{5}/{4}'.format(s3_tag, today.year, today.month, today.day, match, today.hour + '-' + today.minute )))
+            queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}-{5}{6}/{4}'.format(s3_tag, today.year, today.month, today.day, match, today.hour, today.minute )))
 
     for root, dir_names, filenames in os.walk(BENCHMARKING_LOGS):
         for match in fnmatch.filter(filenames, '*.csv'):
@@ -84,7 +84,7 @@ def copy_files(s3_tag, processes):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
             queue.put(CopyTask(join(root, match), '{0}/{1}{2:02d}{3:02d}/{4}'.format(s3_tag, today.year, today.month, today.day, match)))
 
-    queue.put(CopyTask('/var/log/chiles-output.log', '{0}/{1}{2:02d}{3:02d}/chiles-output.{4}.log'.format(s3_tag, today.year, today.month, today.day, today.hour + '-' + today.minute)))
+    queue.put(CopyTask('/var/log/chiles-output.log', '{0}/{1}{2:02d}{3:02d}/chiles-output.{4}{5}.log'.format(s3_tag, today.year, today.month, today.day, today.hour, today.minute)))
 
     # Add a poison pill to shut things down
     for x in range(processes):
