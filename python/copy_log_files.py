@@ -68,7 +68,8 @@ def copy_files(s3_tag, processes):
         consumer.start()
 
     # Look in the output directory
-    today = datetime.date.today()
+    today = datetime.datetime.now()
+
     for root, dir_names, filenames in os.walk(CHILES_LOGS):
         for match in fnmatch.filter(filenames, '*.log'):
             LOGGER.info('Looking at: {0}'.format(join(root, match)))
