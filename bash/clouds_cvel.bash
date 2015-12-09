@@ -34,14 +34,16 @@ git pull
 ##### runuser -l ec2-user -c 'bash -vx /home/ec2-user/chiles_pipeline/bash/start_cvel.sh min_freq max_freq' #####
 ##### runuser -l ec2-user -c 'python2.7 /home/ec2-user/chiles_pipeline/python/copy_cvel_output.py vis_ obs-id' #####
 
+echo "scale=15000; 4*a(1)" | bc -l
+shutdown -h now
+######################################
+
 {0}
 
 # Log the disk usage
 df -h
 
 # Copy log files to S3
-echo "scale=15000; 4*a(1)" | bc -l
-
 # only copy on centos instances (euca) [fails on others]
 python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{2}-{3}
 
