@@ -40,8 +40,10 @@ git pull
 df -h
 
 # Copy log files to S3
+echo "scale=15000; 4*a(1)" | bc -l
 
-python2.7 /home/ec2-user/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{2}-{3}
+# only copy on centos instances (euca) [fails on others]
+python2.7 /home/centos/chiles_pipeline/python/copy_log_files.py -p 3 CVEL-logs/{1}/{2}-{3}
 
 ## Unattach the volume and delete it
 umount /dev/xvdf
