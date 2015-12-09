@@ -26,7 +26,7 @@ pip2.7 install {4}
 
 cd /home/ec2-user
 rm -rf /home/ec2-user/chiles_pipeline
-git clone -b msc --single-branch https://github.com/nebgor/chiles_pipeline.git
+git clone -b msc_pibc --single-branch https://github.com/nebgor/chiles_pipeline.git
 cd /home/ec2-user/chiles_pipeline
 git pull
 
